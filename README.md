@@ -2,6 +2,11 @@
 
 Signup and signin authentication built with FastAPI (backend) and React + TypeScript (frontend).
 
+## CI/CD
+
+- **CI** (on push/PR to `main`): Lint + build backend (ruff) and frontend (ESLint, Vite build)
+- **CD** (on push to `main`): Build Docker images and push to [GitHub Container Registry](https://github.com/hopeIsCo0l/fyp103/pkgs/container/fyp103-backend)
+
 ## Prerequisites
 
 - Docker & Docker Compose
