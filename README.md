@@ -13,27 +13,52 @@ Signup and signin authentication built with FastAPI (backend) and React + TypeSc
 
 ## Quick Start (Docker – All-in-One)
 
-**1. Free ports** (if 5432, 8000, or 5173 are in use):
+**1. Start Docker Desktop**, then:
 
-```bash
-# PowerShell (run as Administrator if needed)
+```powershell
+# Free ports if needed (PowerShell)
 .\scripts\free-ports.ps1
 
-# Git Bash
-bash scripts/free-ports.sh
-```
-
-**2. Run everything**
-
-```bash
+# Run everything
 docker-compose up --build
 ```
 
 - **Frontend:** http://localhost:5173  
 - **API docs:** http://localhost:8000/docs  
-- **PostgreSQL:** localhost:5432 (user: postgres, password: postgres, db: recruit_db)
+- **PostgreSQL:** localhost:5433 (user: postgres, password: postgres, db: recruit_db)
 
-To run in the background: `docker-compose up -d --build`
+Background: `docker-compose up -d --build`
+
+---
+
+## Quick Start (Local – No Docker)
+
+Uses SQLite by default. Two terminals:
+
+**Terminal 1 – Backend:**
+```powershell
+.\scripts\run-backend.ps1
+```
+
+**Terminal 2 – Frontend:**
+```powershell
+.\scripts\run-frontend.ps1
+```
+
+Open http://localhost:5173 and try Sign up / Sign in.
+
+---
+
+## Quick Start (PostgreSQL via Docker)
+
+**1. PostgreSQL** – start Docker Desktop, then:
+```powershell
+docker-compose up -d postgres
+$env:DATABASE_URL = "postgresql://postgres:postgres@localhost:5433/recruit_db"
+.\scripts\run-backend.ps1
+```
+
+**2. Frontend:** `.\scripts\run-frontend.ps1`
 
 ---
 

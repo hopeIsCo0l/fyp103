@@ -32,12 +32,16 @@ export default function Signin() {
       navigate('/', { replace: true });
       window.location.reload();
     } catch (err: unknown) {
-      const msg =
-        err && typeof err === 'object' && 'response' in err
-          ? (err as { response?: { data?: { detail?: string } } }).response?.data
-              ?.detail
-          : 'Sign in failed';
-      setError(typeof msg === 'string' ? msg : 'Sign in failed');
+      const ax = err as { response?: { data?: { detail?: string | string[] }; status?: number }; message?: string; code?: string };
+      let msg = 'Sign in failed';
+      if (ax?.response?.data?.detail) {
+        msg = Array.isArray(ax.response.data.detail)
+          ? ax.response.data.detail.map((d: { msg?: string }) => d.msg || d).join(', ')
+          : String(ax.response.data.detail);
+      } else if (ax?.code === 'ERR_NETWORK' || ax?.message?.includes('Network Error')) {
+        msg = 'Cannot connect to server. Is the backend running on port 8000?';
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }

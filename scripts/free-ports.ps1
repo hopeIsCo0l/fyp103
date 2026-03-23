@@ -11,12 +11,12 @@ foreach ($port in $ports) {
 
     if ($conn) {
         $pids = $conn.OwningProcess | Select-Object -Unique
-        foreach ($pid in $pids) {
+        foreach ($procId in $pids) {
             try {
-                $proc = Get-Process -Id $pid -ErrorAction SilentlyContinue
+                $proc = Get-Process -Id $procId -ErrorAction SilentlyContinue
                 if ($proc) {
-                    Write-Host "Stopping $($proc.ProcessName) (PID $pid) on port $port"
-                    Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+                    Write-Host "Stopping $($proc.ProcessName) (PID $procId) on port $port"
+                    Stop-Process -Id $procId -Force -ErrorAction SilentlyContinue
                 }
             } catch { }
         }
