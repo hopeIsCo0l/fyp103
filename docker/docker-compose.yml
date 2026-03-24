@@ -16,7 +16,9 @@ services:
       retries: 5
 
   backend:
-    build: ./backend
+    build:
+      context: ../apps/api
+      dockerfile: ../../docker/api.Dockerfile
     ports:
       - "8000:8000"
     environment:
@@ -28,10 +30,12 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ./backend:/app
+      - ../apps/api:/app
 
   frontend:
-    build: ./frontend
+    build:
+      context: ../apps/web
+      dockerfile: ../../docker/web.Dockerfile
     ports:
       - "5173:5173"
     environment:
@@ -39,7 +43,7 @@ services:
     depends_on:
       - backend
     volumes:
-      - ./frontend:/app
+      - ../apps/web:/app
       - /app/node_modules
     stdin_open: true
     tty: true

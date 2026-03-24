@@ -1,124 +1,80 @@
-# AI-Powered Recruitment System
+﻿# FYP103 - AI Recruitment Platform
 
-Signup and signin authentication built with FastAPI (backend) and React + TypeScript (frontend).
+A clean monorepo-style structure for an AI-powered recruitment system.
 
-## CI/CD
+## Repository Structure
 
-- **CI** (on push/PR to `main`): Lint + build backend (ruff) and frontend (ESLint, Vite build)
-- **CD** (on push to `main`): Build Docker images and push to [GitHub Container Registry](https://github.com/hopeIsCo0l/fyp103/pkgs/container/fyp103-backend)
-
-## Prerequisites
-
-- Docker & Docker Compose
-
-## Quick Start (Docker – All-in-One)
-
-**1. Start Docker Desktop**, then:
-
-```powershell
-# Free ports if needed (PowerShell)
-.\scripts\free-ports.ps1
-
-# Run everything
-docker-compose up --build
+```text
+fypimp103/
+├─ apps/
+│  ├─ api/                    # FastAPI backend (auth, OTP, JWT, DB)
+│  └─ web/                    # React + TypeScript frontend
+├─ docker/
+│  ├─ api.Dockerfile
+│  ├─ web.Dockerfile
+│  └─ docker-compose.yml
+├─ packages/                  # Reserved for shared libs
+├─ scripts/
+├─ .github/workflows/
+├─ ARCHITECTURE.md
+└─ README.md
 ```
 
-- **Frontend:** http://localhost:5173  
-- **API docs:** http://localhost:8000/docs  
-- **PostgreSQL:** localhost:5433 (user: postgres, password: postgres, db: recruit_db)
+## Quick Start (Local, No Docker)
 
-Background: `docker-compose up -d --build`
+### Terminal 1 - API
 
----
-
-## Quick Start (Local – No Docker)
-
-Uses SQLite by default. Two terminals:
-
-**Terminal 1 – Backend:**
 ```powershell
 .\scripts\run-backend.ps1
 ```
 
-**Terminal 2 – Frontend:**
+### Terminal 2 - Web
+
 ```powershell
 .\scripts\run-frontend.ps1
 ```
 
-Open http://localhost:5173 and try Sign up / Sign in.
+Open:
+- Web: http://localhost:5173
+- API docs: http://localhost:8000/docs
 
----
+## Quick Start (Docker)
 
-## Quick Start (PostgreSQL via Docker)
-
-**1. PostgreSQL** – start Docker Desktop, then:
 ```powershell
-docker-compose up -d postgres
-$env:DATABASE_URL = "postgresql://postgres:postgres@localhost:5433/recruit_db"
-.\scripts\run-backend.ps1
+.\scripts\free-ports.ps1
+docker-compose -f .\docker\docker-compose.yml up --build
 ```
 
-**2. Frontend:** `.\scripts\run-frontend.ps1`
+Services:
+- Web: http://localhost:5173
+- API: http://localhost:8000/docs
+- PostgreSQL: localhost:5433
 
----
+## OTP Email Setup
 
-## Local Development (without Docker)
+Set SMTP values in `apps/api/.env` (or copy from `apps/api/.env.example`).
 
-### Prerequisites
+Example for Mailtrap:
 
-- Node.js 18+, Python 3.10+, PostgreSQL
-
-### 1. Database
-
-**Docker (PostgreSQL only):**
-```bash
-docker-compose up -d postgres
-# Set DATABASE_URL=postgresql://postgres:postgres@localhost:5432/recruit_db in backend/.env
+```env
+SMTP_HOST=live.smtp.mailtrap.io
+SMTP_PORT=587
+SMTP_USER=api
+SMTP_PASSWORD=YOUR_API_TOKEN
+EMAIL_FROM=hello@yourdomain.com
 ```
 
-**Or local PostgreSQL:** Create `recruit_db`, set `DATABASE_URL` in `backend/.env`
+## CI/CD
 
-### 2. Backend
-
-```bash
-cd backend
-source venv/Scripts/activate   # Git Bash
-# venv\Scripts\activate        # PowerShell
-pip install -r requirements.txt
-python init_db.py
-uvicorn app.main:app --reload --port 8000
-```
-
-### 3. Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
+- CI: `.github/workflows/ci.yml` (lint + build api/web)
+- CD: `.github/workflows/cd.yml` (build/push Docker images to GHCR)
 
 ## Auth Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/signup` | Register new user |
-| POST | `/api/auth/signin` | Login, returns JWT |
-| GET | `/api/auth/me` | Current user (requires Bearer token) |
-
-## Signup payload
-```json
-{
-  "email": "user@example.com",
-  "password": "min8chars",
-  "full_name": "John Doe",
-  "role": "candidate"  // or "recruiter"
-}
-```
-
-## Signin payload
-```json
-{
-  "email": "user@example.com",
-  "password": "min8chars"
-}
-```
+- `POST /api/auth/signup`
+- `POST /api/auth/verify-email`
+- `POST /api/auth/resend-otp`
+- `POST /api/auth/signin`
+- `POST /api/auth/request-login-otp`
+- `POST /api/auth/verify-login-otp`
+- `GET /api/auth/me`

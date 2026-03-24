@@ -29,6 +29,16 @@ class UserResponse(BaseModel):
     full_name: str
     role: str
     is_active: bool
+    is_email_verified: bool = False
 
     class Config:
         from_attributes = True
+
+
+class RequestOTP(BaseModel):
+    email: EmailStr
+
+
+class VerifyOTP(BaseModel):
+    email: EmailStr
+    otp: str = Field(..., min_length=4, max_length=8)

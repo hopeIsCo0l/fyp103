@@ -4,7 +4,7 @@
 
 Write-Host "Starting PostgreSQL (Docker)..." -ForegroundColor Cyan
 Set-Location "$PSScriptRoot\.."
-docker-compose up -d postgres
+docker-compose -f .\docker\docker-compose.yml up -d postgres
 
 Write-Host "`nPostgreSQL starting. Next steps:" -ForegroundColor Green
 Write-Host "  Terminal 2: .\scripts\run-backend.ps1"
