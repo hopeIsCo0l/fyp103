@@ -1,22 +1,21 @@
 import uuid
-from sqlalchemy.orm import Session
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
 
-from app.database import get_db
-from app.models.user import User
-from app.models.otp import OTP
-from app.auth.schemas import (
-    UserSignup,
-    UserSignin,
-    Token,
-    UserResponse,
-    RequestOTP,
-    VerifyOTP,
-)
-from app.auth.security import get_password_hash, verify_password, create_access_token
 from app.auth.dependencies import get_current_user
 from app.auth.otp_service import create_and_send_otp, verify_otp
+from app.auth.schemas import (
+    RequestOTP,
+    Token,
+    UserResponse,
+    UserSignin,
+    UserSignup,
+    VerifyOTP,
+)
+from app.auth.security import create_access_token, get_password_hash, verify_password
+from app.database import get_db
+from app.models.user import User
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

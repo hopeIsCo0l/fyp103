@@ -1,13 +1,13 @@
-import uuid
 import secrets
-from datetime import datetime, timezone, timedelta
+import uuid
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.orm import Session
 
+from app.auth.email_service import send_otp_email
+from app.auth.security import pwd_context
 from app.config import settings
 from app.models.otp import OTP
-from app.auth.security import pwd_context
-from app.auth.email_service import send_otp_email
 
 
 def generate_otp() -> str:
