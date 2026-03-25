@@ -31,8 +31,8 @@ from app.auth.security import (
 from app.config import settings
 from app.database import get_db
 from app.models.password_reset_token import PasswordResetToken
-from app.models.user_session import UserSession
 from app.models.user import User
+from app.models.user_session import UserSession
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
