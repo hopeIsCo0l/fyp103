@@ -33,7 +33,7 @@ jobs:
           cd apps/api
           python -c "from app.main import app; print('OK')"
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/recruit_db
+          DATABASE_URL: sqlite:///./recruit.db
           SECRET_KEY: ci-secret-key
 
   frontend:
