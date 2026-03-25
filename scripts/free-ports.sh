@@ -15,3 +15,4 @@ for port in 5432 5173 8000; do
     echo "Port $port is free"
   fi
 done
+echo "Done. Wait a few seconds, then run: docker-compose -f ./docker/docker-compose.yml up --build"

@@ -35,4 +35,4 @@ foreach ($port in $ports) {
         }
     }
 }
-Write-Host "Done. Wait a few seconds, then run docker-compose up --build"
+Write-Host "Done. Wait a few seconds, then run docker-compose -f .\docker\docker-compose.yml up --build"

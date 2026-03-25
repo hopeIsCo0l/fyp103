@@ -1,6 +1,6 @@
 import { Box, Button, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/useAuth';
 
 export default function Home() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();

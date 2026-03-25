@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.database import engine, Base
-from app.models import User  # noqa: F401 - import for table creation
 from app.auth.routes import router as auth_router
+from app.database import Base, engine
+from app.models import OTP, User  # noqa: F401 - import for table creation
 
 Base.metadata.create_all(bind=engine)
 

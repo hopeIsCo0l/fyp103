@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
-backend/venv/
+apps/api/venv/
+apps/web/node_modules/
 __pycache__/
 *.py[cod]
 *.pyo
