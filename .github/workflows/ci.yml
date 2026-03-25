@@ -36,6 +36,14 @@ jobs:
           DATABASE_URL: sqlite:///./recruit.db
           SECRET_KEY: ci-secret-key
 
+      - name: Run tests
+        run: |
+          cd apps/api
+          pytest tests/ -v --tb=short
+        env:
+          DATABASE_URL: sqlite://
+          SECRET_KEY: ci-secret-key
+
   frontend:
     runs-on: ubuntu-latest
     steps:

@@ -5,7 +5,7 @@ import {
 } from 'react';
 import type { ReactNode } from 'react';
 import type { User } from '../api/auth';
-import { getMe } from '../api/auth';
+import { clearAuthTokens, getAccessToken, getMe, logoutApi } from '../api/auth';
 import { AuthContext } from './AuthContextDef';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -13,7 +13,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const refreshUser = useCallback(async () => {
-    const token = localStorage.getItem('token');
+    const token = getAccessToken();
     if (!token) {
       setUser(null);
       setIsLoading(false);
@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const u = await getMe();
       setUser(u);
     } catch {
-      localStorage.removeItem('token');
+      clearAuthTokens();
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -34,8 +34,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshUser();
   }, [refreshUser]);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem('token');
+  const logout = useCallback(async () => {
+    try {
+      await logoutApi();
+    } catch {
+      // Logout still clears local tokens even if API call fails.
+    }
+    clearAuthTokens();
     setUser(null);
   }, []);
 

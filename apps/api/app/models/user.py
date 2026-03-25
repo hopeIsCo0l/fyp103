@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, DateTime, String
+from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from sqlalchemy.sql import func
 
 from app.database import Base
@@ -14,5 +14,9 @@ class User(Base):
     role = Column(String(50), default="candidate", nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     is_email_verified = Column(Boolean, default=False, nullable=False)
+    failed_login_attempts = Column(Integer, default=0, nullable=False)
+    failed_login_window_started_at = Column(DateTime(timezone=True), nullable=True)
+    locked_until = Column(DateTime(timezone=True), nullable=True)
+    last_login_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
