@@ -12,8 +12,8 @@ from app.auth.rate_limit import enforce_rate_limit
 from app.auth.schemas import (
     ForgotPasswordRequest,
     RefreshTokenRequest,
-    ResetPasswordRequest,
     RequestOTP,
+    ResetPasswordRequest,
     Token,
     UserResponse,
     UserSignin,
