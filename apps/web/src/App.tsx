@@ -9,6 +9,10 @@ import ResetPassword from './pages/ResetPassword';
 import Signin from './pages/Signin';
 import Signup from './pages/Signup';
 import Unauthorized from './pages/Unauthorized';
+import AdminLayout from './pages/admin/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminAuditLogs from './pages/admin/AdminAuditLogs';
 
 const theme = createTheme({
   palette: {
@@ -72,6 +76,18 @@ function App() {
                 </RequireRole>
               }
             />
+            <Route
+              path="/admin"
+              element={
+                <RequireRole role="admin">
+                  <AdminLayout />
+                </RequireRole>
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="audit-logs" element={<AdminAuditLogs />} />
+            </Route>
             <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

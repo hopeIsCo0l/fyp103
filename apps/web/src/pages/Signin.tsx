@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -14,12 +15,14 @@ import {
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 import { requestLoginOtp, setAuthTokens, signin, verifyLoginOtp } from '../api/auth';
 
 type LoginTab = 'password' | 'otp';
 
 export default function Signin() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [tab, setTab] = useState<LoginTab>('password');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,7 +42,7 @@ export default function Signin() {
       navigate('/', { replace: true });
       window.location.reload();
     } catch (err: unknown) {
-      setError(getErrorMessage(err, 'Sign in failed'));
+      setError(getErrorMessage(err, t('signin.failedDefault')));
     } finally {
       setLoading(false);
     }
@@ -53,7 +56,7 @@ export default function Signin() {
       await requestLoginOtp(email);
       setOtpSent(true);
     } catch (err: unknown) {
-      setError(getErrorMessage(err, 'Failed to send OTP'));
+      setError(getErrorMessage(err, t('signin.failedOtpSend')));
     } finally {
       setLoading(false);
     }
@@ -69,7 +72,7 @@ export default function Signin() {
       navigate('/', { replace: true });
       window.location.reload();
     } catch (err: unknown) {
-      setError(getErrorMessage(err, 'Invalid or expired OTP'));
+      setError(getErrorMessage(err, t('signin.failedOtpVerify')));
     } finally {
       setLoading(false);
     }
@@ -93,24 +96,20 @@ export default function Signin() {
         py: 4,
       }}
     >
-      <Paper
-        elevation={3}
-        sx={{
-          p: 4,
-          maxWidth: 400,
-          width: '100%',
-        }}
-      >
+      <Paper elevation={3} sx={{ p: 4, maxWidth: 400, width: '100%' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+          <LanguageSwitcher />
+        </Box>
         <Typography variant="h4" component="h1" gutterBottom align="center">
-          Sign in
+          {t('signin.title')}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2, textAlign: 'center' }}>
-          AI-Powered Recruitment System
+          {t('common.appName')}
         </Typography>
 
         <Tabs value={tab} onChange={handleTabChange} sx={{ mb: 2 }}>
-          <Tab label="Password" value="password" />
-          <Tab label="OTP by email" value="otp" />
+          <Tab label={t('signin.passwordTab')} value="password" />
+          <Tab label={t('signin.otpTab')} value="otp" />
         </Tabs>
 
         {error && (
@@ -123,7 +122,7 @@ export default function Signin() {
           <form onSubmit={handlePasswordSubmit}>
             <TextField
               fullWidth
-              label="Email"
+              label={t('common.email')}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -133,7 +132,7 @@ export default function Signin() {
             />
             <TextField
               fullWidth
-              label="Password"
+              label={t('common.password')}
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -161,7 +160,7 @@ export default function Signin() {
               sx={{ mt: 3 }}
               disabled={loading}
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? t('signin.signingIn') : t('common.signIn')}
             </Button>
           </form>
         )}
@@ -170,7 +169,7 @@ export default function Signin() {
           <form onSubmit={handleRequestOtp}>
             <TextField
               fullWidth
-              label="Email"
+              label={t('common.email')}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -186,7 +185,7 @@ export default function Signin() {
               sx={{ mt: 3 }}
               disabled={loading}
             >
-              {loading ? 'Sending OTP...' : 'Send OTP'}
+              {loading ? t('signin.sendingOtp') : t('signin.sendOtp')}
             </Button>
           </form>
         )}
@@ -194,11 +193,11 @@ export default function Signin() {
         {tab === 'otp' && otpSent && (
           <form onSubmit={handleVerifyOtp}>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Code sent to {email}
+              {t('signin.codeSentTo', { email })}
             </Typography>
             <TextField
               fullWidth
-              label="Enter OTP"
+              label={t('signin.enterOtp')}
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
               placeholder="000000"
@@ -214,19 +213,19 @@ export default function Signin() {
               sx={{ mt: 2 }}
               disabled={loading || otp.length < 4}
             >
-              {loading ? 'Verifying...' : 'Verify & Sign in'}
+              {loading ? t('signin.verifying') : t('signin.verifyAndSignIn')}
             </Button>
             <Button fullWidth sx={{ mt: 1 }} onClick={() => setOtpSent(false)} size="small">
-              Use different email
+              {t('signin.useDifferentEmail')}
             </Button>
           </form>
         )}
 
         <Typography variant="body2" sx={{ mt: 2, textAlign: 'center' }}>
-          Don't have an account? <Link to="/signup">Sign up</Link>
+          {t('signin.noAccount')} <Link to="/signup">{t('common.signUp')}</Link>
         </Typography>
         <Typography variant="body2" sx={{ mt: 1, textAlign: 'center' }}>
-          <Link to="/forgot-password">Forgot password?</Link>
+          <Link to="/forgot-password">{t('signin.forgotPassword')}</Link>
         </Typography>
       </Paper>
     </Box>
@@ -246,7 +245,7 @@ function getErrorMessage(err: unknown, fallback: string): string {
       : String(d);
   }
   if (ax?.code === 'ERR_NETWORK' || ax?.message?.includes('Network Error')) {
-    return 'Cannot connect to server. Is the backend running on port 8000?';
+    return fallback;
   }
   return fallback;
 }

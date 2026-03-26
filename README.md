@@ -1,4 +1,4 @@
-﻿# FYP103 - AI Recruitment Platform
+# FYP103 - AI Recruitment Platform
 
 A clean monorepo-style structure for an AI-powered recruitment system.
 
@@ -77,4 +77,26 @@ EMAIL_FROM=hello@yourdomain.com
 - `POST /api/auth/signin`
 - `POST /api/auth/request-login-otp`
 - `POST /api/auth/verify-login-otp`
+- `POST /api/auth/refresh`
+- `POST /api/auth/forgot-password`
+- `POST /api/auth/reset-password`
+- `POST /api/auth/logout`
 - `GET /api/auth/me`
+- `GET /api/auth/recruiter-only`
+- `GET /api/auth/admin-only`
+
+## Week 1 — Completed by Abdellah
+
+- Signup, email OTP verification, signin (password + OTP)
+- Refresh token rotation with session persistence
+- Forgot / reset password flow (single-use tokens, email delivery)
+- Account lockout after 5 failed sign-in attempts (15 min)
+- In-memory rate limiting on all sensitive endpoints
+- Role-based access control (candidate, recruiter, admin)
+- Audit logging (signup, signin, verify, refresh, reset events)
+- Frontend auth pages: Signin, Signup, ForgotPassword, ResetPassword, Unauthorized
+- Client-side route guards: RequireAuth, GuestOnly, RequireRole
+- Axios interceptor for automatic access token refresh
+- i18n scaffolding with English and Amharic translations
+- 29 pytest integration tests covering the full auth surface
+- CI pipeline with lint, build, and pytest steps

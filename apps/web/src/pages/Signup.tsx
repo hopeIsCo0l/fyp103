@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -9,22 +10,19 @@ import {
   Paper,
   InputAdornment,
   IconButton,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 import { resendOtp, setAuthTokens, signup, verifyEmail } from '../api/auth';
 
 export default function Signup() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [step, setStep] = useState<'form' | 'otp'>('form');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [role, setRole] = useState<string>('candidate');
   const [otp, setOtp] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -35,10 +33,10 @@ export default function Signup() {
     setError('');
     setLoading(true);
     try {
-      await signup({ email, password, full_name: fullName, role });
+      await signup({ email, password, full_name: fullName });
       setStep('otp');
     } catch (err: unknown) {
-      setError(getErrorMessage(err, 'Sign up failed'));
+      setError(getErrorMessage(err, t('signup.failedDefault')));
     } finally {
       setLoading(false);
     }
@@ -54,7 +52,7 @@ export default function Signup() {
       navigate('/', { replace: true });
       window.location.reload();
     } catch (err: unknown) {
-      setError(getErrorMessage(err, 'Invalid or expired OTP'));
+      setError(getErrorMessage(err, t('signup.failedOtpVerify')));
     } finally {
       setLoading(false);
     }
@@ -74,10 +72,10 @@ export default function Signup() {
       >
         <Paper elevation={3} sx={{ p: 4, maxWidth: 400, width: '100%' }}>
           <Typography variant="h5" gutterBottom align="center">
-            Verify your email
+            {t('signup.verifyTitle')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2, textAlign: 'center' }}>
-            We sent a 6-digit code to {email}
+            {t('signup.otpSentTo', { email })}
           </Typography>
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -87,7 +85,7 @@ export default function Signup() {
           <form onSubmit={handleVerifyOtp}>
             <TextField
               fullWidth
-              label="Enter OTP"
+              label={t('signup.enterOtp')}
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
               placeholder="000000"
@@ -104,13 +102,13 @@ export default function Signup() {
               sx={{ mt: 3 }}
               disabled={loading || otp.length < 4}
             >
-              {loading ? 'Verifying...' : 'Verify'}
+              {loading ? t('signup.verifying') : t('signup.verify')}
             </Button>
           </form>
           <Box sx={{ display: 'flex', gap: 1, mt: 2, flexDirection: 'column' }}>
             <ResendOtpButton email={email} />
             <Button fullWidth onClick={() => setStep('form')} size="small">
-              Back to sign up
+              {t('signup.backToSignUp')}
             </Button>
           </Box>
         </Paper>
@@ -129,19 +127,15 @@ export default function Signup() {
         py: 4,
       }}
     >
-      <Paper
-        elevation={3}
-        sx={{
-          p: 4,
-          maxWidth: 400,
-          width: '100%',
-        }}
-      >
+      <Paper elevation={3} sx={{ p: 4, maxWidth: 400, width: '100%' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+          <LanguageSwitcher />
+        </Box>
         <Typography variant="h4" component="h1" gutterBottom align="center">
-          Sign up
+          {t('signup.title')}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center' }}>
-          AI-Powered Recruitment System
+          {t('common.appName')}
         </Typography>
 
         {error && (
@@ -153,7 +147,7 @@ export default function Signup() {
         <form onSubmit={handleSignup}>
           <TextField
             fullWidth
-            label="Full name"
+            label={t('signup.fullName')}
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             required
@@ -162,7 +156,7 @@ export default function Signup() {
           />
           <TextField
             fullWidth
-            label="Email"
+            label={t('common.email')}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -172,13 +166,13 @@ export default function Signup() {
           />
           <TextField
             fullWidth
-            label="Password"
+            label={t('common.password')}
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             margin="normal"
-            helperText="At least 8 characters"
+            helperText={t('signup.passwordHelp')}
             autoComplete="new-password"
             InputProps={{
               endAdornment: (
@@ -193,17 +187,6 @@ export default function Signup() {
               ),
             }}
           />
-          <FormControl fullWidth margin="normal">
-            <InputLabel>I am a</InputLabel>
-            <Select
-              value={role}
-              label="I am a"
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <MenuItem value="candidate">Candidate</MenuItem>
-              <MenuItem value="recruiter">Recruiter</MenuItem>
-            </Select>
-          </FormControl>
           <Button
             type="submit"
             fullWidth
@@ -212,12 +195,12 @@ export default function Signup() {
             sx={{ mt: 3 }}
             disabled={loading}
           >
-            {loading ? 'Sending OTP...' : 'Sign up'}
+            {loading ? t('signup.sendingOtp') : t('common.signUp')}
           </Button>
         </form>
 
         <Typography variant="body2" sx={{ mt: 2, textAlign: 'center' }}>
-          Already have an account? <Link to="/signin">Sign in</Link>
+          {t('signup.hasAccount')} <Link to="/signin">{t('common.signIn')}</Link>
         </Typography>
       </Paper>
     </Box>
@@ -225,6 +208,7 @@ export default function Signup() {
 }
 
 function ResendOtpButton({ email }: { email: string }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
 
@@ -247,7 +231,11 @@ function ResendOtpButton({ email }: { email: string }) {
 
   return (
     <Button fullWidth onClick={handleResend} size="small" disabled={loading || cooldown > 0}>
-      {cooldown > 0 ? `Resend in ${cooldown}s` : loading ? 'Sending...' : 'Resend OTP'}
+      {cooldown > 0
+        ? t('signup.resendIn', { seconds: cooldown })
+        : loading
+          ? t('signup.sending')
+          : t('signup.resendOtp')}
     </Button>
   );
 }
@@ -265,7 +253,7 @@ function getErrorMessage(err: unknown, fallback: string): string {
       : String(d);
   }
   if (ax?.code === 'ERR_NETWORK' || ax?.message?.includes('Network Error')) {
-    return 'Cannot connect to server. Is the backend running on port 8000?';
+    return fallback;
   }
   return fallback;
 }
