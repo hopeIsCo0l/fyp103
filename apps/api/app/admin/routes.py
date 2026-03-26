@@ -2,7 +2,8 @@ import csv
 import io
 import uuid
 from datetime import date as date_type
-from datetime import datetime, time as dt_time, timezone
+from datetime import datetime, timezone
+from datetime import time as dt_time
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
