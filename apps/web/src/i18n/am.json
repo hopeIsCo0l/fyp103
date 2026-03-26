@@ -94,7 +94,8 @@
       "activeSessions": "ንቁ ክፍለ ጊዜዎች",
       "signupsToday": "ዛሬ የተመዘገቡ",
       "loadError": "ስታቲስቲክስ መጫን አልተቻለም",
-      "openUsers": "የተጠቃሚ ዝርዝር ክፈት"
+      "openUsers": "የተጠቃሚ ዝርዝር ክፈት",
+      "clickToView": "የተሰናዳ ዝርዝር ክፈት"
     },
     "users": {
       "createBtn": "ተጠቃሚ ፍጠር",

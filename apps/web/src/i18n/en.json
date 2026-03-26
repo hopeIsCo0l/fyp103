@@ -94,7 +94,8 @@
       "activeSessions": "Active Sessions",
       "signupsToday": "Signups Today",
       "loadError": "Failed to load stats",
-      "openUsers": "Open user list"
+      "openUsers": "Open user list",
+      "clickToView": "Open filtered list"
     },
     "users": {
       "createBtn": "Create User",

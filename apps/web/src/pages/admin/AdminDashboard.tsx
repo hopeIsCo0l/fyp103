@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +22,13 @@ import TodayIcon from '@mui/icons-material/Today';
 import type { StatsResponse } from '../../api/admin';
 import { getStats } from '../../api/admin';
 
+type CardDef = {
+  label: string;
+  value: number;
+  icon: ReactNode;
+  navigateTo: string;
+};
+
 export default function AdminDashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -34,14 +42,15 @@ export default function AdminDashboard() {
   }, [t]);
 
   if (error) return <Alert severity="error">{error}</Alert>;
-  if (!stats) return <Box sx={{ textAlign: 'center', mt: 4 }}><CircularProgress /></Box>;
+  if (!stats) {
+    return (
+      <Box sx={{ textAlign: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-  const cards: {
-    label: string;
-    value: number;
-    icon: React.ReactNode;
-    navigateTo?: string;
-  }[] = [
+  const cards: CardDef[] = [
     {
       label: t('admin.stats.totalUsers'),
       value: stats.total_users,
@@ -76,6 +85,7 @@ export default function AdminDashboard() {
       label: t('admin.stats.activeSessions'),
       value: stats.active_sessions,
       icon: <DevicesIcon fontSize="large" color="secondary" />,
+      navigateTo: '/admin/audit-logs',
     },
     {
       label: t('admin.stats.signupsToday'),
@@ -87,33 +97,30 @@ export default function AdminDashboard() {
 
   return (
     <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>{t('admin.nav.dashboard')}</Typography>
+      <Typography variant="h5" sx={{ mb: 3 }}>
+        {t('admin.nav.dashboard')}
+      </Typography>
       <Grid container spacing={3}>
         {cards.map((c) => (
           <Grid size={{ xs: 12, sm: 6, md: 3 }} key={c.label}>
-            <Card>
-              {c.navigateTo ? (
-                <CardActionArea
-                  onClick={() => navigate(c.navigateTo)}
-                  aria-label={`${c.label} — ${t('admin.stats.openUsers')}`}
-                >
-                  <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    {c.icon}
-                    <Box>
-                      <Typography variant="h4">{c.value}</Typography>
-                      <Typography variant="body2" color="text.secondary">{c.label}</Typography>
-                    </Box>
-                  </CardContent>
-                </CardActionArea>
-              ) : (
+            <Card variant="outlined">
+              <CardActionArea
+                onClick={() => navigate(c.navigateTo)}
+                aria-label={`${c.label} — ${t('admin.stats.clickToView')}`}
+              >
                 <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   {c.icon}
                   <Box>
                     <Typography variant="h4">{c.value}</Typography>
-                    <Typography variant="body2" color="text.secondary">{c.label}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {c.label}
+                    </Typography>
+                    <Typography variant="caption" color="primary">
+                      {t('admin.stats.clickToView')}
+                    </Typography>
                   </Box>
                 </CardContent>
-              )}
+              </CardActionArea>
             </Card>
           </Grid>
         ))}
