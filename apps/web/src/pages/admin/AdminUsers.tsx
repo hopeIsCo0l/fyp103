@@ -8,13 +8,16 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   FormControl,
+  FormControlLabel,
   IconButton,
   InputLabel,
   MenuItem,
   Pagination,
   Select,
+  Switch,
   Table,
   TableBody,
   TableCell,
@@ -29,13 +32,17 @@ import {
 import BlockIcon from '@mui/icons-material/Block';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import EditIcon from '@mui/icons-material/Edit';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import type { CreateUserPayload, UserOut } from '../../api/admin';
-import { createUser, deleteUser, getUsers, updateUser } from '../../api/admin';
+import { createUser, deleteUser, getUsers, resetUserPassword, updateUser } from '../../api/admin';
+import { useAuth } from '../../contexts/useAuth';
 
 const PAGE_SIZE = 15;
 
 export default function AdminUsers() {
   const { t } = useTranslation();
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<UserOut[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -47,6 +54,13 @@ export default function AdminUsers() {
   const [editOpen, setEditOpen] = useState(false);
   const [editUser, setEditUser] = useState<UserOut | null>(null);
   const [editRole, setEditRole] = useState('');
+  const [editFullName, setEditFullName] = useState('');
+  const [editActive, setEditActive] = useState(true);
+  const [editVerified, setEditVerified] = useState(false);
+
+  const [confirmOpen, setConfirmOpen] = useState<null | { type: 'deactivate' | 'reactivate'; user: UserOut }>(null);
+  const [resetConfirm, setResetConfirm] = useState<UserOut | null>(null);
+  const [resetResult, setResetResult] = useState<{ email: string; temporary_password: string } | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -62,25 +76,53 @@ export default function AdminUsers() {
 
   const handleDeactivate = async (id: string) => {
     await deleteUser(id);
+    setConfirmOpen(null);
     load();
   };
 
   const handleReactivate = async (id: string) => {
     await updateUser(id, { is_active: true });
+    setConfirmOpen(null);
     load();
   };
 
   const openEdit = (u: UserOut) => {
     setEditUser(u);
     setEditRole(u.role);
+    setEditFullName(u.full_name);
+    setEditActive(u.is_active);
+    setEditVerified(u.is_email_verified);
     setEditOpen(true);
   };
 
   const handleEditSave = async () => {
     if (!editUser) return;
-    await updateUser(editUser.id, { role: editRole });
+    await updateUser(editUser.id, {
+      role: editRole,
+      full_name: editFullName,
+      is_active: editActive,
+      is_email_verified: editVerified,
+    });
     setEditOpen(false);
     load();
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetConfirm) return;
+    try {
+      const res = await resetUserPassword(resetConfirm.id);
+      setResetConfirm(null);
+      setResetResult(res);
+    } catch {
+      setError(t('admin.users.resetPasswordError'));
+      setResetConfirm(null);
+    }
+  };
+
+  const copyPassword = () => {
+    if (resetResult?.temporary_password) {
+      void navigator.clipboard.writeText(resetResult.temporary_password);
+    }
   };
 
   return (
@@ -115,7 +157,7 @@ export default function AdminUsers() {
         </FormControl>
       </Box>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
 
       <TableContainer component={Paper}>
         <Table size="small">
@@ -150,20 +192,39 @@ export default function AdminUsers() {
                 </TableCell>
                 <TableCell>{u.is_email_verified ? t('admin.users.yes') : t('admin.users.no')}</TableCell>
                 <TableCell align="right">
-                  <Tooltip title={t('admin.users.editRole')}>
+                  <Tooltip title={t('admin.users.editUser')}>
                     <IconButton size="small" onClick={() => openEdit(u)}>
                       <EditIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
-                  {u.is_active ? (
-                    <Tooltip title={t('admin.users.deactivate')}>
-                      <IconButton size="small" color="error" onClick={() => handleDeactivate(u.id)}>
-                        <BlockIcon fontSize="small" />
+                  <Tooltip title={u.id === currentUser?.id ? t('admin.users.cannotResetOwn') : t('admin.users.resetPassword')}>
+                    <span>
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        disabled={u.id === currentUser?.id}
+                        onClick={() => setResetConfirm(u)}
+                      >
+                        <VpnKeyIcon fontSize="small" />
                       </IconButton>
+                    </span>
+                  </Tooltip>
+                  {u.is_active ? (
+                    <Tooltip title={u.id === currentUser?.id ? t('admin.users.cannotDeactivateSelf') : t('admin.users.deactivate')}>
+                      <span>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          disabled={u.id === currentUser?.id}
+                          onClick={() => setConfirmOpen({ type: 'deactivate', user: u })}
+                        >
+                          <BlockIcon fontSize="small" />
+                        </IconButton>
+                      </span>
                     </Tooltip>
                   ) : (
                     <Tooltip title={t('admin.users.reactivate')}>
-                      <IconButton size="small" color="success" onClick={() => handleReactivate(u.id)}>
+                      <IconButton size="small" color="success" onClick={() => setConfirmOpen({ type: 'reactivate', user: u })}>
                         <CheckCircleIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
@@ -188,10 +249,18 @@ export default function AdminUsers() {
 
       <CreateUserDialog open={createOpen} onClose={() => setCreateOpen(false)} onCreated={load} />
 
-      <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
-        <DialogTitle>{t('admin.users.editRole')}</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" sx={{ mb: 2 }}>{editUser?.email}</Typography>
+      <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>{t('admin.users.editUser')}</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+          <Typography variant="body2" color="text.secondary">{editUser?.email}</Typography>
+          <TextField
+            label={t('signup.fullName')}
+            value={editFullName}
+            onChange={(e) => setEditFullName(e.target.value)}
+            required
+            size="small"
+            fullWidth
+          />
           <FormControl fullWidth size="small">
             <InputLabel>{t('admin.users.colRole')}</InputLabel>
             <Select value={editRole} label={t('admin.users.colRole')} onChange={(e) => setEditRole(e.target.value)}>
@@ -200,10 +269,94 @@ export default function AdminUsers() {
               <MenuItem value="admin">{t('admin.users.admin')}</MenuItem>
             </Select>
           </FormControl>
+          <FormControlLabel
+            control={(
+              <Switch
+                checked={editActive}
+                onChange={(_, v) => setEditActive(v)}
+                disabled={editUser?.id === currentUser?.id}
+              />
+            )}
+            label={t('admin.users.statusActive')}
+          />
+          {editUser?.id === currentUser?.id && (
+            <Typography variant="caption" color="text.secondary">
+              {t('admin.users.cannotDeactivateSelfHint')}
+            </Typography>
+          )}
+          <FormControlLabel
+            control={<Switch checked={editVerified} onChange={(_, v) => setEditVerified(v)} />}
+            label={t('admin.users.emailVerified')}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditOpen(false)}>{t('admin.users.cancel')}</Button>
           <Button variant="contained" onClick={handleEditSave}>{t('admin.users.save')}</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={!!confirmOpen} onClose={() => setConfirmOpen(null)}>
+        <DialogTitle>
+          {confirmOpen?.type === 'deactivate' ? t('admin.users.confirmDeactivateTitle') : t('admin.users.confirmReactivateTitle')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {confirmOpen?.type === 'deactivate'
+              ? t('admin.users.confirmDeactivateBody', { email: confirmOpen.user.email })
+              : t('admin.users.confirmReactivateBody', { email: confirmOpen?.user.email ?? '' })}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(null)}>{t('admin.users.cancel')}</Button>
+          <Button
+            variant="contained"
+            color={confirmOpen?.type === 'deactivate' ? 'error' : 'success'}
+            onClick={() => {
+              if (!confirmOpen) return;
+              if (confirmOpen.type === 'deactivate') void handleDeactivate(confirmOpen.user.id);
+              else void handleReactivate(confirmOpen.user.id);
+            }}
+          >
+            {confirmOpen?.type === 'deactivate' ? t('admin.users.deactivate') : t('admin.users.reactivate')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={!!resetConfirm} onClose={() => setResetConfirm(null)}>
+        <DialogTitle>{t('admin.users.resetPasswordConfirmTitle')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t('admin.users.resetPasswordConfirmBody', { email: resetConfirm?.email ?? '' })}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setResetConfirm(null)}>{t('admin.users.cancel')}</Button>
+          <Button variant="contained" color="warning" onClick={handleResetPassword}>
+            {t('admin.users.resetPasswordConfirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={!!resetResult} onClose={() => setResetResult(null)} maxWidth="sm" fullWidth>
+        <DialogTitle>{t('admin.users.newPasswordTitle')}</DialogTitle>
+        <DialogContent>
+          <Alert severity="warning" sx={{ mb: 2 }}>{t('admin.users.newPasswordWarning')}</Alert>
+          <Typography variant="body2" sx={{ mb: 1 }}>{resetResult?.email}</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label={t('admin.users.temporaryPassword')}
+              value={resetResult?.temporary_password ?? ''}
+              InputProps={{ readOnly: true }}
+            />
+            <IconButton onClick={copyPassword} aria-label="copy">
+              <ContentCopyIcon />
+            </IconButton>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={() => setResetResult(null)}>{t('admin.users.done')}</Button>
         </DialogActions>
       </Dialog>
     </Box>

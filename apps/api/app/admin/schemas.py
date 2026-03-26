@@ -69,3 +69,10 @@ class StatsResponse(BaseModel):
     verified_users: int
     active_sessions: int
     signups_today: int
+
+
+class AdminResetPasswordResponse(BaseModel):
+    """Plain password is returned once; client must store it — never logged in audit."""
+
+    email: str
+    temporary_password: str

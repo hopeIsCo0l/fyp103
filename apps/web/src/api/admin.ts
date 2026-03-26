@@ -89,6 +89,18 @@ export async function deleteUser(userId: string): Promise<{ message: string }> {
   return data;
 }
 
+export interface AdminResetPasswordResponse {
+  email: string;
+  temporary_password: string;
+}
+
+export async function resetUserPassword(userId: string): Promise<AdminResetPasswordResponse> {
+  const { data } = await api.post<AdminResetPasswordResponse>(
+    `/admin/users/${userId}/reset-password`,
+  );
+  return data;
+}
+
 export async function getAuditLogs(params: {
   action?: string;
   actor_id?: string;

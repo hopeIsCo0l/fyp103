@@ -1,3 +1,4 @@
+import secrets
 import uuid
 from datetime import datetime, timezone
 
@@ -7,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.admin.schemas import (
     AdminCreateUser,
+    AdminResetPasswordResponse,
     AdminUpdateUser,
     AuditLogListResponse,
     AuditLogOut,
@@ -174,6 +176,50 @@ def delete_user(
         user_agent=request.headers.get("user-agent"),
     )
     return {"message": "User deactivated"}
+
+
+@router.post("/users/{user_id}/reset-password", response_model=AdminResetPasswordResponse)
+def admin_reset_password(
+    user_id: str,
+    request: Request,
+    admin: User = Depends(_admin_dep),
+    db: Session = Depends(get_db),
+):
+    """Set a new random password; revoke all sessions. Password returned once (not stored or audited)."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if user.id == admin.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot reset your own password from the admin panel",
+        )
+    temporary_password = secrets.token_urlsafe(24)
+    user.hashed_password = get_password_hash(temporary_password)
+    user.failed_login_attempts = 0
+    user.failed_login_window_started_at = None
+    user.locked_until = None
+    now = datetime.now(timezone.utc)
+    db.query(UserSession).filter(
+        UserSession.user_id == user.id,
+        UserSession.revoked.is_(False),
+    ).update({"revoked": True, "revoked_at": now})
+    db.commit()
+    ip = request.client.host if request.client else None
+    write_audit_log(
+        db,
+        action="admin.reset_password",
+        actor_id=admin.id,
+        target_type="user",
+        target_id=user.id,
+        ip_address=ip,
+        user_agent=request.headers.get("user-agent"),
+        metadata={},
+    )
+    return AdminResetPasswordResponse(
+        email=user.email,
+        temporary_password=temporary_password,
+    )
 
 
 # ── Audit Logs ───────────────────────────────────────────────────────────

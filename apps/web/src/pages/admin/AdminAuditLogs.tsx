@@ -38,6 +38,7 @@ const ACTION_OPTIONS = [
   'admin.create_user',
   'admin.update_user',
   'admin.deactivate_user',
+  'admin.reset_password',
 ];
 
 export default function AdminAuditLogs() {
