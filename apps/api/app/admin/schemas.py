@@ -27,9 +27,15 @@ class UserOut(BaseModel):
     is_email_verified: bool
     last_login_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
+    failed_login_attempts: int = 0
+    locked_until: Optional[datetime] = None
 
     class Config:
         from_attributes = True
+
+
+class AdminResetPassword(BaseModel):
+    new_password: str = Field(..., min_length=8)
 
 
 class UserListResponse(BaseModel):
@@ -42,6 +48,7 @@ class UserListResponse(BaseModel):
 class AuditLogOut(BaseModel):
     id: str
     actor_id: Optional[str] = None
+    actor_email: Optional[str] = None
     action: str
     target_type: Optional[str] = None
     target_id: Optional[str] = None

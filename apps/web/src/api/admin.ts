@@ -9,6 +9,8 @@ export interface UserOut {
   is_email_verified: boolean;
   last_login_at: string | null;
   created_at: string | null;
+  failed_login_attempts: number;
+  locked_until: string | null;
 }
 
 export interface UserListResponse {
@@ -35,6 +37,7 @@ export interface UpdateUserPayload {
 export interface AuditLogOut {
   id: string;
   actor_id: string | null;
+  actor_email: string | null;
   action: string;
   target_type: string | null;
   target_id: string | null;
@@ -64,6 +67,7 @@ export interface StatsResponse {
 export async function getUsers(params: {
   search?: string;
   role?: string;
+  verified?: boolean;
   page?: number;
   size?: number;
 }): Promise<UserListResponse> {
@@ -89,9 +93,28 @@ export async function deleteUser(userId: string): Promise<{ message: string }> {
   return data;
 }
 
+export async function resetUserPassword(
+  userId: string,
+  newPassword: string,
+): Promise<{ message: string }> {
+  const { data } = await api.post(`/admin/users/${userId}/reset-password`, {
+    new_password: newPassword,
+  });
+  return data;
+}
+
+export async function revokeUserSessions(
+  userId: string,
+): Promise<{ message: string; sessions_revoked: number }> {
+  const { data } = await api.post(`/admin/users/${userId}/revoke-sessions`);
+  return data;
+}
+
 export async function getAuditLogs(params: {
   action?: string;
   actor_id?: string;
+  date_from?: string;
+  date_to?: string;
   page?: number;
   size?: number;
 }): Promise<AuditLogListResponse> {
@@ -102,4 +125,40 @@ export async function getAuditLogs(params: {
 export async function getStats(): Promise<StatsResponse> {
   const { data } = await api.get('/admin/stats');
   return data;
+}
+
+export async function exportUsersCsv(params: {
+  search?: string;
+  role?: string;
+  verified?: boolean;
+}): Promise<Blob> {
+  const { data } = await api.get('/admin/users/export', {
+    params,
+    responseType: 'blob',
+  });
+  return data as Blob;
+}
+
+export async function exportAuditLogsCsv(params: {
+  action?: string;
+  actor_id?: string;
+  date_from?: string;
+  date_to?: string;
+}): Promise<Blob> {
+  const { data } = await api.get('/admin/audit-logs/export', {
+    params,
+    responseType: 'blob',
+  });
+  return data as Blob;
+}
+
+export function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
