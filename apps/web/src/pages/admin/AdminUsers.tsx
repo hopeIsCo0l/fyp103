@@ -9,6 +9,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   FormControl,
   FormControlLabel,
@@ -37,16 +38,17 @@ import EditIcon from '@mui/icons-material/Edit';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import type { CreateUserPayload, UserOut } from '../../api/admin';
 import {
   createUser,
   deleteUser,
   downloadBlob,
   exportUsersCsv,
+  getUsers,
   resetUserPassword,
   revokeUserSessions,
   updateUser,
-  getUsers,
 } from '../../api/admin';
 import { useAuth } from '../../contexts/useAuth';
 
@@ -59,6 +61,7 @@ export default function AdminUsers() {
   const { user: currentUser } = useAuth();
   const [searchParams] = useSearchParams();
   const urlInitDone = useRef(false);
+
   const [users, setUsers] = useState<UserOut[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -85,10 +88,8 @@ export default function AdminUsers() {
     user: null,
   });
 
-  const [resetTarget, setResetTarget] = useState<UserOut | null>(null);
-  const [resetPass, setResetPass] = useState('');
-  const [resetPass2, setResetPass2] = useState('');
-  const [resetError, setResetError] = useState('');
+  const [resetConfirm, setResetConfirm] = useState<UserOut | null>(null);
+  const [resetResult, setResetResult] = useState<{ email: string; temporary_password: string } | null>(null);
 
   useEffect(() => {
     const id = setTimeout(() => {
@@ -132,6 +133,13 @@ export default function AdminUsers() {
     load();
   }, [load]);
 
+  const isSelf = (u: UserOut) => currentUser?.id === u.id;
+
+  const fmtDate = (d: string | null) => {
+    if (!d) return '—';
+    return new Date(d).toLocaleString();
+  };
+
   const handleExportCsv = async () => {
     setExporting(true);
     try {
@@ -148,8 +156,6 @@ export default function AdminUsers() {
       setExporting(false);
     }
   };
-
-  const isSelf = (u: UserOut) => currentUser?.id === u.id;
 
   const runConfirm = async () => {
     const u = confirm.user;
@@ -201,34 +207,22 @@ export default function AdminUsers() {
     }
   };
 
-  const handleResetSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setResetError('');
-    if (resetPass.length < 8) {
-      setResetError(t('admin.users.resetPasswordTooShort'));
-      return;
-    }
-    if (resetPass !== resetPass2) {
-      setResetError(t('admin.users.resetPasswordMismatch'));
-      return;
-    }
-    if (!resetTarget) return;
+  const handleResetPassword = async () => {
+    if (!resetConfirm) return;
     try {
-      await resetUserPassword(resetTarget.id, resetPass);
-      setResetPass('');
-      setResetPass2('');
-      setResetTarget(null);
-      setSnack(t('admin.users.successPasswordReset'));
-      load();
-    } catch (err: unknown) {
-      const ax = err as { response?: { data?: { detail?: string } } };
-      setResetError(ax?.response?.data?.detail || t('admin.users.resetPasswordError'));
+      const res = await resetUserPassword(resetConfirm.id);
+      setResetConfirm(null);
+      setResetResult(res);
+    } catch {
+      setError(t('admin.users.resetPasswordError'));
+      setResetConfirm(null);
     }
   };
 
-  const fmtDate = (d: string | null) => {
-    if (!d) return '—';
-    return new Date(d).toLocaleString();
+  const copyPassword = () => {
+    if (resetResult?.temporary_password) {
+      void navigator.clipboard.writeText(resetResult.temporary_password);
+    }
   };
 
   return (
@@ -337,18 +331,17 @@ export default function AdminUsers() {
                       <EditIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title={t('admin.users.resetPassword')}>
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setResetTarget(u);
-                        setResetPass('');
-                        setResetPass2('');
-                        setResetError('');
-                      }}
-                    >
-                      <VpnKeyIcon fontSize="small" />
-                    </IconButton>
+                  <Tooltip title={isSelf(u) ? t('admin.users.cannotResetOwn') : t('admin.users.resetPassword')}>
+                    <span>
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        disabled={isSelf(u)}
+                        onClick={() => setResetConfirm(u)}
+                      >
+                        <VpnKeyIcon fontSize="small" />
+                      </IconButton>
+                    </span>
                   </Tooltip>
                   <Tooltip title={t('admin.users.revokeSessions')}>
                     <IconButton
@@ -459,6 +452,11 @@ export default function AdminUsers() {
                 <MenuItem value="admin">{t('admin.users.admin')}</MenuItem>
               </Select>
             </FormControl>
+            {editUser && isSelf(editUser) && (
+              <Typography variant="caption" color="text.secondary">
+                {t('admin.users.cannotChangeOwnRoleHint')}
+              </Typography>
+            )}
             <FormControlLabel
               control={
                 <Switch
@@ -467,13 +465,18 @@ export default function AdminUsers() {
                   disabled={editUser ? isSelf(editUser) : false}
                 />
               }
-              label={t('admin.users.colStatus')}
+              label={t('admin.users.statusActive')}
             />
+            {editUser && isSelf(editUser) && (
+              <Typography variant="caption" color="text.secondary">
+                {t('admin.users.cannotDeactivateSelfHint')}
+              </Typography>
+            )}
             <FormControlLabel
               control={
                 <Switch checked={editVerified} onChange={(_, v) => setEditVerified(v)} />
               }
-              label={t('admin.users.colVerified')}
+              label={t('admin.users.emailVerified')}
             />
           </Stack>
         </DialogContent>
@@ -503,8 +506,7 @@ export default function AdminUsers() {
                 <strong>{t('admin.users.colRole')}</strong> {detailUser.role}
               </Typography>
               <Typography variant="body2">
-                <strong>{t('admin.users.detailCreated')}</strong>{' '}
-                {fmtDate(detailUser.created_at)}
+                <strong>{t('admin.users.detailCreated')}</strong> {fmtDate(detailUser.created_at)}
               </Typography>
               <Typography variant="body2">
                 <strong>{t('admin.users.detailLastLogin')}</strong>{' '}
@@ -552,67 +554,48 @@ export default function AdminUsers() {
         </DialogActions>
       </Dialog>
 
-      <Dialog
-        open={!!resetTarget}
-        onClose={() => {
-          setResetTarget(null);
-          setResetPass('');
-          setResetPass2('');
-          setResetError('');
-        }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <form onSubmit={handleResetSubmit}>
-          <DialogTitle>{t('admin.users.resetPasswordTitle')}</DialogTitle>
-          <DialogContent>
-            <Typography variant="body2" sx={{ mb: 2 }}>
-              {resetTarget?.email}
-            </Typography>
-            {resetError && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {resetError}
-              </Alert>
-            )}
-            <Stack spacing={2}>
-              <TextField
-                label={t('admin.users.newPassword')}
-                type="password"
-                value={resetPass}
-                onChange={(e) => setResetPass(e.target.value)}
-                size="small"
-                fullWidth
-                required
-                helperText={t('signup.passwordHelp')}
-              />
-              <TextField
-                label={t('admin.users.confirmNewPassword')}
-                type="password"
-                value={resetPass2}
-                onChange={(e) => setResetPass2(e.target.value)}
-                size="small"
-                fullWidth
-                required
-              />
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              type="button"
-              onClick={() => {
-                setResetTarget(null);
-                setResetPass('');
-                setResetPass2('');
-                setResetError('');
-              }}
-            >
-              {t('admin.users.cancel')}
-            </Button>
-            <Button type="submit" variant="contained">
-              {t('admin.users.resetPasswordSubmit')}
-            </Button>
-          </DialogActions>
-        </form>
+      <Dialog open={!!resetConfirm} onClose={() => setResetConfirm(null)}>
+        <DialogTitle>{t('admin.users.resetPasswordConfirmTitle')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t('admin.users.resetPasswordConfirmBody', { email: resetConfirm?.email ?? '' })}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setResetConfirm(null)}>{t('admin.users.cancel')}</Button>
+          <Button variant="contained" color="warning" onClick={handleResetPassword}>
+            {t('admin.users.resetPasswordConfirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={!!resetResult} onClose={() => setResetResult(null)} maxWidth="sm" fullWidth>
+        <DialogTitle>{t('admin.users.newPasswordTitle')}</DialogTitle>
+        <DialogContent>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {t('admin.users.newPasswordWarning')}
+          </Alert>
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            {resetResult?.email}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label={t('admin.users.temporaryPassword')}
+              value={resetResult?.temporary_password ?? ''}
+              InputProps={{ readOnly: true }}
+            />
+            <IconButton onClick={copyPassword} aria-label="copy">
+              <ContentCopyIcon />
+            </IconButton>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={() => setResetResult(null)}>
+            {t('admin.users.done')}
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );

@@ -10,6 +10,7 @@ import {
   Pagination,
   Paper,
   Select,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
@@ -18,7 +19,6 @@ import {
   TableRow,
   TextField,
   Typography,
-  Snackbar,
 } from '@mui/material';
 import type { AuditLogOut } from '../../api/admin';
 import {

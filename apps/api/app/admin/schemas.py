@@ -35,7 +35,9 @@ class UserOut(BaseModel):
 
 
 class AdminResetPassword(BaseModel):
-    new_password: str = Field(..., min_length=8)
+    """Optional: set a specific password (min 8 chars). Omit body to let the server generate one."""
+
+    new_password: Optional[str] = None
 
 
 class UserListResponse(BaseModel):
@@ -76,3 +78,10 @@ class StatsResponse(BaseModel):
     verified_users: int
     active_sessions: int
     signups_today: int
+
+
+class AdminResetPasswordResponse(BaseModel):
+    """Plain password is returned once; client must store it — never logged in audit."""
+
+    email: str
+    temporary_password: str

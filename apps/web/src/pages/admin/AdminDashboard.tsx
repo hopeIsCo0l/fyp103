@@ -104,7 +104,10 @@ export default function AdminDashboard() {
         {cards.map((c) => (
           <Grid size={{ xs: 12, sm: 6, md: 3 }} key={c.label}>
             <Card variant="outlined">
-              <CardActionArea onClick={() => navigate(c.navigateTo)}>
+              <CardActionArea
+                onClick={() => navigate(c.navigateTo)}
+                aria-label={`${c.label} — ${t('admin.stats.clickToView')}`}
+              >
                 <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   {c.icon}
                   <Box>

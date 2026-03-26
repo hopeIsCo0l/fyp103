@@ -1,12 +1,13 @@
 import csv
 import io
+import secrets
 import uuid
 from datetime import date as date_type
 from datetime import datetime, timezone
 from datetime import time as dt_time
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
 from fastapi.responses import Response
 from sqlalchemy import func as sa_func
 from sqlalchemy.orm import Session
@@ -14,6 +15,7 @@ from sqlalchemy.orm import Session
 from app.admin.schemas import (
     AdminCreateUser,
     AdminResetPassword,
+    AdminResetPasswordResponse,
     AdminUpdateUser,
     AuditLogListResponse,
     AuditLogOut,
@@ -250,26 +252,40 @@ def _clear_lockout(user: User) -> None:
     user.locked_until = None
 
 
-@router.post("/users/{user_id}/reset-password", response_model=dict)
+@router.post("/users/{user_id}/reset-password", response_model=AdminResetPasswordResponse)
 def admin_reset_password(
     user_id: str,
-    payload: AdminResetPassword,
     request: Request,
     admin: User = Depends(_admin_dep),
     db: Session = Depends(get_db),
+    payload: AdminResetPassword = Body(default_factory=AdminResetPassword),
 ):
+    """Optional JSON body `{"new_password": "..."}` (min 8 chars); omit body to generate a random password."""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    user.hashed_password = get_password_hash(payload.new_password)
+    if user.id == admin.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot reset your own password from the admin panel",
+        )
+    if payload.new_password:
+        if len(payload.new_password) < 8:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Password must be at least 8 characters",
+            )
+        plain = payload.new_password
+    else:
+        plain = secrets.token_urlsafe(24)
+
+    user.hashed_password = get_password_hash(plain)
     _clear_lockout(user)
+    now = datetime.now(timezone.utc)
     db.query(UserSession).filter(
         UserSession.user_id == user.id,
         UserSession.revoked.is_(False),
-    ).update(
-        {"revoked": True, "revoked_at": datetime.now(timezone.utc)},
-        synchronize_session=False,
-    )
+    ).update({"revoked": True, "revoked_at": now}, synchronize_session=False)
     db.commit()
     ip = request.client.host if request.client else None
     write_audit_log(
@@ -280,8 +296,12 @@ def admin_reset_password(
         target_id=user.id,
         ip_address=ip,
         user_agent=request.headers.get("user-agent"),
+        metadata={},
     )
-    return {"message": "Password updated"}
+    return AdminResetPasswordResponse(
+        email=user.email,
+        temporary_password=plain,
+    )
 
 
 @router.post("/users/{user_id}/revoke-sessions", response_model=dict)

@@ -64,6 +64,11 @@ export interface StatsResponse {
   signups_today: number;
 }
 
+export interface AdminResetPasswordResponse {
+  email: string;
+  temporary_password: string;
+}
+
 export async function getUsers(params: {
   search?: string;
   role?: string;
@@ -93,13 +98,15 @@ export async function deleteUser(userId: string): Promise<{ message: string }> {
   return data;
 }
 
+/** Omit body (or pass nothing) for a server-generated password; optional manual password for API compatibility. */
 export async function resetUserPassword(
   userId: string,
-  newPassword: string,
-): Promise<{ message: string }> {
-  const { data } = await api.post(`/admin/users/${userId}/reset-password`, {
-    new_password: newPassword,
-  });
+  newPassword?: string,
+): Promise<AdminResetPasswordResponse> {
+  const { data } = await api.post<AdminResetPasswordResponse>(
+    `/admin/users/${userId}/reset-password`,
+    newPassword ? { new_password: newPassword } : {},
+  );
   return data;
 }
 
