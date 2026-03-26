@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { signin, requestLoginOtp, verifyLoginOtp } from '../api/auth';
+import { requestLoginOtp, setAuthTokens, signin, verifyLoginOtp } from '../api/auth';
 
 type LoginTab = 'password' | 'otp';
 
@@ -34,8 +34,8 @@ export default function Signin() {
     setError('');
     setLoading(true);
     try {
-      const { access_token } = await signin({ email, password });
-      localStorage.setItem('token', access_token);
+      const tokens = await signin({ email, password });
+      setAuthTokens(tokens);
       navigate('/', { replace: true });
       window.location.reload();
     } catch (err: unknown) {
@@ -64,8 +64,8 @@ export default function Signin() {
     setError('');
     setLoading(true);
     try {
-      const { access_token } = await verifyLoginOtp(email, otp);
-      localStorage.setItem('token', access_token);
+      const tokens = await verifyLoginOtp(email, otp);
+      setAuthTokens(tokens);
       navigate('/', { replace: true });
       window.location.reload();
     } catch (err: unknown) {
@@ -224,6 +224,9 @@ export default function Signin() {
 
         <Typography variant="body2" sx={{ mt: 2, textAlign: 'center' }}>
           Don't have an account? <Link to="/signup">Sign up</Link>
+        </Typography>
+        <Typography variant="body2" sx={{ mt: 1, textAlign: 'center' }}>
+          <Link to="/forgot-password">Forgot password?</Link>
         </Typography>
       </Paper>
     </Box>

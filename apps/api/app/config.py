@@ -12,10 +12,18 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "your-super-secret-key-change-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    PASSWORD_RESET_EXPIRE_MINUTES: int = 30
 
     # OTP
     OTP_EXPIRE_MINUTES: int = 10
     OTP_LENGTH: int = 6
+    OTP_MAX_ATTEMPTS_PER_HOUR: int = 5
+
+    # Auth security controls
+    SIGNIN_MAX_ATTEMPTS: int = 5
+    SIGNIN_LOCK_MINUTES: int = 15
+    SIGNIN_ATTEMPT_WINDOW_MINUTES: int = 30
 
     # Email (optional - if not set, OTP is logged to console in dev)
     SMTP_HOST: str = ""

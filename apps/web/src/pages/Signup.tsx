@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { signup, verifyEmail, resendOtp } from '../api/auth';
+import { resendOtp, setAuthTokens, signup, verifyEmail } from '../api/auth';
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -49,8 +49,8 @@ export default function Signup() {
     setError('');
     setLoading(true);
     try {
-      const { access_token } = await verifyEmail(email, otp);
-      localStorage.setItem('token', access_token);
+      const tokens = await verifyEmail(email, otp);
+      setAuthTokens(tokens);
       navigate('/', { replace: true });
       window.location.reload();
     } catch (err: unknown) {

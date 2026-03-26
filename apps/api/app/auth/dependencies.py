@@ -48,3 +48,17 @@ def get_current_user(
             detail="User account is inactive",
         )
     return user
+
+
+def require_roles(*allowed_roles: str):
+    allowed = {r.lower() for r in allowed_roles}
+
+    def _guard(current_user: Annotated[User, Depends(get_current_user)]) -> User:
+        if current_user.role.lower() not in allowed:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to perform this action",
+            )
+        return current_user
+
+    return _guard
