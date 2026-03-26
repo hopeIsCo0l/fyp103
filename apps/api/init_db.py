@@ -1,11 +1,13 @@
 """Run this script to create all database tables and run migrations."""
 from sqlalchemy import text
 
-from app.database import Base, engine
-from app.models import AuditLog, OTP, PasswordResetToken, User, UserSession  # noqa: F401
+from app.database import Base, SessionLocal, engine
+from app.legacy_migrate import run_post_create_all
+from app.models import AuditLog, OTP, PasswordResetToken, Role, User, UserSession  # noqa: F401
 
 if __name__ == "__main__":
     Base.metadata.create_all(bind=engine)
+    run_post_create_all(engine, SessionLocal)
     # Migration: add is_email_verified if missing
     with engine.connect() as conn:
         if engine.url.get_backend_name() == "sqlite":

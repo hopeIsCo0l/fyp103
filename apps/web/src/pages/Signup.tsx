@@ -23,6 +23,7 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -33,7 +34,12 @@ export default function Signup() {
     setError('');
     setLoading(true);
     try {
-      await signup({ email, password, full_name: fullName });
+      await signup({
+        email,
+        password,
+        full_name: fullName,
+        ...(phone.trim() ? { phone: phone.trim() } : {}),
+      });
       setStep('otp');
     } catch (err: unknown) {
       setError(getErrorMessage(err, t('signup.failedDefault')));
@@ -163,6 +169,15 @@ export default function Signup() {
             required
             margin="normal"
             autoComplete="email"
+          />
+          <TextField
+            fullWidth
+            label={t('signup.phone')}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            margin="normal"
+            autoComplete="tel"
+            helperText={t('signup.phoneHelp')}
           />
           <TextField
             fullWidth

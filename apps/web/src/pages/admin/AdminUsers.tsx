@@ -123,6 +123,7 @@ export default function AdminUsers() {
             <TableRow>
               <TableCell>{t('admin.users.colName')}</TableCell>
               <TableCell>{t('common.email')}</TableCell>
+              <TableCell>{t('admin.users.colPhone')}</TableCell>
               <TableCell>{t('admin.users.colRole')}</TableCell>
               <TableCell>{t('admin.users.colStatus')}</TableCell>
               <TableCell>{t('admin.users.colVerified')}</TableCell>
@@ -134,6 +135,7 @@ export default function AdminUsers() {
               <TableRow key={u.id}>
                 <TableCell>{u.full_name}</TableCell>
                 <TableCell>{u.email}</TableCell>
+                <TableCell sx={{ fontSize: '0.85rem' }}>{u.phone || '—'}</TableCell>
                 <TableCell>
                   <Chip
                     label={u.role}
@@ -173,7 +175,7 @@ export default function AdminUsers() {
             ))}
             {users.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} align="center">{t('admin.users.noUsers')}</TableCell>
+                <TableCell colSpan={7} align="center">{t('admin.users.noUsers')}</TableCell>
               </TableRow>
             )}
           </TableBody>

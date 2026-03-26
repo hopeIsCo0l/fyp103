@@ -33,6 +33,7 @@ from app.database import get_db
 from app.models.password_reset_token import PasswordResetToken
 from app.models.user import User
 from app.models.user_session import UserSession
+from app.role_utils import get_role_id_by_code
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -119,13 +120,12 @@ def signup(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Phone already registered",
             )
-    role = "candidate"
     user = User(
         id=str(uuid.uuid4()),
         email=payload.email.lower(),
         hashed_password=get_password_hash(payload.password),
         full_name=payload.full_name.strip(),
-        role=role,
+        role_id=get_role_id_by_code(db, "candidate"),
         is_email_verified=False,
         phone=phone_norm,
     )

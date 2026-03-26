@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func as sa_func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.admin.schemas import (
     AdminCreateUser,
@@ -19,8 +19,10 @@ from app.auth.dependencies import require_roles
 from app.auth.security import get_password_hash
 from app.database import get_db
 from app.models.audit_log import AuditLog
+from app.models.role import Role
 from app.models.user import User
 from app.models.user_session import UserSession
+from app.role_utils import get_role_id_by_code
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -46,9 +48,17 @@ def list_users(
             (User.email.ilike(pattern)) | (User.full_name.ilike(pattern))
         )
     if role:
-        q = q.filter(User.role == role.lower())
+        rid = db.query(Role.id).filter(Role.code == role.lower()).scalar()
+        if rid is not None:
+            q = q.filter(User.role_id == rid)
     total = q.count()
-    items = q.order_by(User.created_at.desc()).offset((page - 1) * size).limit(size).all()
+    items = (
+        q.options(joinedload(User.role_rel))
+        .order_by(User.created_at.desc())
+        .offset((page - 1) * size)
+        .limit(size)
+        .all()
+    )
     return UserListResponse(
         items=[UserOut.model_validate(u) for u in items],
         total=total,
@@ -75,7 +85,7 @@ def create_user(
         email=payload.email.lower(),
         hashed_password=get_password_hash(payload.password),
         full_name=payload.full_name.strip(),
-        role=payload.role.lower(),
+        role_id=get_role_id_by_code(db, payload.role.lower()),
         is_email_verified=True,
         is_active=True,
     )
@@ -119,8 +129,8 @@ def update_user(
         )
     changes: dict = {}
     if payload.role is not None:
-        user.role = payload.role.lower()
-        changes["role"] = user.role
+        user.role_id = get_role_id_by_code(db, payload.role.lower())
+        changes["role"] = payload.role.lower()
     if payload.is_active is not None:
         user.is_active = payload.is_active
         changes["is_active"] = user.is_active
@@ -212,15 +222,15 @@ def get_stats(
     db: Session = Depends(get_db),
 ):
     total = db.query(sa_func.count(User.id)).scalar() or 0
-    candidates = (
-        db.query(sa_func.count(User.id)).filter(User.role == "candidate").scalar() or 0
-    )
-    recruiters = (
-        db.query(sa_func.count(User.id)).filter(User.role == "recruiter").scalar() or 0
-    )
-    admins = (
-        db.query(sa_func.count(User.id)).filter(User.role == "admin").scalar() or 0
-    )
+    def _count_role(code: str) -> int:
+        rid = db.query(Role.id).filter(Role.code == code).scalar()
+        if rid is None:
+            return 0
+        return db.query(sa_func.count(User.id)).filter(User.role_id == rid).scalar() or 0
+
+    candidates = _count_role("candidate")
+    recruiters = _count_role("recruiter")
+    admins = _count_role("admin")
     verified = (
         db.query(sa_func.count(User.id)).filter(User.is_email_verified.is_(True)).scalar() or 0
     )

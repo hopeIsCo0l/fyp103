@@ -69,6 +69,19 @@ EMAIL_FROM=hello@yourdomain.com
 - CI: `.github/workflows/ci.yml` (lint + build api/web)
 - CD: `.github/workflows/cd.yml` (build/push Docker images to GHCR)
 
+## Database migrations
+
+- **Runtime:** On API startup, `app/main.py` runs `Base.metadata.create_all` then `run_post_create_all` (legacy `users.role` → `role_id` migration when needed, seed `roles` rows).
+- **Manual / CI:** From `apps/api` with `DATABASE_URL` set (and dependencies installed):
+
+  ```powershell
+  alembic upgrade head
+  ```
+
+  First revision (`0001_bootstrap`) runs the same legacy role migration + `ensure_roles`. **Tables must exist** (run `python init_db.py` or start the API once) before Alembic can apply data-only steps on an empty file DB.
+
+- **Roles:** `roles` table (`candidate`, `recruiter`, `admin`); `users.role_id` foreign key. API responses still expose `role` as a string (role code).
+
 ## Auth Endpoints
 
 - `POST /api/auth/signup`
@@ -93,7 +106,7 @@ EMAIL_FROM=hello@yourdomain.com
 - Forgot / reset password flow (single-use tokens, email delivery)
 - Account lockout after 5 failed sign-in attempts (15 min, 30 min attempt window)
 - In-memory rate limiting on all sensitive endpoints
-- Role-based access control (candidate, recruiter, admin) — roles stored on `users.role` (no separate `roles` table)
+- Role-based access control (candidate, recruiter, admin) — normalized **`roles`** table + **`users.role_id`** FK
 - Audit logging (signup, signin, verify, refresh, reset events, **`auth.locked`** when an account is locked after max failures)
 - Composite index on `audit_logs` (`created_at`, `actor_id`, `action`); `init_db.py` for SQLite column migrations
 - Seed super admin via `apps/api/seed_admin.py`
@@ -101,5 +114,7 @@ EMAIL_FROM=hello@yourdomain.com
 - Client-side route guards: RequireAuth, GuestOnly, RequireRole
 - Axios interceptor for automatic access token refresh
 - i18n scaffolding with English and Amharic translations
-- 29 pytest integration tests covering the full auth surface
+- Signup form: optional **phone** field (EN + AM i18n); admin users table shows phone column
+- **Alembic** (`alembic.ini`, `alembic/env.py`, revision `0001_bootstrap`) for versioned DB steps
+- 31 pytest integration tests covering the full auth surface
 - CI pipeline with lint, build, and pytest steps

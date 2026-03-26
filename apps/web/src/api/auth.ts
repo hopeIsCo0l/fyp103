@@ -4,6 +4,8 @@ export interface SignupPayload {
   email: string;
   password: string;
   full_name: string;
+  /** Optional; must be unique when set */
+  phone?: string;
 }
 
 export interface SigninPayload {

@@ -16,7 +16,9 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.database import Base, get_db
+from app.legacy_migrate import run_post_create_all
 from app.main import app
+from app.role_utils import get_role_id_by_code
 
 # ---------------------------------------------------------------------------
 # In-memory SQLite engine – StaticPool keeps one shared connection so that
@@ -44,6 +46,7 @@ def _set_sqlite_pragma(dbapi_conn, _):
 def _setup_db():
     """Create all tables before each test; drop after."""
     Base.metadata.create_all(bind=engine)
+    run_post_create_all(engine, TestingSessionLocal)
     yield
     Base.metadata.drop_all(bind=engine)
 
@@ -147,7 +150,7 @@ def make_verified_user(client, captured_otps):
             session = TestingSessionLocal()
             user = session.query(User).filter(User.email == email.lower()).first()
             if user:
-                user.role = role
+                user.role_id = get_role_id_by_code(session, role)
                 session.commit()
             session.close()
         return {

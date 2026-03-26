@@ -3,10 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.admin.routes import router as admin_router
 from app.auth.routes import router as auth_router
-from app.database import Base, engine
-from app.models import OTP, User  # noqa: F401 - import for table creation
+from app.database import Base, SessionLocal, engine
+from app.legacy_migrate import run_post_create_all
+from app.models import OTP, Role, User  # noqa: F401 - import for table creation
 
 Base.metadata.create_all(bind=engine)
+run_post_create_all(engine, SessionLocal)
 
 app = FastAPI(
     title="Recruitment AI API",

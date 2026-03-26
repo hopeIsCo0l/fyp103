@@ -38,6 +38,8 @@
   "signup": {
     "title": "ተመዝገብ",
     "fullName": "ሙሉ ስም",
+    "phone": "ስልክ (አማራጭ)",
+    "phoneHelp": "ካስገቡ በሁሉም አካውንቶች ልዩ መሆን አለበት",
     "passwordHelp": "ቢያንስ 8 ቁምፊዎች",
     "roleLabel": "እኔ ነኝ",
     "roleCandidate": "እጩ ተወዳዳሪ",
@@ -105,6 +107,7 @@
       "recruiter": "ቀጣሪ",
       "admin": "አስተዳዳሪ",
       "colName": "ስም",
+      "colPhone": "ስልክ",
       "colRole": "ሚና",
       "colStatus": "ሁኔታ",
       "colVerified": "የተረጋገጠ",

@@ -38,6 +38,8 @@
   "signup": {
     "title": "Sign up",
     "fullName": "Full name",
+    "phone": "Phone (optional)",
+    "phoneHelp": "If provided, must be unique across accounts",
     "passwordHelp": "At least 8 characters",
     "roleLabel": "I am a",
     "roleCandidate": "Candidate",
@@ -105,6 +107,7 @@
       "recruiter": "Recruiter",
       "admin": "Admin",
       "colName": "Name",
+      "colPhone": "Phone",
       "colRole": "Role",
       "colStatus": "Status",
       "colVerified": "Verified",
