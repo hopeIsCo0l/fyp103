@@ -111,6 +111,14 @@ def signup(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered",
         )
+    phone_norm = None
+    if payload.phone and payload.phone.strip():
+        phone_norm = payload.phone.strip()
+        if db.query(User).filter(User.phone == phone_norm).first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Phone already registered",
+            )
     role = "candidate"
     user = User(
         id=str(uuid.uuid4()),
@@ -119,6 +127,7 @@ def signup(
         full_name=payload.full_name.strip(),
         role=role,
         is_email_verified=False,
+        phone=phone_norm,
     )
     db.add(user)
     db.commit()
@@ -219,6 +228,20 @@ def signin(
             user_agent=ua,
             metadata={"failed_attempts": user.failed_login_attempts},
         )
+        if user.locked_until is not None and user.failed_login_attempts >= settings.SIGNIN_MAX_ATTEMPTS:
+            lu = user.locked_until
+            if lu.tzinfo is None:
+                lu = lu.replace(tzinfo=timezone.utc)
+            write_audit_log(
+                db,
+                action="auth.locked",
+                actor_id=user.id,
+                target_type="user",
+                target_id=user.id,
+                ip_address=ip,
+                user_agent=ua,
+                metadata={"locked_until": lu.isoformat()},
+            )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",

@@ -88,12 +88,15 @@ EMAIL_FROM=hello@yourdomain.com
 ## Week 1 — Completed by Abdellah
 
 - Signup, email OTP verification, signin (password + OTP)
+- Optional unique **phone** on signup (email + phone uniqueness)
 - Refresh token rotation with session persistence
 - Forgot / reset password flow (single-use tokens, email delivery)
-- Account lockout after 5 failed sign-in attempts (15 min)
+- Account lockout after 5 failed sign-in attempts (15 min, 30 min attempt window)
 - In-memory rate limiting on all sensitive endpoints
-- Role-based access control (candidate, recruiter, admin)
-- Audit logging (signup, signin, verify, refresh, reset events)
+- Role-based access control (candidate, recruiter, admin) — roles stored on `users.role` (no separate `roles` table)
+- Audit logging (signup, signin, verify, refresh, reset events, **`auth.locked`** when an account is locked after max failures)
+- Composite index on `audit_logs` (`created_at`, `actor_id`, `action`); `init_db.py` for SQLite column migrations
+- Seed super admin via `apps/api/seed_admin.py`
 - Frontend auth pages: Signin, Signup, ForgotPassword, ResetPassword, Unauthorized
 - Client-side route guards: RequireAuth, GuestOnly, RequireRole
 - Axios interceptor for automatic access token refresh

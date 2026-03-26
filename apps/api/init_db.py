@@ -24,5 +24,8 @@ if __name__ == "__main__":
                 conn.execute(text("ALTER TABLE users ADD COLUMN locked_until DATETIME"))
             if "last_login_at" not in cols:
                 conn.execute(text("ALTER TABLE users ADD COLUMN last_login_at DATETIME"))
+            if "phone" not in cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN phone VARCHAR(32)"))
+                conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_phone ON users(phone)"))
             conn.commit()
     print("Database ready.")

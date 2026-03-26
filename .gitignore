@@ -16,6 +16,9 @@ __pycache__/
 # SQLite (local dev)
 *.db
 
+# Vite cache
+apps/web/.vite/
+
 # Build / dist
 dist/
 build/

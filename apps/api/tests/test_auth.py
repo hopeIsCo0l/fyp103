@@ -40,6 +40,29 @@ class TestSignupVerifySignin:
         assert resp.status_code == 400
         assert "already registered" in resp.json()["detail"].lower()
 
+    def test_duplicate_phone_signup_rejected(self, client):
+        r1 = client.post(
+            "/api/auth/signup",
+            json={
+                "email": "a@test.com",
+                "password": PASSWORD,
+                "full_name": "A",
+                "phone": "+251911111111",
+            },
+        )
+        assert r1.status_code == 200
+        r2 = client.post(
+            "/api/auth/signup",
+            json={
+                "email": "b@test.com",
+                "password": PASSWORD,
+                "full_name": "B",
+                "phone": "+251911111111",
+            },
+        )
+        assert r2.status_code == 400
+        assert "phone" in r2.json()["detail"].lower()
+
     def test_verify_email_with_correct_otp(self, client, captured_otps):
         _signup(client)
         otp = captured_otps[EMAIL][-1]
@@ -197,6 +220,15 @@ class TestLockout:
         resp = _signin(client, password=PASSWORD)
         assert resp.status_code == 423
         assert "locked" in resp.json()["detail"].lower()
+
+    def test_lock_emits_auth_locked_audit(self, client, make_verified_user, db):
+        from app.models.audit_log import AuditLog
+
+        make_verified_user(EMAIL, PASSWORD)
+        for _ in range(5):
+            _signin(client, password="BadPassword!")
+        locked = db.query(AuditLog).filter(AuditLog.action == "auth.locked").all()
+        assert len(locked) == 1
 
     def test_successful_login_resets_counter(self, client, make_verified_user):
         make_verified_user(EMAIL, PASSWORD)

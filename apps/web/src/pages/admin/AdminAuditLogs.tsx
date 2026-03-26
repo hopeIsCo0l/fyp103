@@ -29,6 +29,7 @@ const ACTION_OPTIONS = [
   'auth.verify_email',
   'auth.signin_success',
   'auth.signin_failed',
+  'auth.locked',
   'auth.refresh',
   'auth.forgot_password',
   'auth.reset_password',

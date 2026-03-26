@@ -7,6 +7,7 @@ export interface UserOut {
   role: string;
   is_active: boolean;
   is_email_verified: boolean;
+  phone?: string | null;
   last_login_at: string | null;
   created_at: string | null;
 }

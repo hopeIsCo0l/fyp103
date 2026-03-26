@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -6,6 +8,7 @@ class UserSignup(BaseModel):
     password: str = Field(..., min_length=8)
     full_name: str = Field(..., min_length=1, max_length=255)
     role: str = "candidate"
+    phone: Optional[str] = Field(None, max_length=32)
 
 
 class UserSignin(BaseModel):
@@ -31,6 +34,7 @@ class UserResponse(BaseModel):
     role: str
     is_active: bool
     is_email_verified: bool = False
+    phone: str | None = None
 
     class Config:
         from_attributes = True

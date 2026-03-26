@@ -25,6 +25,7 @@ class UserOut(BaseModel):
     role: str
     is_active: bool
     is_email_verified: bool
+    phone: Optional[str] = None
     last_login_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
 
