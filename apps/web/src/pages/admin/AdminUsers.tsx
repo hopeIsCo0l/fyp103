@@ -263,12 +263,22 @@ export default function AdminUsers() {
           />
           <FormControl fullWidth size="small">
             <InputLabel>{t('admin.users.colRole')}</InputLabel>
-            <Select value={editRole} label={t('admin.users.colRole')} onChange={(e) => setEditRole(e.target.value)}>
+            <Select
+              value={editRole}
+              label={t('admin.users.colRole')}
+              onChange={(e) => setEditRole(e.target.value)}
+              disabled={editUser?.id === currentUser?.id}
+            >
               <MenuItem value="candidate">{t('admin.users.candidate')}</MenuItem>
               <MenuItem value="recruiter">{t('admin.users.recruiter')}</MenuItem>
               <MenuItem value="admin">{t('admin.users.admin')}</MenuItem>
             </Select>
           </FormControl>
+          {editUser?.id === currentUser?.id && (
+            <Typography variant="caption" color="text.secondary" display="block">
+              {t('admin.users.cannotChangeOwnRoleHint')}
+            </Typography>
+          )}
           <FormControlLabel
             control={(
               <Switch

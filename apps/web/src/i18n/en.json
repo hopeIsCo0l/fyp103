@@ -135,6 +135,7 @@
       "cannotResetOwn": "You cannot reset your own password here",
       "cannotDeactivateSelf": "You cannot deactivate your own account",
       "cannotDeactivateSelfHint": "You cannot deactivate your own account from here.",
+      "cannotChangeOwnRoleHint": "You cannot change your own role from here.",
       "noUsers": "No users found",
       "cancel": "Cancel",
       "save": "Save",

@@ -135,6 +135,7 @@
       "cannotResetOwn": "የራስዎን የይለፍ ቃል እዚህ ማስጀመር አይችሉም",
       "cannotDeactivateSelf": "የራስዎን አካውንት ማቦዝን አይችሉም",
       "cannotDeactivateSelfHint": "የራስዎን አካውንት እዚህ ማቦዝን አይችሉም።",
+      "cannotChangeOwnRoleHint": "የራስዎን ሚና እዚህ መቀየር አይችሉም።",
       "noUsers": "ምንም ተጠቃሚ አልተገኘም",
       "cancel": "ሰርዝ",
       "save": "አስቀምጥ",
