@@ -76,5 +76,65 @@
   "unauthorized": {
     "title": "ያልተፈቀደ",
     "message": "ይህን ገጽ ለመድረስ ፈቃድ የለዎትም።"
+  },
+  "admin": {
+    "title": "የአስተዳዳሪ ዳሽቦርድ",
+    "goToDashboard": "የአስተዳዳሪ ዳሽቦርድ",
+    "nav": {
+      "dashboard": "ዳሽቦርድ",
+      "users": "ተጠቃሚዎች",
+      "auditLogs": "የኦዲት ምዝግብ ማስታወሻዎች"
+    },
+    "stats": {
+      "totalUsers": "ጠቅላላ ተጠቃሚዎች",
+      "candidates": "እጩ ተወዳዳሪዎች",
+      "recruiters": "ቀጣሪዎች",
+      "admins": "አስተዳዳሪዎች",
+      "verified": "የተረጋገጡ",
+      "activeSessions": "ንቁ ክፍለ ጊዜዎች",
+      "signupsToday": "ዛሬ የተመዘገቡ",
+      "loadError": "ስታቲስቲክስ መጫን አልተቻለም"
+    },
+    "users": {
+      "createBtn": "ተጠቃሚ ፍጠር",
+      "createTitle": "አዲስ ተጠቃሚ ፍጠር",
+      "searchPlaceholder": "በስም ወይም ኢሜይል ይፈልጉ...",
+      "roleFilter": "ሚና",
+      "allRoles": "ሁሉም ሚናዎች",
+      "candidate": "እጩ ተወዳዳሪ",
+      "recruiter": "ቀጣሪ",
+      "admin": "አስተዳዳሪ",
+      "colName": "ስም",
+      "colRole": "ሚና",
+      "colStatus": "ሁኔታ",
+      "colVerified": "የተረጋገጠ",
+      "colActions": "ድርጊቶች",
+      "active": "ንቁ",
+      "inactive": "ንቁ ያልሆነ",
+      "yes": "አዎ",
+      "no": "አይ",
+      "editRole": "ሚና ቀይር",
+      "deactivate": "አቦዝን",
+      "reactivate": "አግብር",
+      "noUsers": "ምንም ተጠቃሚ አልተገኘም",
+      "cancel": "ሰርዝ",
+      "save": "አስቀምጥ",
+      "creating": "በመፍጠር ላይ...",
+      "createError": "ተጠቃሚ መፍጠር አልተቻለም",
+      "loadError": "ተጠቃሚዎችን መጫን አልተቻለም"
+    },
+    "audit": {
+      "actionFilter": "ድርጊት",
+      "allActions": "ሁሉም ድርጊቶች",
+      "actorIdPlaceholder": "በአከናዋኝ መታወቂያ ይፈልጉ...",
+      "colTime": "ጊዜ",
+      "colAction": "ድርጊት",
+      "colActor": "አከናዋኝ",
+      "colTarget": "ኢላማ",
+      "colIp": "አይፒ",
+      "colMeta": "ሜታዳታ",
+      "noLogs": "ምንም የኦዲት ምዝግብ አልተገኘም",
+      "loadError": "የኦዲት ምዝግቦችን መጫን አልተቻለም"
+    }
   }
 }

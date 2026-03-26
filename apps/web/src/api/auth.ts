@@ -4,7 +4,6 @@ export interface SignupPayload {
   email: string;
   password: string;
   full_name: string;
-  role?: string;
 }
 
 export interface SigninPayload {
@@ -46,10 +45,7 @@ export const getAccessToken = () => localStorage.getItem(ACCESS_TOKEN_KEY);
 export const getRefreshToken = () => localStorage.getItem(REFRESH_TOKEN_KEY);
 
 export const signup = async (data: SignupPayload) => {
-  const res = await api.post<{ message: string; email: string }>('/auth/signup', {
-    ...data,
-    role: data.role || 'candidate',
-  });
+  const res = await api.post<{ message: string; email: string }>('/auth/signup', data);
   return res.data;
 };
 

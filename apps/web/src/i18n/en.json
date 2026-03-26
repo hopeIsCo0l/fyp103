@@ -76,5 +76,65 @@
   "unauthorized": {
     "title": "Unauthorized",
     "message": "You do not have permission to access this page."
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "goToDashboard": "Admin Dashboard",
+    "nav": {
+      "dashboard": "Dashboard",
+      "users": "Users",
+      "auditLogs": "Audit Logs"
+    },
+    "stats": {
+      "totalUsers": "Total Users",
+      "candidates": "Candidates",
+      "recruiters": "Recruiters",
+      "admins": "Admins",
+      "verified": "Verified",
+      "activeSessions": "Active Sessions",
+      "signupsToday": "Signups Today",
+      "loadError": "Failed to load stats"
+    },
+    "users": {
+      "createBtn": "Create User",
+      "createTitle": "Create New User",
+      "searchPlaceholder": "Search by name or email...",
+      "roleFilter": "Role",
+      "allRoles": "All roles",
+      "candidate": "Candidate",
+      "recruiter": "Recruiter",
+      "admin": "Admin",
+      "colName": "Name",
+      "colRole": "Role",
+      "colStatus": "Status",
+      "colVerified": "Verified",
+      "colActions": "Actions",
+      "active": "Active",
+      "inactive": "Inactive",
+      "yes": "Yes",
+      "no": "No",
+      "editRole": "Edit role",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "noUsers": "No users found",
+      "cancel": "Cancel",
+      "save": "Save",
+      "creating": "Creating...",
+      "createError": "Failed to create user",
+      "loadError": "Failed to load users"
+    },
+    "audit": {
+      "actionFilter": "Action",
+      "allActions": "All actions",
+      "actorIdPlaceholder": "Filter by actor ID...",
+      "colTime": "Time",
+      "colAction": "Action",
+      "colActor": "Actor",
+      "colTarget": "Target",
+      "colIp": "IP",
+      "colMeta": "Metadata",
+      "noLogs": "No audit logs found",
+      "loadError": "Failed to load audit logs"
+    }
   }
 }

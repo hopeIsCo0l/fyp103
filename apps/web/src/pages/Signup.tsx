@@ -10,10 +10,6 @@ import {
   Paper,
   InputAdornment,
   IconButton,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
@@ -27,7 +23,6 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [role, setRole] = useState<string>('candidate');
   const [otp, setOtp] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -38,7 +33,7 @@ export default function Signup() {
     setError('');
     setLoading(true);
     try {
-      await signup({ email, password, full_name: fullName, role });
+      await signup({ email, password, full_name: fullName });
       setStep('otp');
     } catch (err: unknown) {
       setError(getErrorMessage(err, t('signup.failedDefault')));
@@ -192,17 +187,6 @@ export default function Signup() {
               ),
             }}
           />
-          <FormControl fullWidth margin="normal">
-            <InputLabel>{t('signup.roleLabel')}</InputLabel>
-            <Select
-              value={role}
-              label={t('signup.roleLabel')}
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <MenuItem value="candidate">{t('signup.roleCandidate')}</MenuItem>
-              <MenuItem value="recruiter">{t('signup.roleRecruiter')}</MenuItem>
-            </Select>
-          </FormControl>
           <Button
             type="submit"
             fullWidth

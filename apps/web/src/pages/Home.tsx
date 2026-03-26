@@ -63,6 +63,16 @@ export default function Home() {
       <Typography color="text.secondary">
         {t('home.signedInAs', { email: user.email, role: user.role })}
       </Typography>
+      {user.role === 'admin' && (
+        <Button
+          variant="contained"
+          color="secondary"
+          sx={{ mt: 3 }}
+          onClick={() => navigate('/admin')}
+        >
+          {t('admin.goToDashboard')}
+        </Button>
+      )}
     </Box>
   );
 }

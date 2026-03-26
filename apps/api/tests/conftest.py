@@ -135,11 +135,21 @@ def client():
 def make_verified_user(client, captured_otps):
     def _make(email: str, password: str, full_name: str = "Test User", role: str = "candidate"):
         client.post("/api/auth/signup", json={
-            "email": email, "password": password, "full_name": full_name, "role": role,
+            "email": email, "password": password, "full_name": full_name,
         })
         otp = captured_otps[email.lower()][-1]
         resp = client.post("/api/auth/verify-email", json={"email": email, "otp": otp})
         data = resp.json()
+        # Signup always creates candidates; override role directly in DB if needed
+        if role != "candidate":
+            from app.models.user import User
+
+            session = TestingSessionLocal()
+            user = session.query(User).filter(User.email == email.lower()).first()
+            if user:
+                user.role = role
+                session.commit()
+            session.close()
         return {
             "access_token": data["access_token"],
             "refresh_token": data["refresh_token"],
