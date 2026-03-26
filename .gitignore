@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 apps/api/venv/
+apps/api/venv311/
 apps/web/node_modules/
 __pycache__/
 *.py[cod]

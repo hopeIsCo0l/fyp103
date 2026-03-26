@@ -1,4 +1,4 @@
-﻿# Architecture
+# Architecture
 
 ## Apps
 
@@ -21,9 +21,9 @@
 
 ## Runtime
 
-- API default local DB: SQLite (`sqlite:///./recruit.db`)
-- Optional DB: PostgreSQL via docker compose
-- Frontend talks to API via Vite proxy (`/api`) in dev
+- **Primary:** PostgreSQL via Docker Compose (`docker/docker-compose.yml`) — same engine and topology as production-like deployments.
+- **Tests / optional host workflows:** SQLite (`sqlite:///./recruit.db`) is used in pytest and may appear in local `.env` for isolated runs; it is not the reference runtime for the product.
+- Frontend talks to the API via the Vite dev proxy (`/api`) when using the compose stack.
 
 ## CI/CD
 
@@ -32,8 +32,6 @@
 
 ## Scripts
 
-- `scripts/run-backend.ps1`
-- `scripts/run-frontend.ps1`
-- `scripts/run-all.ps1`
-- `scripts/free-ports.ps1`
-- `scripts/free-ports.sh`
+- `scripts/docker-up.ps1` — copy `docker/.env` if needed and start Compose (preferred).
+- `scripts/free-ports.ps1` / `scripts/free-ports.sh` — avoid port clashes before Compose.
+- `scripts/run-backend.ps1` / `scripts/run-frontend.ps1` / `scripts/run-all.ps1` — optional host-side processes (see README); not a substitute for the Docker stack.

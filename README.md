@@ -20,25 +20,9 @@ fypimp103/
 └─ README.md
 ```
 
-## Quick Start (Local, No Docker)
+## Run the stack (Docker Compose — production-like)
 
-### Terminal 1 - API
-
-```powershell
-.\scripts\run-backend.ps1
-```
-
-### Terminal 2 - Web
-
-```powershell
-.\scripts\run-frontend.ps1
-```
-
-Open:
-- Web: http://localhost:5173
-- API docs: http://localhost:8000/docs
-
-## Quick Start (Docker)
+The intended way to run the full system matches deployment: **PostgreSQL**, API, and web in Docker with env-driven configuration (`docker/.env`). Use this for development, demos, and anything that should behave like a real environment—not a stripped-down “local only” shortcut.
 
 From the repo root:
 
@@ -55,7 +39,7 @@ copy .env.example .env
 docker compose up --build
 ```
 
-The first run creates `docker/.env` from `docker/.env.example` if missing. Edit secrets there before production.
+The first run creates `docker/.env` from `docker/.env.example` if missing. Copy and adjust secrets, database credentials, and admin seed values for any shared or production-like deployment.
 
 **Services**
 
@@ -77,6 +61,10 @@ The first run creates `docker/.env` from `docker/.env.example` if missing. Edit 
 docker compose -f docker/docker-compose.yml exec postgres psql -U postgres -d recruit_db -c "\dt"
 ```
 (Run from `docker/` or pass `-f` from repo root.)
+
+### Optional: processes on the host (limited parity)
+
+Running the API and web **directly on the host** (e.g. `.\scripts\run-backend.ps1` / `.\scripts\run-frontend.ps1`) is only for **narrow automation, debugging, or CI-style checks**. It does not replace Docker + PostgreSQL for realistic behavior. The API defaults in `apps/api/.env.example` may use SQLite for tests only; for database parity without full compose, point `DATABASE_URL` at PostgreSQL yourself.
 
 ## OTP Email Setup
 
