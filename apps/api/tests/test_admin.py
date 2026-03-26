@@ -39,8 +39,6 @@ def _make_admin_and_target(client, captured_otps) -> tuple[str, str]:
     assert r2.status_code == 200
     target_id = r2.json()["user"]["id"]
 
-    # One active session for target (refresh from verify response)
-    refresh = r2.json()["refresh_token"]
     session = TestingSessionLocal()
     cnt = session.query(UserSession).filter(UserSession.user_id == target_id, UserSession.revoked.is_(False)).count()
     session.close()

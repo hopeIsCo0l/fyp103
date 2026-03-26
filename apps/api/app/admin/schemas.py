@@ -27,9 +27,17 @@ class UserOut(BaseModel):
     is_email_verified: bool
     last_login_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
+    failed_login_attempts: int = 0
+    locked_until: Optional[datetime] = None
 
     class Config:
         from_attributes = True
+
+
+class AdminResetPassword(BaseModel):
+    """Optional: set a specific password (min 8 chars). Omit body to let the server generate one."""
+
+    new_password: Optional[str] = None
 
 
 class UserListResponse(BaseModel):
@@ -42,6 +50,7 @@ class UserListResponse(BaseModel):
 class AuditLogOut(BaseModel):
     id: str
     actor_id: Optional[str] = None
+    actor_email: Optional[str] = None
     action: str
     target_type: Optional[str] = None
     target_id: Optional[str] = None
