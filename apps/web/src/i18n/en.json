@@ -1,0 +1,80 @@
+{
+  "common": {
+    "appName": "AI-Powered Recruitment System",
+    "loading": "Loading...",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "signOut": "Sign out",
+    "backToHome": "Back to home",
+    "backToSignIn": "Back to Sign in",
+    "networkError": "Cannot connect to server. Is the backend running on port 8000?"
+  },
+  "home": {
+    "welcome": "Welcome, {{name}}",
+    "signedInAs": "Signed in as {{email}} ({{role}})",
+    "guestHeading": "AI-Powered Recruitment System",
+    "guestSubtext": "Sign in or create an account to get started"
+  },
+  "signin": {
+    "title": "Sign in",
+    "passwordTab": "Password",
+    "otpTab": "OTP by email",
+    "signingIn": "Signing in...",
+    "sendOtp": "Send OTP",
+    "sendingOtp": "Sending OTP...",
+    "codeSentTo": "Code sent to {{email}}",
+    "enterOtp": "Enter OTP",
+    "verifying": "Verifying...",
+    "verifyAndSignIn": "Verify & Sign in",
+    "useDifferentEmail": "Use different email",
+    "noAccount": "Don't have an account?",
+    "forgotPassword": "Forgot password?",
+    "failedDefault": "Sign in failed",
+    "failedOtpSend": "Failed to send OTP",
+    "failedOtpVerify": "Invalid or expired OTP"
+  },
+  "signup": {
+    "title": "Sign up",
+    "fullName": "Full name",
+    "passwordHelp": "At least 8 characters",
+    "roleLabel": "I am a",
+    "roleCandidate": "Candidate",
+    "roleRecruiter": "Recruiter",
+    "sendingOtp": "Sending OTP...",
+    "verifyTitle": "Verify your email",
+    "otpSentTo": "We sent a 6-digit code to {{email}}",
+    "enterOtp": "Enter OTP",
+    "verify": "Verify",
+    "verifying": "Verifying...",
+    "resendOtp": "Resend OTP",
+    "resendIn": "Resend in {{seconds}}s",
+    "sending": "Sending...",
+    "backToSignUp": "Back to sign up",
+    "hasAccount": "Already have an account?",
+    "failedDefault": "Sign up failed",
+    "failedOtpVerify": "Invalid or expired OTP"
+  },
+  "forgotPassword": {
+    "title": "Forgot password",
+    "subtitle": "Enter your account email. If found, a reset token will be sent.",
+    "submitting": "Submitting...",
+    "sendResetToken": "Send reset token",
+    "failedDefault": "Failed to submit request"
+  },
+  "resetPassword": {
+    "title": "Reset password",
+    "subtitle": "Paste the reset token from your email and set a new password.",
+    "resetToken": "Reset token",
+    "newPassword": "New password",
+    "passwordHelp": "At least 8 characters",
+    "updating": "Updating...",
+    "updatePassword": "Update password",
+    "failedDefault": "Failed to reset password"
+  },
+  "unauthorized": {
+    "title": "Unauthorized",
+    "message": "You do not have permission to access this page."
+  }
+}

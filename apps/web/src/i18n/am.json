@@ -1,0 +1,80 @@
+{
+  "common": {
+    "appName": "በአይ የሚሰራ የቅጥር ስርዓት",
+    "loading": "በመጫን ላይ...",
+    "email": "ኢሜይል",
+    "password": "የይለፍ ቃል",
+    "signIn": "ግባ",
+    "signUp": "ተመዝገብ",
+    "signOut": "ውጣ",
+    "backToHome": "ወደ መነሻ ተመለስ",
+    "backToSignIn": "ወደ መግቢያ ተመለስ",
+    "networkError": "ከሰርቨር ጋር መገናኘት አልተቻለም። የጀርባ ስርዓቱ እየሰራ ነው?"
+  },
+  "home": {
+    "welcome": "እንኳን ደህና መጡ፣ {{name}}",
+    "signedInAs": "እንደ {{email}} ({{role}}) ገብተዋል",
+    "guestHeading": "በአይ የሚሰራ የቅጥር ስርዓት",
+    "guestSubtext": "ለመጀመር ይግቡ ወይም አካውንት ይፍጠሩ"
+  },
+  "signin": {
+    "title": "ግባ",
+    "passwordTab": "የይለፍ ቃል",
+    "otpTab": "በኢሜይል OTP",
+    "signingIn": "በመግባት ላይ...",
+    "sendOtp": "OTP ላክ",
+    "sendingOtp": "OTP በመላክ ላይ...",
+    "codeSentTo": "ኮድ ወደ {{email}} ተልኳል",
+    "enterOtp": "OTP ያስገቡ",
+    "verifying": "በማረጋገጥ ላይ...",
+    "verifyAndSignIn": "አረጋግጥ እና ግባ",
+    "useDifferentEmail": "ሌላ ኢሜይል ተጠቀም",
+    "noAccount": "አካውንት የለዎትም?",
+    "forgotPassword": "የይለፍ ቃል ረሱ?",
+    "failedDefault": "መግባት አልተሳካም",
+    "failedOtpSend": "OTP መላክ አልተቻለም",
+    "failedOtpVerify": "ልክ ያልሆነ ወይም ያለፈበት OTP"
+  },
+  "signup": {
+    "title": "ተመዝገብ",
+    "fullName": "ሙሉ ስም",
+    "passwordHelp": "ቢያንስ 8 ቁምፊዎች",
+    "roleLabel": "እኔ ነኝ",
+    "roleCandidate": "እጩ ተወዳዳሪ",
+    "roleRecruiter": "ቀጣሪ",
+    "sendingOtp": "OTP በመላክ ላይ...",
+    "verifyTitle": "ኢሜይልዎን ያረጋግጡ",
+    "otpSentTo": "ባለ 6 አሃዝ ኮድ ወደ {{email}} ተልኳል",
+    "enterOtp": "OTP ያስገቡ",
+    "verify": "አረጋግጥ",
+    "verifying": "በማረጋገጥ ላይ...",
+    "resendOtp": "OTP ድጋሚ ላክ",
+    "resendIn": "በ{{seconds}} ሰከንድ ድጋሚ ላክ",
+    "sending": "በመላክ ላይ...",
+    "backToSignUp": "ወደ ምዝገባ ተመለስ",
+    "hasAccount": "አካውንት አለዎት?",
+    "failedDefault": "ምዝገባ አልተሳካም",
+    "failedOtpVerify": "ልክ ያልሆነ ወይም ያለፈበት OTP"
+  },
+  "forgotPassword": {
+    "title": "የይለፍ ቃል ረሱ",
+    "subtitle": "የአካውንትዎን ኢሜይል ያስገቡ። ከተገኘ የማስጀመሪያ ቶከን ይላካል።",
+    "submitting": "በማስገባት ላይ...",
+    "sendResetToken": "የማስጀመሪያ ቶከን ላክ",
+    "failedDefault": "ጥያቄውን ማስገባት አልተቻለም"
+  },
+  "resetPassword": {
+    "title": "የይለፍ ቃል ቀይር",
+    "subtitle": "ከኢሜይልዎ የማስጀመሪያ ቶከኑን ይለጥፉ እና አዲስ የይለፍ ቃል ያዘጋጁ።",
+    "resetToken": "የማስጀመሪያ ቶከን",
+    "newPassword": "አዲስ የይለፍ ቃል",
+    "passwordHelp": "ቢያንስ 8 ቁምፊዎች",
+    "updating": "በማዘመን ላይ...",
+    "updatePassword": "የይለፍ ቃል አዘምን",
+    "failedDefault": "የይለፍ ቃል መቀየር አልተቻለም"
+  },
+  "unauthorized": {
+    "title": "ያልተፈቀደ",
+    "message": "ይህን ገጽ ለመድረስ ፈቃድ የለዎትም።"
+  }
+}

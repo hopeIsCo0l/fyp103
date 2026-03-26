@@ -1,15 +1,18 @@
 import { Box, Button, Typography } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 import { useAuth } from '../contexts/useAuth';
 
 export default function Home() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   if (isLoading) {
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
-        <Typography>Loading...</Typography>
+        <Typography>{t('common.loading')}</Typography>
       </Box>
     );
   }
@@ -27,16 +30,17 @@ export default function Home() {
           bgcolor: 'grey.100',
         }}
       >
-        <Typography variant="h4">AI-Powered Recruitment System</Typography>
-        <Typography color="text.secondary">
-          Sign in or create an account to get started
-        </Typography>
+        <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+          <LanguageSwitcher />
+        </Box>
+        <Typography variant="h4">{t('home.guestHeading')}</Typography>
+        <Typography color="text.secondary">{t('home.guestSubtext')}</Typography>
         <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
           <Button variant="contained" onClick={() => navigate('/signin')}>
-            Sign in
+            {t('common.signIn')}
           </Button>
           <Button variant="outlined" onClick={() => navigate('/signup')}>
-            Sign up
+            {t('common.signUp')}
           </Button>
         </Box>
       </Box>
@@ -47,14 +51,17 @@ export default function Home() {
     <Box sx={{ p: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h5">
-          Welcome, {user.full_name}
+          {t('home.welcome', { name: user.full_name })}
         </Typography>
-        <Button variant="outlined" onClick={logout}>
-          Sign out
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <LanguageSwitcher />
+          <Button variant="outlined" onClick={logout}>
+            {t('common.signOut')}
+          </Button>
+        </Box>
       </Box>
       <Typography color="text.secondary">
-        Signed in as {user.email} ({user.role})
+        {t('home.signedInAs', { email: user.email, role: user.role })}
       </Typography>
     </Box>
   );
