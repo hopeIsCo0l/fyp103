@@ -1,7 +1,7 @@
 """Seed the first super-admin user.
 
 Reads credentials from environment variables:
-    ADMIN_EMAIL    (default: admin@recruit.local)
+    ADMIN_EMAIL    (default: admin@recruit-system.com)
     ADMIN_PASSWORD (default: Admin123!)
     ADMIN_NAME     (default: Super Admin)
 

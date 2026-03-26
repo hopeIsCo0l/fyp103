@@ -40,15 +40,43 @@ Open:
 
 ## Quick Start (Docker)
 
+From the repo root:
+
 ```powershell
 .\scripts\free-ports.ps1
-docker-compose -f .\docker\docker-compose.yml up --build
+.\scripts\docker-up.ps1
 ```
 
-Services:
-- Web: http://localhost:5173
-- API: http://localhost:8000/docs
-- PostgreSQL: localhost:5433
+Or manually:
+
+```powershell
+cd docker
+copy .env.example .env
+docker compose up --build
+```
+
+The first run creates `docker/.env` from `docker/.env.example` if missing. Edit secrets there before production.
+
+**Services**
+
+| Service    | URL / host |
+|-----------|------------|
+| Web (Vite) | http://localhost:5173 |
+| API (Swagger) | http://localhost:8000/docs |
+| PostgreSQL | `localhost:5433` (user/password/db from `docker/.env`) |
+
+**Inside Docker:** the Vite dev server proxies `/api` to `http://backend:8000` (see `BACKEND_PROXY_TARGET` in `docker-compose.yml`). The browser still uses `http://localhost:5173`, so no manual API URL change is needed.
+
+**Super admin** (when `SEED_ADMIN_ON_START=1`, default): email `admin@recruit-system.com`, password `Admin123!` — override with `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `docker/.env`.
+
+**Optional:** set `RUN_ALEMBIC=1` in `docker/.env` to run `alembic upgrade head` before the API starts.
+
+**Inspect Postgres from the host**
+
+```powershell
+docker compose -f docker/docker-compose.yml exec postgres psql -U postgres -d recruit_db -c "\dt"
+```
+(Run from `docker/` or pass `-f` from repo root.)
 
 ## OTP Email Setup
 
