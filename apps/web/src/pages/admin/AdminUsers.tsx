@@ -283,8 +283,14 @@ function CreateUserDialog({
             <Select
               value={form.role}
               label={t('admin.users.colRole')}
-              onChange={(e) => setForm({ ...form, role: e.target.value as 'recruiter' | 'admin' })}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  role: e.target.value as 'candidate' | 'recruiter' | 'admin',
+                })
+              }
             >
+              <MenuItem value="candidate">{t('admin.users.candidate')}</MenuItem>
               <MenuItem value="recruiter">{t('admin.users.recruiter')}</MenuItem>
               <MenuItem value="admin">{t('admin.users.admin')}</MenuItem>
             </Select>

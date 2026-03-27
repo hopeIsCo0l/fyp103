@@ -23,7 +23,7 @@ export interface CreateUserPayload {
   email: string;
   password: string;
   full_name: string;
-  role: 'recruiter' | 'admin';
+  role: 'candidate' | 'recruiter' | 'admin';
 }
 
 export interface UpdateUserPayload {
