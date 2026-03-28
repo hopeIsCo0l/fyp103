@@ -20,35 +20,51 @@ fypimp103/
 └─ README.md
 ```
 
-## Quick Start (Local, No Docker)
+## Run the stack (Docker Compose — production-like)
 
-### Terminal 1 - API
+The intended way to run the full system matches deployment: **PostgreSQL**, API, and web in Docker with env-driven configuration (`docker/.env`). Use this for development, demos, and anything that should behave like a real environment—not a stripped-down “local only” shortcut.
 
-```powershell
-.\scripts\run-backend.ps1
-```
-
-### Terminal 2 - Web
-
-```powershell
-.\scripts\run-frontend.ps1
-```
-
-Open:
-- Web: http://localhost:5173
-- API docs: http://localhost:8000/docs
-
-## Quick Start (Docker)
+From the repo root:
 
 ```powershell
 .\scripts\free-ports.ps1
-docker-compose -f .\docker\docker-compose.yml up --build
+.\scripts\docker-up.ps1
 ```
 
-Services:
-- Web: http://localhost:5173
-- API: http://localhost:8000/docs
-- PostgreSQL: localhost:5433
+Or manually:
+
+```powershell
+cd docker
+copy .env.example .env
+docker compose up --build
+```
+
+The first run creates `docker/.env` from `docker/.env.example` if missing. Copy and adjust secrets, database credentials, and admin seed values for any shared or production-like deployment.
+
+**Services**
+
+| Service    | URL / host |
+|-----------|------------|
+| Web (Vite) | http://localhost:5173 |
+| API (Swagger) | http://localhost:8000/docs |
+| PostgreSQL | `localhost:5433` (user/password/db from `docker/.env`) |
+
+**Inside Docker:** the Vite dev server proxies `/api` to `http://backend:8000` (see `BACKEND_PROXY_TARGET` in `docker-compose.yml`). The browser still uses `http://localhost:5173`, so no manual API URL change is needed.
+
+**Super admin** (when `SEED_ADMIN_ON_START=1`, default): email `admin@recruit-system.com`, password `Admin123!` — override with `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `docker/.env`.
+
+**Optional:** set `RUN_ALEMBIC=1` in `docker/.env` to run `alembic upgrade head` before the API starts.
+
+**Inspect Postgres from the host**
+
+```powershell
+docker compose -f docker/docker-compose.yml exec postgres psql -U postgres -d recruit_db -c "\dt"
+```
+(Run from `docker/` or pass `-f` from repo root.)
+
+### Optional: processes on the host (limited parity)
+
+Running the API and web **directly on the host** (e.g. `.\scripts\run-backend.ps1` / `.\scripts\run-frontend.ps1`) is only for **narrow automation, debugging, or CI-style checks**. It does not replace Docker + PostgreSQL for realistic behavior. The API defaults in `apps/api/.env.example` may use SQLite for tests only; for database parity without full compose, point `DATABASE_URL` at PostgreSQL yourself.
 
 ## OTP Email Setup
 
@@ -69,6 +85,19 @@ EMAIL_FROM=hello@yourdomain.com
 - CI: `.github/workflows/ci.yml` (lint + build api/web)
 - CD: `.github/workflows/cd.yml` (build/push Docker images to GHCR)
 
+## Database migrations
+
+- **Runtime:** On API startup, `app/main.py` runs `Base.metadata.create_all` then `run_post_create_all` (legacy `users.role` → `role_id` migration when needed, seed `roles` rows).
+- **Manual / CI:** From `apps/api` with `DATABASE_URL` set (and dependencies installed):
+
+  ```powershell
+  alembic upgrade head
+  ```
+
+  First revision (`0001_bootstrap`) runs the same legacy role migration + `ensure_roles`. **Tables must exist** (run `python init_db.py` or start the API once) before Alembic can apply data-only steps on an empty file DB.
+
+- **Roles:** `roles` table (`candidate`, `recruiter`, `admin`); `users.role_id` foreign key. API responses still expose `role` as a string (role code).
+
 ## Auth Endpoints
 
 - `POST /api/auth/signup`
@@ -88,15 +117,20 @@ EMAIL_FROM=hello@yourdomain.com
 ## Week 1 — Completed by Abdellah
 
 - Signup, email OTP verification, signin (password + OTP)
+- Optional unique **phone** on signup (email + phone uniqueness)
 - Refresh token rotation with session persistence
 - Forgot / reset password flow (single-use tokens, email delivery)
-- Account lockout after 5 failed sign-in attempts (15 min)
+- Account lockout after 5 failed sign-in attempts (15 min, 30 min attempt window)
 - In-memory rate limiting on all sensitive endpoints
-- Role-based access control (candidate, recruiter, admin)
-- Audit logging (signup, signin, verify, refresh, reset events)
+- Role-based access control (candidate, recruiter, admin) — normalized **`roles`** table + **`users.role_id`** FK
+- Audit logging (signup, signin, verify, refresh, reset events, **`auth.locked`** when an account is locked after max failures)
+- Composite index on `audit_logs` (`created_at`, `actor_id`, `action`); `init_db.py` for SQLite column migrations
+- Seed super admin via `apps/api/seed_admin.py`
 - Frontend auth pages: Signin, Signup, ForgotPassword, ResetPassword, Unauthorized
 - Client-side route guards: RequireAuth, GuestOnly, RequireRole
 - Axios interceptor for automatic access token refresh
 - i18n scaffolding with English and Amharic translations
-- 29 pytest integration tests covering the full auth surface
+- Signup form: optional **phone** field (EN + AM i18n); admin users table shows phone column
+- **Alembic** (`alembic.ini`, `alembic/env.py`, revision `0001_bootstrap`) for versioned DB steps
+- 31 pytest integration tests covering the full auth surface
 - CI pipeline with lint, build, and pytest steps

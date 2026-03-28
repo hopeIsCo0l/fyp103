@@ -1,6 +1,6 @@
-# Free ports 5432, 5173, 8000 on Windows
+# Free ports used by Docker Compose (Postgres host 5433, web 5173, API 8000) and local 5432
 # Run: powershell -ExecutionPolicy Bypass -File .\scripts\free-ports.ps1
-$ports = @(5432, 5173, 8000)
+$ports = @(5432, 5433, 5173, 8000)
 
 foreach ($port in $ports) {
     try {
@@ -35,4 +35,4 @@ foreach ($port in $ports) {
         }
     }
 }
-Write-Host "Done. Wait a few seconds, then run docker-compose -f .\docker\docker-compose.yml up --build"
+Write-Host "Done. Wait a few seconds, then run: .\scripts\docker-up.ps1"
