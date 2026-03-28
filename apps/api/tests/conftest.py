@@ -1,40 +1,22 @@
-"""Shared test fixtures: isolated in-memory DB, TestClient, OTP capture."""
+"""Shared test fixtures: PostgreSQL test DB, TestClient, OTP capture."""
 
 import os
 
-# Force SQLite in-memory BEFORE any app module is imported so that
-# database.py / main.py never try to connect to PostgreSQL.
-os.environ["DATABASE_URL"] = "sqlite://"
+# Must be set before app imports so database.py binds to the test database.
+os.environ.setdefault(
+    "DATABASE_URL",
+    "postgresql://postgres:postgres@127.0.0.1:5433/recruit_test",
+)
+os.environ.setdefault("SECRET_KEY", "test-secret-key-for-pytest")
 
 from collections import defaultdict
 from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, event
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
-from app.database import Base, get_db
+from app.database import Base, SessionLocal, engine, get_db
 from app.main import app
-
-# ---------------------------------------------------------------------------
-# In-memory SQLite engine – StaticPool keeps one shared connection so that
-# table creation and request handling see the same database.
-# ---------------------------------------------------------------------------
-engine = create_engine(
-    "sqlite://",
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-
-@event.listens_for(engine, "connect")
-def _set_sqlite_pragma(dbapi_conn, _):
-    cursor = dbapi_conn.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
 
 
 # ---------------------------------------------------------------------------
@@ -42,7 +24,8 @@ def _set_sqlite_pragma(dbapi_conn, _):
 # ---------------------------------------------------------------------------
 @pytest.fixture(autouse=True)
 def _setup_db():
-    """Create all tables before each test; drop after."""
+    """Recreate schema before each test; tear down after."""
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
@@ -50,7 +33,7 @@ def _setup_db():
 
 @pytest.fixture()
 def db():
-    session = TestingSessionLocal()
+    session = SessionLocal()
     try:
         yield session
     finally:
@@ -58,7 +41,7 @@ def db():
 
 
 def _override_get_db():
-    session = TestingSessionLocal()
+    session = SessionLocal()
     try:
         yield session
     finally:
@@ -67,7 +50,7 @@ def _override_get_db():
 
 @pytest.fixture(autouse=True)
 def _override_deps():
-    """Swap the production DB dependency with the test DB for every request."""
+    """Swap the production DB dependency with the test session for every request."""
     app.dependency_overrides[get_db] = _override_get_db
     yield
     app.dependency_overrides.clear()
@@ -144,7 +127,7 @@ def make_verified_user(client, captured_otps):
         if role != "candidate":
             from app.models.user import User
 
-            session = TestingSessionLocal()
+            session = SessionLocal()
             user = session.query(User).filter(User.email == email.lower()).first()
             if user:
                 user.role = role

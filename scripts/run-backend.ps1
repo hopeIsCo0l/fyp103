@@ -1,8 +1,6 @@
-# Run backend - SQLite by default (no Docker needed)
-# For PostgreSQL: set DATABASE_URL in apps/api/.env before running
-if (-not $env:DATABASE_URL -or $env:DATABASE_URL -like "*postgresql*") {
-    # Use SQLite if no DB set or postgres fails
-    $env:DATABASE_URL = "sqlite:///./recruit.db"
+# Run backend — expects PostgreSQL (see docker/docker-compose.yml, port 5433 on host)
+if (-not $env:DATABASE_URL) {
+    $env:DATABASE_URL = "postgresql://postgres:postgres@127.0.0.1:5433/recruit_db"
 }
 if (-not $env:SECRET_KEY) { $env:SECRET_KEY = "dev-secret-key" }
 
