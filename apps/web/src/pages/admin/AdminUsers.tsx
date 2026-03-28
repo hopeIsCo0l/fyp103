@@ -31,18 +31,15 @@ import {
   Tooltip,
   Typography,
   Paper,
+  Divider,
 } from '@mui/material';
-import BlockIcon from '@mui/icons-material/Block';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import EditIcon from '@mui/icons-material/Edit';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import type { CreateUserPayload, UserOut } from '../../api/admin';
 import {
   createUser,
-  deleteUser,
   downloadBlob,
   exportUsersCsv,
   getUsers,
@@ -55,7 +52,7 @@ import { getApiErrorMessage } from '../../utils/apiError';
 
 const PAGE_SIZE = 15;
 
-type ConfirmKind = 'deactivate' | 'reactivate' | 'revokeSessions' | null;
+type ConfirmKind = 'revokeSessions' | null;
 
 export default function AdminUsers() {
   const { t } = useTranslation();
@@ -82,8 +79,6 @@ export default function AdminUsers() {
   const [editRole, setEditRole] = useState('');
   const [editActive, setEditActive] = useState(true);
   const [editVerified, setEditVerified] = useState(false);
-
-  const [detailUser, setDetailUser] = useState<UserOut | null>(null);
 
   const [confirm, setConfirm] = useState<{ kind: ConfirmKind; user: UserOut | null }>({
     kind: null,
@@ -163,14 +158,6 @@ export default function AdminUsers() {
     const u = confirm.user;
     if (!u || !confirm.kind) return;
     try {
-      if (confirm.kind === 'deactivate') {
-        await deleteUser(u.id);
-        setSnack(t('admin.users.successDeactivated'));
-      }
-      if (confirm.kind === 'reactivate') {
-        await updateUser(u.id, { is_active: true });
-        setSnack(t('admin.users.successReactivated'));
-      }
       if (confirm.kind === 'revokeSessions') {
         await revokeUserSessions(u.id);
         setSnack(t('admin.users.successRevokeSessions'));
@@ -327,75 +314,17 @@ export default function AdminUsers() {
                 </TableCell>
                 <TableCell>{u.is_email_verified ? t('admin.users.yes') : t('admin.users.no')}</TableCell>
                 <TableCell align="right">
-                  <Tooltip title={t('admin.users.viewDetails')}>
-                    <IconButton size="small" onClick={() => setDetailUser(u)}>
-                      <InfoOutlinedIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title={t('admin.users.editUser')}>
-                    <IconButton size="small" onClick={() => openEdit(u)}>
+                  <Tooltip title={t('admin.users.editUserFull')}>
+                    <IconButton size="small" color="primary" onClick={() => openEdit(u)} aria-label={t('admin.users.editUser')}>
                       <EditIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title={isSelf(u) ? t('admin.users.cannotResetOwn') : t('admin.users.resetPassword')}>
-                    <span>
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        disabled={isSelf(u)}
-                        onClick={() => setResetConfirm(u)}
-                      >
-                        <VpnKeyIcon fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                  <Tooltip title={t('admin.users.revokeSessions')}>
-                    <IconButton
-                      size="small"
-                      color="warning"
-                      onClick={() => setConfirm({ kind: 'revokeSessions', user: u })}
-                    >
-                      <LogoutIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  {u.is_active ? (
-                    <Tooltip
-                      title={
-                        isSelf(u)
-                          ? t('admin.users.cannotDeactivateSelf')
-                          : t('admin.users.deactivate')
-                      }
-                    >
-                      <span>
-                        <IconButton
-                          size="small"
-                          color="error"
-                          disabled={isSelf(u)}
-                          onClick={() =>
-                            !isSelf(u) && setConfirm({ kind: 'deactivate', user: u })
-                          }
-                        >
-                          <BlockIcon fontSize="small" />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                  ) : (
-                    <Tooltip title={t('admin.users.reactivate')}>
-                      <IconButton
-                        size="small"
-                        color="success"
-                        onClick={() => setConfirm({ kind: 'reactivate', user: u })}
-                      >
-                        <CheckCircleIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  )}
                 </TableCell>
               </TableRow>
             ))}
             {users.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} align="center">
+                <TableCell colSpan={7} align="center">
                   {t('admin.users.noUsers')}
                 </TableCell>
               </TableRow>
@@ -431,68 +360,134 @@ export default function AdminUsers() {
         }}
       />
 
-      <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="md" fullWidth scroll="paper">
         <DialogTitle>{t('admin.users.editUser')}</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" sx={{ mb: 2 }} color="text.secondary">
-            {editUser?.email}
-          </Typography>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              label={t('signup.fullName')}
-              value={editFullName}
-              onChange={(e) => setEditFullName(e.target.value)}
-              size="small"
-              fullWidth
-            />
-            <TextField
-              label={t('signup.phone')}
-              value={editPhone}
-              onChange={(e) => setEditPhone(e.target.value)}
-              size="small"
-              fullWidth
-              helperText={t('signup.phoneHelp')}
-            />
-            <FormControl fullWidth size="small">
-              <InputLabel>{t('admin.users.colRole')}</InputLabel>
-              <Select
-                value={editRole}
-                label={t('admin.users.colRole')}
-                disabled={editUser ? isSelf(editUser) : false}
-                onChange={(e) => setEditRole(e.target.value)}
-              >
-                <MenuItem value="candidate">{t('admin.users.candidate')}</MenuItem>
-                <MenuItem value="recruiter">{t('admin.users.recruiter')}</MenuItem>
-                <MenuItem value="admin">{t('admin.users.admin')}</MenuItem>
-              </Select>
-            </FormControl>
-            {editUser && isSelf(editUser) && (
-              <Typography variant="caption" color="text.secondary">
-                {t('admin.users.cannotChangeOwnRoleHint')}
+        <DialogContent dividers>
+          {editUser && (
+            <>
+              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                {t('admin.users.editSectionMetadata')}
               </Typography>
-            )}
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={editActive}
-                  onChange={(_, v) => setEditActive(v)}
-                  disabled={editUser ? isSelf(editUser) : false}
+              <Stack spacing={0.75} sx={{ mb: 2 }}>
+                <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
+                  <strong>{t('admin.users.detailId')}</strong> {editUser.id}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>{t('common.email')}</strong> {editUser.email}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>{t('admin.users.detailCreated')}</strong> {fmtDate(editUser.created_at)}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>{t('admin.users.detailLastLogin')}</strong> {fmtDate(editUser.last_login_at)}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>{t('admin.users.detailFailedAttempts')}</strong>{' '}
+                  {editUser.failed_login_attempts ?? 0}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>{t('admin.users.detailLockedUntil')}</strong> {fmtDate(editUser.locked_until)}
+                </Typography>
+              </Stack>
+
+              <Divider sx={{ my: 2 }} />
+
+              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                {t('admin.users.editSectionProfile')}
+              </Typography>
+              <Stack spacing={2}>
+                <TextField
+                  label={t('signup.fullName')}
+                  value={editFullName}
+                  onChange={(e) => setEditFullName(e.target.value)}
+                  size="small"
+                  fullWidth
                 />
-              }
-              label={t('admin.users.statusActive')}
-            />
-            {editUser && isSelf(editUser) && (
-              <Typography variant="caption" color="text.secondary">
-                {t('admin.users.cannotDeactivateSelfHint')}
+                <TextField
+                  label={t('signup.phone')}
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  size="small"
+                  fullWidth
+                  helperText={t('signup.phoneHelp')}
+                />
+                <FormControl fullWidth size="small">
+                  <InputLabel>{t('admin.users.colRole')}</InputLabel>
+                  <Select
+                    value={editRole}
+                    label={t('admin.users.colRole')}
+                    disabled={isSelf(editUser)}
+                    onChange={(e) => setEditRole(e.target.value)}
+                  >
+                    <MenuItem value="candidate">{t('admin.users.candidate')}</MenuItem>
+                    <MenuItem value="recruiter">{t('admin.users.recruiter')}</MenuItem>
+                    <MenuItem value="admin">{t('admin.users.admin')}</MenuItem>
+                  </Select>
+                </FormControl>
+                {isSelf(editUser) && (
+                  <Typography variant="caption" color="text.secondary">
+                    {t('admin.users.cannotChangeOwnRoleHint')}
+                  </Typography>
+                )}
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={editActive}
+                      onChange={(_, v) => setEditActive(v)}
+                      disabled={isSelf(editUser)}
+                    />
+                  }
+                  label={t('admin.users.statusActive')}
+                />
+                {isSelf(editUser) && (
+                  <Typography variant="caption" color="text.secondary">
+                    {t('admin.users.cannotDeactivateSelfHint')}
+                  </Typography>
+                )}
+                <FormControlLabel
+                  control={
+                    <Switch checked={editVerified} onChange={(_, v) => setEditVerified(v)} />
+                  }
+                  label={t('admin.users.emailVerified')}
+                />
+              </Stack>
+
+              <Divider sx={{ my: 2 }} />
+
+              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                {t('admin.users.editSectionSecurity')}
               </Typography>
-            )}
-            <FormControlLabel
-              control={
-                <Switch checked={editVerified} onChange={(_, v) => setEditVerified(v)} />
-              }
-              label={t('admin.users.emailVerified')}
-            />
-          </Stack>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+                <Tooltip
+                  title={
+                    isSelf(editUser) ? t('admin.users.cannotResetOwn') : t('admin.users.resetPassword')
+                  }
+                >
+                  <span>
+                    <Button
+                      variant="outlined"
+                      startIcon={<VpnKeyIcon />}
+                      disabled={isSelf(editUser)}
+                      onClick={() => setResetConfirm(editUser)}
+                    >
+                      {t('admin.users.resetPassword')}
+                    </Button>
+                  </span>
+                </Tooltip>
+                <Button
+                  variant="outlined"
+                  color="warning"
+                  startIcon={<LogoutIcon />}
+                  onClick={() => setConfirm({ kind: 'revokeSessions', user: editUser })}
+                >
+                  {t('admin.users.revokeSessions')}
+                </Button>
+              </Stack>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
+                {t('admin.users.editSecurityHint')}
+              </Typography>
+            </>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditOpen(false)}>{t('admin.users.cancel')}</Button>
@@ -502,63 +497,11 @@ export default function AdminUsers() {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={!!detailUser} onClose={() => setDetailUser(null)} maxWidth="sm" fullWidth>
-        <DialogTitle>{t('admin.users.userDetails')}</DialogTitle>
-        <DialogContent>
-          {detailUser && (
-            <Stack spacing={1}>
-              <Typography variant="body2">
-                <strong>{t('admin.users.detailId')}</strong> {detailUser.id}
-              </Typography>
-              <Typography variant="body2">
-                <strong>{t('common.email')}</strong> {detailUser.email}
-              </Typography>
-              <Typography variant="body2">
-                <strong>{t('signup.phone')}</strong> {detailUser.phone || '—'}
-              </Typography>
-              <Typography variant="body2">
-                <strong>{t('signup.fullName')}</strong> {detailUser.full_name}
-              </Typography>
-              <Typography variant="body2">
-                <strong>{t('admin.users.colRole')}</strong> {detailUser.role}
-              </Typography>
-              <Typography variant="body2">
-                <strong>{t('admin.users.detailCreated')}</strong> {fmtDate(detailUser.created_at)}
-              </Typography>
-              <Typography variant="body2">
-                <strong>{t('admin.users.detailLastLogin')}</strong>{' '}
-                {fmtDate(detailUser.last_login_at)}
-              </Typography>
-              <Typography variant="body2">
-                <strong>{t('admin.users.detailFailedAttempts')}</strong>{' '}
-                {detailUser.failed_login_attempts ?? 0}
-              </Typography>
-              <Typography variant="body2">
-                <strong>{t('admin.users.detailLockedUntil')}</strong>{' '}
-                {fmtDate(detailUser.locked_until)}
-              </Typography>
-            </Stack>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDetailUser(null)}>{t('admin.users.close')}</Button>
-        </DialogActions>
-      </Dialog>
-
       <Dialog open={!!confirm.kind} onClose={() => setConfirm({ kind: null, user: null })}>
-        <DialogTitle>
-          {confirm.kind === 'deactivate' && t('admin.users.confirmDeactivateTitle')}
-          {confirm.kind === 'reactivate' && t('admin.users.confirmReactivateTitle')}
-          {confirm.kind === 'revokeSessions' && t('admin.users.confirmRevokeSessionsTitle')}
-        </DialogTitle>
+        <DialogTitle>{t('admin.users.confirmRevokeSessionsTitle')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2">
-            {confirm.kind === 'deactivate' &&
-              t('admin.users.confirmDeactivateBody', { email: confirm.user?.email ?? '' })}
-            {confirm.kind === 'reactivate' &&
-              t('admin.users.confirmReactivateBody', { email: confirm.user?.email ?? '' })}
-            {confirm.kind === 'revokeSessions' &&
-              t('admin.users.confirmRevokeSessionsBody', { email: confirm.user?.email ?? '' })}
+            {t('admin.users.confirmRevokeSessionsBody', { email: confirm.user?.email ?? '' })}
           </Typography>
         </DialogContent>
         <DialogActions>
