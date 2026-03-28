@@ -2,9 +2,9 @@
 
 from fastapi.testclient import TestClient
 
+from app.database import SessionLocal
 from app.models.user import User
 from app.models.user_session import UserSession
-from tests.conftest import TestingSessionLocal
 
 ADMIN_EMAIL = "admin@test-recruit.com"
 ADMIN_PASS = "AdminPass1!"
@@ -23,7 +23,7 @@ def _make_admin_and_target(client, captured_otps) -> tuple[str, str]:
     assert r.status_code == 200
     admin_token = r.json()["access_token"]
 
-    session = TestingSessionLocal()
+    session = SessionLocal()
     u = session.query(User).filter(User.email == ADMIN_EMAIL.lower()).first()
     assert u
     u.role = "admin"
@@ -39,7 +39,7 @@ def _make_admin_and_target(client, captured_otps) -> tuple[str, str]:
     assert r2.status_code == 200
     target_id = r2.json()["user"]["id"]
 
-    session = TestingSessionLocal()
+    session = SessionLocal()
     cnt = session.query(UserSession).filter(UserSession.user_id == target_id, UserSession.revoked.is_(False)).count()
     session.close()
     assert cnt >= 1
@@ -70,7 +70,7 @@ def test_admin_reset_password_returns_plain_and_revokes_sessions(client: TestCli
     )
     assert good.status_code == 200
 
-    session = TestingSessionLocal()
+    session = SessionLocal()
     open_sess = (
         session.query(UserSession)
         .filter(UserSession.user_id == target_id, UserSession.revoked.is_(False))
@@ -82,7 +82,7 @@ def test_admin_reset_password_returns_plain_and_revokes_sessions(client: TestCli
 
 def test_admin_cannot_reset_own_password(client: TestClient, captured_otps):
     admin_token, _ = _make_admin_and_target(client, captured_otps)
-    session = TestingSessionLocal()
+    session = SessionLocal()
     admin_user = session.query(User).filter(User.email == ADMIN_EMAIL.lower()).first()
     admin_id = admin_user.id
     session.close()
