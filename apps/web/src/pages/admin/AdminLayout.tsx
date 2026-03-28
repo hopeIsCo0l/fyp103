@@ -1,5 +1,6 @@
 import {
   Box,
+  Divider,
   Drawer,
   List,
   ListItemButton,
@@ -13,6 +14,8 @@ import {
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import HistoryIcon from '@mui/icons-material/History';
+import PersonIcon from '@mui/icons-material/Person';
+import WorkIcon from '@mui/icons-material/Work';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
@@ -41,7 +44,16 @@ export default function AdminLayout() {
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Typography variant="body2">{user?.full_name}</Typography>
-            <LanguageSwitcher />
+            <LanguageSwitcher
+              sx={{
+                '& .MuiToggleButton-root': {
+                  color: 'inherit',
+                  borderColor: 'rgba(255,255,255,0.35)',
+                  py: 0.25,
+                },
+                '& .Mui-selected': { bgcolor: 'rgba(255,255,255,0.2) !important', color: '#fff !important' },
+              }}
+            />
             <Button color="inherit" onClick={logout} size="small">
               {t('common.signOut')}
             </Button>
@@ -69,6 +81,24 @@ export default function AdminLayout() {
               <ListItemText primary={item.label} />
             </ListItemButton>
           ))}
+        </List>
+        <Divider sx={{ my: 1 }} />
+        <Typography variant="overline" sx={{ px: 2, color: 'text.secondary', letterSpacing: '0.08em' }}>
+          {t('admin.nav.previewWorkspaces')}
+        </Typography>
+        <List>
+          <ListItemButton onClick={() => navigate('/candidate/dashboard')}>
+            <ListItemIcon>
+              <PersonIcon />
+            </ListItemIcon>
+            <ListItemText primary={t('admin.nav.candidateHub')} />
+          </ListItemButton>
+          <ListItemButton onClick={() => navigate('/recruiter/dashboard')}>
+            <ListItemIcon>
+              <WorkIcon />
+            </ListItemIcon>
+            <ListItemText primary={t('admin.nav.recruiterHub')} />
+          </ListItemButton>
         </List>
       </Drawer>
 

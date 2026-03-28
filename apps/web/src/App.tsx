@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import { Box, CircularProgress, ThemeProvider, CssBaseline } from '@mui/material';
 import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './contexts/useAuth';
 import ForgotPassword from './pages/ForgotPassword';
@@ -13,21 +13,25 @@ import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminAuditLogs from './pages/admin/AdminAuditLogs';
-
-const theme = createTheme({
-  palette: {
-    primary: { main: '#1976d2' },
-  },
-});
+import RecruitLayout from './layouts/RecruitLayout';
+import CandidateDashboard from './pages/candidate/CandidateDashboard';
+import CandidateJobsPage from './pages/candidate/CandidateJobsPage';
+import CandidateApplicationsPage from './pages/candidate/CandidateApplicationsPage';
+import RecruiterDashboard from './pages/recruiter/RecruiterDashboard';
+import RecruiterJobsPage from './pages/recruiter/RecruiterJobsPage';
+import RecruiterCandidatesPage from './pages/recruiter/RecruiterCandidatesPage';
+import ProfilePage from './pages/shared/ProfilePage';
+import { appTheme } from './theme';
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={appTheme}>
       <CssBaseline />
       <AuthProvider>
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/dashboard" element={<DashboardRedirect />} />
             <Route
               path="/signin"
               element={
@@ -61,21 +65,33 @@ function App() {
               }
             />
             <Route
-              path="/dashboard"
+              path="/candidate"
               element={
-                <RequireAuth>
-                  <Home />
-                </RequireAuth>
+                <RequireRole role="candidate">
+                  <RecruitLayout variant="candidate" />
+                </RequireRole>
               }
-            />
+            >
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<CandidateDashboard />} />
+              <Route path="jobs" element={<CandidateJobsPage />} />
+              <Route path="applications" element={<CandidateApplicationsPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+            </Route>
             <Route
               path="/recruiter"
               element={
                 <RequireRole role="recruiter">
-                  <Home />
+                  <RecruitLayout variant="recruiter" />
                 </RequireRole>
               }
-            />
+            >
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<RecruiterDashboard />} />
+              <Route path="jobs" element={<RecruiterJobsPage />} />
+              <Route path="candidates" element={<RecruiterCandidatesPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+            </Route>
             <Route
               path="/admin"
               element={
@@ -97,25 +113,45 @@ function App() {
   );
 }
 
-function RequireAuth({ children }: { children: ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
-  if (isLoading) return <Home />;
+/** Sends signed-in users to the right hub: admin → /admin, recruiter → /recruiter/dashboard, everyone else → /candidate/dashboard. */
+function DashboardRedirect() {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: 'background.default',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
   if (!isAuthenticated) return <Navigate to="/signin" replace />;
-  return children;
+  const r = (user?.role || '').toLowerCase();
+  if (r === 'admin') return <Navigate to="/admin" replace />;
+  if (r === 'recruiter') return <Navigate to="/recruiter/dashboard" replace />;
+  return <Navigate to="/candidate/dashboard" replace />;
 }
 
 function GuestOnly({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
-  if (isLoading) return <Home />;
-  if (isAuthenticated) return <Navigate to="/" replace />;
+  if (isLoading) return null;
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
   return children;
 }
 
 function RequireRole({ role, children }: { role: string; children: ReactNode }) {
   const { user, isAuthenticated, isLoading } = useAuth();
-  if (isLoading) return <Home />;
+  if (isLoading) return null;
   if (!isAuthenticated) return <Navigate to="/signin" replace />;
-  if ((user?.role || '').toLowerCase() !== role.toLowerCase() && user?.role !== 'admin') {
+  const r = (user?.role || '').toLowerCase();
+  const need = role.toLowerCase();
+  if (r !== need && r !== 'admin') {
     return <Navigate to="/unauthorized" replace />;
   }
   return children;
