@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class AdminCreateUser(BaseModel):
@@ -9,6 +9,14 @@ class AdminCreateUser(BaseModel):
     password: str = Field(..., min_length=8)
     full_name: str = Field(..., min_length=1, max_length=255)
     role: str = Field(..., pattern="^(candidate|recruiter|admin)$")
+    phone: Optional[str] = Field(None, max_length=32)
+
+    @field_validator("role", mode="before")
+    @classmethod
+    def normalize_role(cls, v: object) -> str:
+        if isinstance(v, str):
+            return v.lower().strip()
+        return v  # type: ignore[return-value]
 
 
 class AdminUpdateUser(BaseModel):
@@ -16,6 +24,17 @@ class AdminUpdateUser(BaseModel):
     is_active: Optional[bool] = None
     is_email_verified: Optional[bool] = None
     full_name: Optional[str] = Field(None, min_length=1, max_length=255)
+    phone: Optional[str] = Field(None, max_length=32)
+
+    @field_validator("role", mode="before")
+    @classmethod
+    def normalize_update_role(cls, v: object) -> str | None:
+        if v is None:
+            return None
+        if isinstance(v, str):
+            s = v.lower().strip()
+            return s if s else None
+        return v  # type: ignore[return-value]
 
 
 class UserOut(BaseModel):
@@ -28,9 +47,17 @@ class UserOut(BaseModel):
     phone: Optional[str] = None
     last_login_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
+    failed_login_attempts: int = 0
+    locked_until: Optional[datetime] = None
 
     class Config:
         from_attributes = True
+
+
+class AdminResetPassword(BaseModel):
+    """Optional: set a specific password (min 8 chars). Omit body to let the server generate one."""
+
+    new_password: Optional[str] = None
 
 
 class UserListResponse(BaseModel):
@@ -43,6 +70,7 @@ class UserListResponse(BaseModel):
 class AuditLogOut(BaseModel):
     id: str
     actor_id: Optional[str] = None
+    actor_email: Optional[str] = None
     action: str
     target_type: Optional[str] = None
     target_id: Optional[str] = None
@@ -70,3 +98,10 @@ class StatsResponse(BaseModel):
     verified_users: int
     active_sessions: int
     signups_today: int
+
+
+class AdminResetPasswordResponse(BaseModel):
+    """Plain password is returned once; client must store it — never logged in audit."""
+
+    email: str
+    temporary_password: str

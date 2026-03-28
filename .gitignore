@@ -14,7 +14,7 @@ __pycache__/
 .env.local
 *.env
 
-# SQLite (local dev)
+# Local DB files (e.g. legacy SQLite)
 *.db
 
 # Vite cache

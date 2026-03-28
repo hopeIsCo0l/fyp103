@@ -15,6 +15,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { resendOtp, setAuthTokens, signup, verifyEmail } from '../api/auth';
+import { getApiErrorMessage } from '../utils/apiError';
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -38,11 +39,13 @@ export default function Signup() {
         email,
         password,
         full_name: fullName,
-        ...(phone.trim() ? { phone: phone.trim() } : {}),
+        phone: phone.trim() || undefined,
       });
       setStep('otp');
     } catch (err: unknown) {
-      setError(getErrorMessage(err, t('signup.failedDefault')));
+      setError(
+        getApiErrorMessage(err, t('signup.failedDefault'), t('common.networkError')),
+      );
     } finally {
       setLoading(false);
     }
@@ -55,10 +58,12 @@ export default function Signup() {
     try {
       const tokens = await verifyEmail(email, otp);
       setAuthTokens(tokens);
-      navigate('/', { replace: true });
+      navigate('/dashboard', { replace: true });
       window.location.reload();
     } catch (err: unknown) {
-      setError(getErrorMessage(err, t('signup.failedOtpVerify')));
+      setError(
+        getApiErrorMessage(err, t('signup.failedOtpVerify'), t('common.networkError')),
+      );
     } finally {
       setLoading(false);
     }
@@ -255,20 +260,3 @@ function ResendOtpButton({ email }: { email: string }) {
   );
 }
 
-function getErrorMessage(err: unknown, fallback: string): string {
-  const ax = err as {
-    response?: { data?: { detail?: string | string[] } };
-    code?: string;
-    message?: string;
-  };
-  if (ax?.response?.data?.detail) {
-    const d = ax.response.data.detail;
-    return Array.isArray(d)
-      ? (d as { msg?: string }[]).map((x) => x.msg || x).join(', ')
-      : String(d);
-  }
-  if (ax?.code === 'ERR_NETWORK' || ax?.message?.includes('Network Error')) {
-    return fallback;
-  }
-  return fallback;
-}

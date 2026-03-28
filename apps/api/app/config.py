@@ -7,8 +7,8 @@ _env_path = Path(__file__).parent.parent / ".env"
 
 
 class Settings(BaseSettings):
-    # Use SQLite for quick local run when Docker/Postgres unavailable
-    DATABASE_URL: str = "sqlite:///./recruit.db"
+    # Local dev: run `docker compose -f docker/docker-compose.yml up -d postgres` (port 5433)
+    DATABASE_URL: str = "postgresql://postgres:postgres@127.0.0.1:5433/recruit_db"
     SECRET_KEY: str = "your-super-secret-key-change-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30

@@ -1,78 +1,69 @@
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { useAuth } from '../contexts/useAuth';
 
 export default function Home() {
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   if (isLoading) {
     return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
-        <Typography>{t('common.loading')}</Typography>
-      </Box>
-    );
-  }
-
-  if (!isAuthenticated || !user) {
-    return (
       <Box
         sx={{
           minHeight: '100vh',
           display: 'flex',
-          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 2,
-          bgcolor: 'grey.100',
+          bgcolor: 'background.default',
         }}
       >
-        <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
-          <LanguageSwitcher />
-        </Box>
-        <Typography variant="h4">{t('home.guestHeading')}</Typography>
-        <Typography color="text.secondary">{t('home.guestSubtext')}</Typography>
-        <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-          <Button variant="contained" onClick={() => navigate('/signin')}>
-            {t('common.signIn')}
-          </Button>
-          <Button variant="outlined" onClick={() => navigate('/signup')}>
-            {t('common.signUp')}
-          </Button>
-        </Box>
+        <CircularProgress />
       </Box>
     );
   }
 
+  if (isAuthenticated && user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
-    <Box sx={{ p: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h5">
-          {t('home.welcome', { name: user.full_name })}
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <LanguageSwitcher />
-          <Button variant="outlined" onClick={logout}>
-            {t('common.signOut')}
-          </Button>
-        </Box>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 2,
+        px: 2,
+        bgcolor: 'background.default',
+        backgroundImage:
+          'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(13, 92, 99, 0.12), transparent 55%)',
+      }}
+    >
+      <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+        <LanguageSwitcher />
       </Box>
-      <Typography color="text.secondary">
-        {t('home.signedInAs', { email: user.email, role: user.role })}
+      <Typography variant="h3" component="h1" align="center" sx={{ fontWeight: 800, maxWidth: 520 }}>
+        {t('home.guestHeading')}
       </Typography>
-      {user.role === 'admin' && (
-        <Button
-          variant="contained"
-          color="secondary"
-          sx={{ mt: 3 }}
-          onClick={() => navigate('/admin')}
-        >
-          {t('admin.goToDashboard')}
+      <Typography color="text.secondary" align="center" sx={{ maxWidth: 440 }}>
+        {t('home.guestSubtext')}
+      </Typography>
+      <Box sx={{ display: 'flex', gap: 2, mt: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+        <Button variant="contained" size="large" onClick={() => navigate('/signin')}>
+          {t('common.signIn')}
         </Button>
-      )}
+        <Button variant="outlined" size="large" onClick={() => navigate('/signup')}>
+          {t('common.signUp')}
+        </Button>
+      </Box>
+      <Button color="inherit" size="small" sx={{ mt: 4 }} onClick={() => navigate('/forgot-password')}>
+        {t('signin.forgotPassword')}
+      </Button>
     </Box>
   );
 }
