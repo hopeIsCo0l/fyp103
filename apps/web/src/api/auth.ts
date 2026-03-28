@@ -4,6 +4,7 @@ export interface SignupPayload {
   email: string;
   password: string;
   full_name: string;
+  phone?: string | null;
 }
 
 export interface SigninPayload {
@@ -18,6 +19,7 @@ export interface User {
   role: string;
   is_active: boolean;
   is_email_verified?: boolean;
+  phone?: string | null;
 }
 
 export interface TokenResponse {

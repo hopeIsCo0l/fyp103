@@ -38,6 +38,8 @@
   "signup": {
     "title": "ተመዝገብ",
     "fullName": "ሙሉ ስም",
+    "phone": "ስልክ (አማራጭ)",
+    "phoneHelp": "ልዩ ሲሆን ብቻ ይጠቀሙ",
     "passwordHelp": "ቢያንስ 8 ቁምፊዎች",
     "roleLabel": "እኔ ነኝ",
     "roleCandidate": "እጩ ተወዳዳሪ",

@@ -7,6 +7,7 @@ export interface UserOut {
   role: string;
   is_active: boolean;
   is_email_verified: boolean;
+  phone?: string | null;
   last_login_at: string | null;
   created_at: string | null;
   failed_login_attempts: number;
@@ -24,7 +25,8 @@ export interface CreateUserPayload {
   email: string;
   password: string;
   full_name: string;
-  role: 'recruiter' | 'admin';
+  role: 'candidate' | 'recruiter' | 'admin';
+  phone?: string | null;
 }
 
 export interface UpdateUserPayload {
@@ -32,6 +34,7 @@ export interface UpdateUserPayload {
   is_active?: boolean;
   is_email_verified?: boolean;
   full_name?: string;
+  phone?: string | null;
 }
 
 export interface AuditLogOut {

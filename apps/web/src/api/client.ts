@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : 'http://localhost:8000/api');
+// In dev, default to same-origin `/api` (Vite proxy) so API calls work whether you open the app
+// at localhost or 127.0.0.1. Setting VITE_API_URL to http://localhost:8000/api breaks requests
+// from 127.0.0.1 (cross-origin). Production builds can set VITE_API_URL explicitly.
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV ? '/api' : 'http://localhost:8000/api');
 const ACCESS_TOKEN_KEY = 'token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
 
