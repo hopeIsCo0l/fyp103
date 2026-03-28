@@ -79,13 +79,114 @@
     "title": "Unauthorized",
     "message": "You do not have permission to access this page."
   },
+  "recruit": {
+    "workspace": "Workspace",
+    "candidateHub": "Candidate hub",
+    "recruiterHub": "Recruiter hub",
+    "mockNotice": "Sample data for layout preview. Wire up job and application APIs to replace this.",
+    "match": "match",
+    "nav": {
+      "dashboard": "Dashboard",
+      "jobs": "Jobs",
+      "applications": "My applications",
+      "jobPostings": "Job postings",
+      "candidates": "Candidates",
+      "profile": "Profile"
+    },
+    "stats": {
+      "activeApplications": "Active applications",
+      "jobsMatched": "Matched roles",
+      "profileStrength": "Profile strength",
+      "openRoles": "Open roles",
+      "totalApplicants": "Applicants in pipeline",
+      "newThisWeek": "New this week"
+    },
+    "jobType": {
+      "full_time": "Full-time",
+      "contract": "Contract",
+      "part_time": "Part-time"
+    },
+    "jobStatus": {
+      "open": "Open",
+      "paused": "Paused",
+      "closed": "Closed"
+    },
+    "stage": {
+      "applied": "Applied",
+      "screening": "Screening",
+      "interview": "Interview",
+      "offer": "Offer",
+      "rejected": "Rejected"
+    },
+    "pipelineStage": {
+      "new": "New",
+      "screening": "Screening",
+      "interview": "Interview",
+      "offer": "Offer"
+    },
+    "candidate": {
+      "dashboardTitle": "Your hiring overview",
+      "dashboardSubtitle": "Track applications and discover roles that fit your profile.",
+      "topMatch": "Top match for you",
+      "browseJobs": "Browse jobs",
+      "pipelinePreview": "Application pipeline",
+      "viewApplications": "View all applications"
+    },
+    "jobs": {
+      "browseTitle": "Discover roles",
+      "browseSubtitle": "AI-ranked matches based on your profile (placeholder).",
+      "apply": "Apply",
+      "save": "Save"
+    },
+    "applications": {
+      "title": "My applications",
+      "subtitle": "Status updates across every role you have applied to.",
+      "colRole": "Role",
+      "colCompany": "Company",
+      "colStage": "Stage",
+      "colUpdated": "Updated"
+    },
+    "recruiter": {
+      "dashboardTitle": "Recruiting pipeline",
+      "dashboardSubtitle": "Monitor open roles, new applicants, and next actions.",
+      "yourPostings": "Your postings",
+      "manageJobs": "Manage",
+      "posted": "Posted {{date}}",
+      "applicants": "applicants",
+      "pipelinePreview": "Latest pipeline",
+      "openPipeline": "Open pipeline",
+      "jobsTitle": "Job postings",
+      "jobsSubtitle": "Publish roles, track applicants, and collaborate with your team.",
+      "newPosting": "New posting",
+      "edit": "Edit",
+      "viewApplicants": "View applicants"
+    },
+    "pipeline": {
+      "title": "Candidate pipeline",
+      "subtitle": "Review candidates across stages.",
+      "colCandidate": "Candidate",
+      "colRole": "Role",
+      "colStage": "Stage",
+      "colUpdated": "Updated"
+    },
+    "profile": {
+      "title": "Profile",
+      "subtitle": "Account information from your profile.",
+      "role": "Role",
+      "editHint": "Profile editing will be available when your backend exposes update endpoints."
+    },
+    "adminPanel": "Admin panel"
+  },
   "admin": {
     "title": "Admin Dashboard",
     "goToDashboard": "Admin Dashboard",
     "nav": {
       "dashboard": "Dashboard",
       "users": "Users",
-      "auditLogs": "Audit Logs"
+      "auditLogs": "Audit Logs",
+      "previewWorkspaces": "Preview",
+      "candidateHub": "Candidate hub",
+      "recruiterHub": "Recruiter hub"
     },
     "stats": {
       "totalUsers": "Total Users",

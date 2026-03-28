@@ -39,7 +39,7 @@ export default function Signin() {
     try {
       const tokens = await signin({ email, password });
       setAuthTokens(tokens);
-      navigate('/', { replace: true });
+      navigate('/dashboard', { replace: true });
       window.location.reload();
     } catch (err: unknown) {
       setError(getErrorMessage(err, t('signin.failedDefault')));
@@ -69,7 +69,7 @@ export default function Signin() {
     try {
       const tokens = await verifyLoginOtp(email, otp);
       setAuthTokens(tokens);
-      navigate('/', { replace: true });
+      navigate('/dashboard', { replace: true });
       window.location.reload();
     } catch (err: unknown) {
       setError(getErrorMessage(err, t('signin.failedOtpVerify')));

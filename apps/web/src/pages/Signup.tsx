@@ -58,7 +58,7 @@ export default function Signup() {
     try {
       const tokens = await verifyEmail(email, otp);
       setAuthTokens(tokens);
-      navigate('/', { replace: true });
+      navigate('/dashboard', { replace: true });
       window.location.reload();
     } catch (err: unknown) {
       setError(
