@@ -9,6 +9,20 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: recruit_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
 
@@ -33,7 +47,7 @@ jobs:
           cd apps/api
           python -c "from app.main import app; print('OK')"
         env:
-          DATABASE_URL: sqlite:///./recruit.db
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/recruit_test
           SECRET_KEY: ci-secret-key
 
       - name: Run tests
@@ -41,7 +55,7 @@ jobs:
           cd apps/api
           pytest tests/ -v --tb=short
         env:
-          DATABASE_URL: sqlite://
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/recruit_test
           SECRET_KEY: ci-secret-key
 
   frontend:

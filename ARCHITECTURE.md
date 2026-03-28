@@ -1,4 +1,4 @@
-﻿# Architecture
+# Architecture
 
 ## Apps
 
@@ -21,8 +21,7 @@
 
 ## Runtime
 
-- API default local DB: SQLite (`sqlite:///./recruit.db`)
-- Optional DB: PostgreSQL via docker compose
+- API database: PostgreSQL (see `docker/docker-compose.yml`; host port `5433` → container `5432`)
 - Frontend talks to API via Vite proxy (`/api`) in dev
 
 ## CI/CD
