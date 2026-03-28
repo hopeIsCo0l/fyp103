@@ -51,6 +51,7 @@ import {
   updateUser,
 } from '../../api/admin';
 import { useAuth } from '../../contexts/useAuth';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 const PAGE_SIZE = 15;
 
@@ -77,6 +78,7 @@ export default function AdminUsers() {
   const [editOpen, setEditOpen] = useState(false);
   const [editUser, setEditUser] = useState<UserOut | null>(null);
   const [editFullName, setEditFullName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
   const [editRole, setEditRole] = useState('');
   const [editActive, setEditActive] = useState(true);
   const [editVerified, setEditVerified] = useState(false);
@@ -184,6 +186,7 @@ export default function AdminUsers() {
   const openEdit = (u: UserOut) => {
     setEditUser(u);
     setEditFullName(u.full_name);
+    setEditPhone(u.phone ?? '');
     setEditRole(u.role);
     setEditActive(u.is_active);
     setEditVerified(u.is_email_verified);
@@ -195,6 +198,7 @@ export default function AdminUsers() {
     try {
       await updateUser(editUser.id, {
         full_name: editFullName,
+        phone: editPhone.trim() || null,
         role: editRole,
         is_active: editActive,
         is_email_verified: editVerified,
@@ -292,6 +296,7 @@ export default function AdminUsers() {
             <TableRow>
               <TableCell>{t('admin.users.colName')}</TableCell>
               <TableCell>{t('common.email')}</TableCell>
+              <TableCell>{t('signup.phone')}</TableCell>
               <TableCell>{t('admin.users.colRole')}</TableCell>
               <TableCell>{t('admin.users.colStatus')}</TableCell>
               <TableCell>{t('admin.users.colVerified')}</TableCell>
@@ -303,6 +308,7 @@ export default function AdminUsers() {
               <TableRow key={u.id}>
                 <TableCell>{u.full_name}</TableCell>
                 <TableCell>{u.email}</TableCell>
+                <TableCell>{u.phone || '—'}</TableCell>
                 <TableCell>
                   <Chip
                     label={u.role}
@@ -439,6 +445,14 @@ export default function AdminUsers() {
               size="small"
               fullWidth
             />
+            <TextField
+              label={t('signup.phone')}
+              value={editPhone}
+              onChange={(e) => setEditPhone(e.target.value)}
+              size="small"
+              fullWidth
+              helperText={t('signup.phoneHelp')}
+            />
             <FormControl fullWidth size="small">
               <InputLabel>{t('admin.users.colRole')}</InputLabel>
               <Select
@@ -498,6 +512,9 @@ export default function AdminUsers() {
               </Typography>
               <Typography variant="body2">
                 <strong>{t('common.email')}</strong> {detailUser.email}
+              </Typography>
+              <Typography variant="body2">
+                <strong>{t('signup.phone')}</strong> {detailUser.phone || '—'}
               </Typography>
               <Typography variant="body2">
                 <strong>{t('signup.fullName')}</strong> {detailUser.full_name}
@@ -616,6 +633,7 @@ function CreateUserDialog({
     password: '',
     full_name: '',
     role: 'recruiter',
+    phone: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -625,13 +643,17 @@ function CreateUserDialog({
     setError('');
     setLoading(true);
     try {
-      await createUser(form);
-      setForm({ email: '', password: '', full_name: '', role: 'recruiter' });
+      await createUser({
+        ...form,
+        phone: form.phone?.trim() || undefined,
+      });
+      setForm({ email: '', password: '', full_name: '', role: 'recruiter', phone: '' });
       onClose();
       onCreated();
     } catch (err: unknown) {
-      const ax = err as { response?: { data?: { detail?: string } } };
-      setError(ax?.response?.data?.detail || t('admin.users.createError'));
+      setError(
+        getApiErrorMessage(err, t('admin.users.createError'), t('common.networkError')),
+      );
     } finally {
       setLoading(false);
     }
@@ -659,6 +681,13 @@ function CreateUserDialog({
             size="small"
           />
           <TextField
+            label={t('signup.phone')}
+            value={form.phone ?? ''}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            size="small"
+            helperText={t('signup.phoneHelp')}
+          />
+          <TextField
             label={t('common.password')}
             type="password"
             value={form.password}
@@ -673,9 +702,13 @@ function CreateUserDialog({
               value={form.role}
               label={t('admin.users.colRole')}
               onChange={(e) =>
-                setForm({ ...form, role: e.target.value as 'recruiter' | 'admin' })
+                setForm({
+                  ...form,
+                  role: e.target.value as 'candidate' | 'recruiter' | 'admin',
+                })
               }
             >
+              <MenuItem value="candidate">{t('admin.users.candidate')}</MenuItem>
               <MenuItem value="recruiter">{t('admin.users.recruiter')}</MenuItem>
               <MenuItem value="admin">{t('admin.users.admin')}</MenuItem>
             </Select>

@@ -1,6 +1,5 @@
 """Integration tests for the full Week-1 auth surface."""
 
-import pytest
 from fastapi.testclient import TestClient
 
 EMAIL = "candidate@test.com"
@@ -39,6 +38,29 @@ class TestSignupVerifySignin:
         resp = _signup(client)
         assert resp.status_code == 400
         assert "already registered" in resp.json()["detail"].lower()
+
+    def test_duplicate_phone_signup_rejected(self, client):
+        r1 = client.post(
+            "/api/auth/signup",
+            json={
+                "email": "phone-a@test.com",
+                "password": PASSWORD,
+                "full_name": "User A",
+                "phone": "+1555000111",
+            },
+        )
+        assert r1.status_code == 200
+        r2 = client.post(
+            "/api/auth/signup",
+            json={
+                "email": "phone-b@test.com",
+                "password": PASSWORD,
+                "full_name": "User B",
+                "phone": "+1555000111",
+            },
+        )
+        assert r2.status_code == 400
+        assert "phone" in r2.json()["detail"].lower()
 
     def test_verify_email_with_correct_otp(self, client, captured_otps):
         _signup(client)
@@ -198,6 +220,15 @@ class TestLockout:
         assert resp.status_code == 423
         assert "locked" in resp.json()["detail"].lower()
 
+    def test_lockout_emits_auth_locked_audit(self, client, db, make_verified_user):
+        from app.models.audit_log import AuditLog
+
+        make_verified_user(EMAIL, PASSWORD)
+        for _ in range(5):
+            _signin(client, password="BadPassword!")
+        logs = db.query(AuditLog).filter(AuditLog.action == "auth.locked").all()
+        assert len(logs) >= 1
+
     def test_successful_login_resets_counter(self, client, make_verified_user):
         make_verified_user(EMAIL, PASSWORD)
         for _ in range(3):
@@ -262,7 +293,7 @@ class TestAuditLog:
 
         make_verified_user(EMAIL, PASSWORD)
         _signin(client)
-        logs = db.query(AuditLog).filter(AuditLog.action == "auth.signin_success").all()
+        logs = db.query(AuditLog).filter(AuditLog.action == "auth.login_success").all()
         assert len(logs) >= 1
 
     def test_signin_failure_creates_audit_entry(self, client, db, make_verified_user):
@@ -270,5 +301,5 @@ class TestAuditLog:
 
         make_verified_user(EMAIL, PASSWORD)
         _signin(client, password="Wrong1234!")
-        logs = db.query(AuditLog).filter(AuditLog.action == "auth.signin_failed").all()
+        logs = db.query(AuditLog).filter(AuditLog.action == "auth.login_failed").all()
         assert len(logs) >= 1

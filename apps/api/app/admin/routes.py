@@ -25,6 +25,7 @@ from app.admin.schemas import (
 )
 from app.auth.audit_service import write_audit_log
 from app.auth.dependencies import require_roles
+from app.auth.phone_util import normalize_phone
 from app.auth.security import get_password_hash
 from app.database import get_db
 from app.models.audit_log import AuditLog
@@ -95,6 +96,7 @@ def export_users_csv(
         [
             "id",
             "email",
+            "phone",
             "full_name",
             "role",
             "is_active",
@@ -110,6 +112,7 @@ def export_users_csv(
             [
                 u.id,
                 u.email,
+                u.phone or "",
                 u.full_name,
                 u.role,
                 u.is_active,
@@ -140,9 +143,17 @@ def create_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered",
         )
+    phone_norm = normalize_phone(payload.phone)
+    if phone_norm:
+        if db.query(User).filter(User.phone == phone_norm).first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Phone number already registered",
+            )
     user = User(
         id=str(uuid.uuid4()),
         email=payload.email.lower(),
+        phone=phone_norm,
         hashed_password=get_password_hash(payload.password),
         full_name=payload.full_name.strip(),
         role=payload.role.lower(),
@@ -200,6 +211,19 @@ def update_user(
     if payload.full_name is not None:
         user.full_name = payload.full_name.strip()
         changes["full_name"] = user.full_name
+    if payload.phone is not None:
+        pn = normalize_phone(payload.phone)
+        if pn and (
+            db.query(User)
+            .filter(User.phone == pn, User.id != user_id)
+            .first()
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Phone number already registered",
+            )
+        user.phone = pn
+        changes["phone"] = user.phone
     db.commit()
     db.refresh(user)
     ip = request.client.host if request.client else None

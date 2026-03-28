@@ -15,6 +15,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { resendOtp, setAuthTokens, signup, verifyEmail } from '../api/auth';
+import { getApiErrorMessage } from '../utils/apiError';
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -33,10 +35,17 @@ export default function Signup() {
     setError('');
     setLoading(true);
     try {
-      await signup({ email, password, full_name: fullName });
+      await signup({
+        email,
+        password,
+        full_name: fullName,
+        phone: phone.trim() || undefined,
+      });
       setStep('otp');
     } catch (err: unknown) {
-      setError(getErrorMessage(err, t('signup.failedDefault')));
+      setError(
+        getApiErrorMessage(err, t('signup.failedDefault'), t('common.networkError')),
+      );
     } finally {
       setLoading(false);
     }
@@ -52,7 +61,9 @@ export default function Signup() {
       navigate('/', { replace: true });
       window.location.reload();
     } catch (err: unknown) {
-      setError(getErrorMessage(err, t('signup.failedOtpVerify')));
+      setError(
+        getApiErrorMessage(err, t('signup.failedOtpVerify'), t('common.networkError')),
+      );
     } finally {
       setLoading(false);
     }
@@ -166,6 +177,15 @@ export default function Signup() {
           />
           <TextField
             fullWidth
+            label={t('signup.phone')}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            margin="normal"
+            autoComplete="tel"
+            helperText={t('signup.phoneHelp')}
+          />
+          <TextField
+            fullWidth
             label={t('common.password')}
             type={showPassword ? 'text' : 'password'}
             value={password}
@@ -240,20 +260,3 @@ function ResendOtpButton({ email }: { email: string }) {
   );
 }
 
-function getErrorMessage(err: unknown, fallback: string): string {
-  const ax = err as {
-    response?: { data?: { detail?: string | string[] } };
-    code?: string;
-    message?: string;
-  };
-  if (ax?.response?.data?.detail) {
-    const d = ax.response.data.detail;
-    return Array.isArray(d)
-      ? (d as { msg?: string }[]).map((x) => x.msg || x).join(', ')
-      : String(d);
-  }
-  if (ax?.code === 'ERR_NETWORK' || ax?.message?.includes('Network Error')) {
-    return fallback;
-  }
-  return fallback;
-}

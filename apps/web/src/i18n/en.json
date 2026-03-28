@@ -38,6 +38,8 @@
   "signup": {
     "title": "Sign up",
     "fullName": "Full name",
+    "phone": "Phone (optional)",
+    "phoneHelp": "E.164 or local; must be unique if provided",
     "passwordHelp": "At least 8 characters",
     "roleLabel": "I am a",
     "roleCandidate": "Candidate",

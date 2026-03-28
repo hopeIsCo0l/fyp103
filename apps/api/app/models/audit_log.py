@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, String, Text
+from sqlalchemy import Column, DateTime, Index, String, Text
 from sqlalchemy.sql import func
 
 from app.database import Base
@@ -6,6 +6,9 @@ from app.database import Base
 
 class AuditLog(Base):
     __tablename__ = "audit_logs"
+    __table_args__ = (
+        Index("ix_audit_logs_created_actor_action", "created_at", "actor_id", "action"),
+    )
 
     id = Column(String(36), primary_key=True, index=True)
     actor_id = Column(String(36), nullable=True, index=True)

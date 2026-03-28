@@ -1,14 +1,22 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class AdminCreateUser(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8)
     full_name: str = Field(..., min_length=1, max_length=255)
-    role: str = Field(..., pattern="^(recruiter|admin)$")
+    role: str = Field(..., pattern="^(candidate|recruiter|admin)$")
+    phone: Optional[str] = Field(None, max_length=32)
+
+    @field_validator("role", mode="before")
+    @classmethod
+    def normalize_role(cls, v: object) -> str:
+        if isinstance(v, str):
+            return v.lower().strip()
+        return v  # type: ignore[return-value]
 
 
 class AdminUpdateUser(BaseModel):
@@ -16,6 +24,17 @@ class AdminUpdateUser(BaseModel):
     is_active: Optional[bool] = None
     is_email_verified: Optional[bool] = None
     full_name: Optional[str] = Field(None, min_length=1, max_length=255)
+    phone: Optional[str] = Field(None, max_length=32)
+
+    @field_validator("role", mode="before")
+    @classmethod
+    def normalize_update_role(cls, v: object) -> str | None:
+        if v is None:
+            return None
+        if isinstance(v, str):
+            s = v.lower().strip()
+            return s if s else None
+        return v  # type: ignore[return-value]
 
 
 class UserOut(BaseModel):
@@ -25,6 +44,7 @@ class UserOut(BaseModel):
     role: str
     is_active: bool
     is_email_verified: bool
+    phone: Optional[str] = None
     last_login_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     failed_login_attempts: int = 0

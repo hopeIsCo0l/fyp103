@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.auth.audit_service import write_audit_log
 from app.auth.dependencies import get_current_user, require_roles
 from app.auth.otp_service import create_and_send_otp, verify_otp
+from app.auth.phone_util import normalize_phone
 from app.auth.rate_limit import enforce_rate_limit
 from app.auth.schemas import (
     ForgotPasswordRequest,
@@ -111,10 +112,18 @@ def signup(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered",
         )
+    phone_norm = normalize_phone(payload.phone)
+    if phone_norm:
+        if db.query(User).filter(User.phone == phone_norm).first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Phone number already registered",
+            )
     role = "candidate"
     user = User(
         id=str(uuid.uuid4()),
         email=payload.email.lower(),
+        phone=phone_norm,
         hashed_password=get_password_hash(payload.password),
         full_name=payload.full_name.strip(),
         role=role,
@@ -211,7 +220,7 @@ def signin(
         db.commit()
         write_audit_log(
             db,
-            action="auth.signin_failed",
+            action="auth.login_failed",
             actor_id=user.id,
             target_type="user",
             target_id=user.id,
@@ -219,6 +228,17 @@ def signin(
             user_agent=ua,
             metadata={"failed_attempts": user.failed_login_attempts},
         )
+        if user.locked_until is not None:
+            write_audit_log(
+                db,
+                action="auth.locked",
+                actor_id=user.id,
+                target_type="user",
+                target_id=user.id,
+                ip_address=ip,
+                user_agent=ua,
+                metadata={"failed_attempts": user.failed_login_attempts},
+            )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -234,7 +254,7 @@ def signin(
     db.commit()
     write_audit_log(
         db,
-        action="auth.signin_success",
+        action="auth.login_success",
         actor_id=user.id,
         target_type="user",
         target_id=user.id,
