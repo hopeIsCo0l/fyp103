@@ -88,7 +88,8 @@ The **admin users** screen supports pagination, debounced search, role and verif
 
 - **Architecture:** See `ARCHITECTURE.md` (monorepo apps, Docker, schema notes).
 - **Local dev:** From repo root — `.\scripts\run-backend.ps1` and `.\scripts\run-frontend.ps1` (`AGENTS.md`). Full stack: `.\scripts\free-ports.ps1` then `.\scripts\docker-up.ps1` (`README.md`).
-- **Merged feature PR:** [#11](https://github.com/hopeIsCo0l/fyp103/pull/11) — Alembic, admin users, docs bundle. This file may be updated in a separate documentation-only PR for weekly submission.
+- **Merged feature PR:** [#11](https://github.com/hopeIsCo0l/fyp103/pull/11) — Alembic, admin users, docs bundle.
+- **This weekly report submission:** [#13](https://github.com/hopeIsCo0l/fyp103/pull/13) — filled progress report (documentation only).
 
 ---
 
