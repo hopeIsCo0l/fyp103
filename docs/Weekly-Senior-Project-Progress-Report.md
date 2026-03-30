@@ -1,6 +1,6 @@
 # Weekly Senior Project Implementation Progress Report
 
-**Project title:** FYP103 — AI Recruitment Platform  
+**Project title:** EAA Recruit — AI Recruitment Platform  
 
 **Week number / date:** Week ending **Monday, March 25, 2026**  
 
