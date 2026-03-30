@@ -88,6 +88,7 @@ The API **startup path** and **initialization scripts** were aligned with the Do
 - **Local dev:** From repo root — `.\scripts\run-backend.ps1` and `.\scripts\run-frontend.ps1` (`AGENTS.md`). Full stack: `.\scripts\free-ports.ps1` then `.\scripts\docker-up.ps1` (`README.md`).
 - **Week 2 feature merge:** [#11](https://github.com/hopeIsCo0l/fyp103/pull/11).
 - **Earlier documentation update for this report:** [#13](https://github.com/hopeIsCo0l/fyp103/pull/13).
+- **This Week 2 report update:** [#16](https://github.com/hopeIsCo0l/fyp103/pull/16).
 
 ---
 
