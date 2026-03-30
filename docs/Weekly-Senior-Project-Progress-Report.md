@@ -2,7 +2,7 @@
 
 **Project title:** FYP103 — AI Recruitment Platform  
 
-**Week number / date:** Week ending **Monday, March 30, 2026**  
+**Week number / date:** Week ending **Monday, March 25, 2026**  
 
 **Repository:** [hopeIsCo0l/fyp103](https://github.com/hopeIsCo0l/fyp103) (GitHub)
 
@@ -88,8 +88,7 @@ The **admin users** screen supports pagination, debounced search, role and verif
 
 - **Architecture:** See `ARCHITECTURE.md` (monorepo apps, Docker, schema notes).
 - **Local dev:** From repo root — `.\scripts\run-backend.ps1` and `.\scripts\run-frontend.ps1` (`AGENTS.md`). Full stack: `.\scripts\free-ports.ps1` then `.\scripts\docker-up.ps1` (`README.md`).
-- **Merged feature PR:** [#11](https://github.com/hopeIsCo0l/fyp103/pull/11) — Alembic, admin users, docs bundle.
-- **This weekly report submission:** [#13](https://github.com/hopeIsCo0l/fyp103/pull/13) — filled progress report (documentation only).
+
 
 ---
 
@@ -97,7 +96,10 @@ The **admin users** screen supports pagination, debounced search, role and verif
 
 | Student name | Signature | Date |
 |--------------|-----------|------|
-| Abdellah | _______________ | March 30, 2026 |
+| Abdellah Teshome| _______________ | March 25, 2026 |
+| Abdurezak Zeynu | _______________ | March 25, 2026 |
+| Binyam Dagne    | _______________ | March 25, 2026 |
+| Rohobot Melaku  | _______________ | March 25, 2026 |
 
 ---
 
