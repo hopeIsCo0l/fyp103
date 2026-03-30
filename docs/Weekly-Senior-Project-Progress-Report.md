@@ -40,6 +40,7 @@ The **admin users** screen supports pagination, debounced search, role and verif
   - `0fb7c40` — `feat(api): Alembic migrations on startup; admin users and docs`
   - `a560203` — `Merge origin/main into feat/admin-users-consolidated-edit` (README + upstream script changes)
   - `baec5ec` — `style(api): fix Ruff I001 import order and format`
+  - `8598ca6` — `docs: complete weekly senior project progress report`
   - Earlier related work on branch: admin consolidate edit, admin password reset UI, PostgreSQL-only tests, candidate role on create (see full `git log`).
 
 ---
@@ -62,7 +63,7 @@ The **admin users** screen supports pagination, debounced search, role and verif
 | Technical | Aligning Alembic revisions with legacy `db_migrate` steps and documenting order for developers | Addressed in `README.md` and `ARCHITECTURE.md` |
 | Technical | Divergence between `main` and feature branch (`README.md`, scripts) | Resolved via merge commit and unified README |
 | CI | Ruff strict import rules failing the backend job | Fixed and pushed (`baec5ec`) |
-| Environment | Migration integration test requires PostgreSQL; not run on SQLite | Accepted; test marked skip when backend is not Postgres |
+| Docs | Add/add merge on this weekly report when merging `main` | Resolved by keeping the completed report |
 
 **Still open (typical for later phases):** production SMTP, secrets management, whether migrations run only in deploy pipeline vs on every API start (team/supervisor policy).
 
@@ -88,7 +89,7 @@ The **admin users** screen supports pagination, debounced search, role and verif
 
 - Architecture overview: `ARCHITECTURE.md` (apps, Docker ports, schema/migration notes).
 - Local development: `.\scripts\run-backend.ps1` and `.\scripts\run-frontend.ps1` from repo root (`AGENTS.md`); full stack: `.\scripts\free-ports.ps1` then `.\scripts\docker-up.ps1` per merged `README.md`.
-- Pull request **#11** on GitHub tracks this feature branch; after merge to `main`, tag or note the release for the weekly record if required by the course.
+- Pull request **#12** merges this finalized weekly report; feature implementation was tracked in earlier PRs (e.g. **#11**). After merge to `main`, tag or note the release for the weekly record if required by the course.
 
 ---
 
