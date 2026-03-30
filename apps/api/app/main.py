@@ -1,11 +1,17 @@
-from fastapi import FastAPI
+import logging
+import os
+import time
+import uuid
+
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.admin.routes import router as admin_router
 from app.auth.routes import router as auth_router
-from app.database import Base, engine
+from app.database import engine
 from app.db_migrate import run_postgresql_migrations
-from app.models import (  # noqa: F401 - register all tables for create_all
+from app.db_startup import run_alembic_upgrade
+from app.models import (  # noqa: F401 - register models for SQLAlchemy metadata
     OTP,
     AuditLog,
     PasswordResetToken,
@@ -14,9 +20,18 @@ from app.models import (  # noqa: F401 - register all tables for create_all
 )
 from app.seed_admin_service import ensure_super_admin
 
-Base.metadata.create_all(bind=engine)
-run_postgresql_migrations(engine)
-ensure_super_admin()
+if not logging.root.handlers:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(levelname)s %(name)s %(message)s",
+    )
+
+if not os.getenv("SKIP_STARTUP_DB"):
+    run_alembic_upgrade()
+    run_postgresql_migrations(engine)
+    ensure_super_admin()
+
+_request_log = logging.getLogger("app.request")
 
 app = FastAPI(
     title="Recruitment AI API",
@@ -42,6 +57,46 @@ app.add_middleware(
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
+
+
+@app.middleware("http")
+async def request_logging_middleware(request: Request, call_next):
+    request_id = str(uuid.uuid4())[:8]
+    start = time.perf_counter()
+    try:
+        response = await call_next(request)
+        elapsed_ms = (time.perf_counter() - start) * 1000
+        _request_log.info(
+            "%s %s %s %d %.1fms",
+            request_id,
+            request.method,
+            request.url.path,
+            response.status_code,
+            elapsed_ms,
+        )
+        response.headers["X-Request-ID"] = request_id
+        return response
+    except HTTPException as exc:
+        elapsed_ms = (time.perf_counter() - start) * 1000
+        _request_log.info(
+            "%s %s %s %d %.1fms",
+            request_id,
+            request.method,
+            request.url.path,
+            exc.status_code,
+            elapsed_ms,
+        )
+        raise
+    except Exception:
+        elapsed_ms = (time.perf_counter() - start) * 1000
+        _request_log.exception(
+            "%s %s %s failed after %.1fms",
+            request_id,
+            request.method,
+            request.url.path,
+            elapsed_ms,
+        )
+        raise
 
 
 @app.get("/health")

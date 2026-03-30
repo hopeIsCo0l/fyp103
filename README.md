@@ -20,7 +20,7 @@ fypimp103/
 └─ README.md
 ```
 
-## Quick Start (Local, No Docker)
+<!-- ## Quick Start (Local, No Docker)
 
 ### Terminal 1 - API
 
@@ -36,7 +36,7 @@ fypimp103/
 
 Open:
 - Web: http://localhost:5173
-- API docs: http://localhost:8000/docs
+- API docs: http://localhost:8000/docs -->
 
 ## Quick Start (Docker)
 
@@ -66,8 +66,13 @@ EMAIL_FROM=hello@yourdomain.com
 
 ## CI/CD
 
-- CI: `.github/workflows/ci.yml` (lint + build api/web)
+- CI: `.github/workflows/ci.yml` — backend: `ruff`, import check, `pytest` (PostgreSQL service); frontend: `npm run lint`, `npm run build`
 - CD: `.github/workflows/cd.yml` (build/push Docker images to GHCR)
+
+## API contract (OpenAPI)
+
+- Interactive docs: `GET /docs` (Swagger UI)
+- Machine-readable schema: `GET /openapi.json` (use for codegen or review)
 
 ## Auth Endpoints
 
@@ -98,5 +103,17 @@ EMAIL_FROM=hello@yourdomain.com
 - Client-side route guards: RequireAuth, GuestOnly, RequireRole
 - Axios interceptor for automatic access token refresh
 - i18n scaffolding with English and Amharic translations
-- 29 pytest integration tests covering the full auth surface
-- CI pipeline with lint, build, and pytest steps
+- **Database:** Alembic migrations (`apps/api/alembic/`) as the source of truth; `init_db.py` runs `alembic upgrade head` plus legacy PostgreSQL patches (`app/db_migrate.py`). Rollback: `cd apps/api && alembic downgrade -1` (or `downgrade base` to empty). Integration test `test_migrations.py` exercises downgrade → upgrade.
+- **Observability:** structured request logging (`app.request` logger: method, path, status, duration; `X-Request-ID` response header)
+- **34** pytest tests (auth + admin + migration round-trip); CI runs the full suite against Postgres
+
+## Database migrations (local)
+
+From `apps/api` with `DATABASE_URL` set (e.g. Docker Postgres on port 5433):
+
+```powershell
+cd apps/api
+python -m alembic upgrade head
+```
+
+Or: `python init_db.py` (upgrade + legacy patches).
