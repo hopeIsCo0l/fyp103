@@ -2,8 +2,9 @@
 
 from pathlib import Path
 
-from alembic import command
 from alembic.config import Config
+
+from alembic import command
 
 
 def run_alembic_upgrade() -> None:

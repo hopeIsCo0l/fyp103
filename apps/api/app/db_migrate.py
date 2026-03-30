@@ -30,13 +30,9 @@ def migrate_users_columns_postgresql(conn) -> None:
 
     alters: list[str] = []
     if "role" not in existing:
-        alters.append(
-            "ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'candidate' NOT NULL"
-        )
+        alters.append("ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'candidate' NOT NULL")
     if "is_active" not in existing:
-        alters.append(
-            "ALTER TABLE users ADD COLUMN is_active BOOLEAN DEFAULT TRUE NOT NULL"
-        )
+        alters.append("ALTER TABLE users ADD COLUMN is_active BOOLEAN DEFAULT TRUE NOT NULL")
     if "is_email_verified" not in existing:
         alters.append(
             "ALTER TABLE users ADD COLUMN is_email_verified BOOLEAN DEFAULT FALSE NOT NULL"

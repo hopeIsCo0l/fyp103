@@ -74,9 +74,7 @@ def _register_failed_signin(user: User) -> None:
         user.locked_until = now + timedelta(minutes=settings.SIGNIN_LOCK_MINUTES)
 
 
-def _issue_session_tokens(
-    db: Session, user: User, request: Request
-) -> tuple[str, str]:
+def _issue_session_tokens(db: Session, user: User, request: Request) -> tuple[str, str]:
     access_token = create_access_token(data={"sub": user.id})
     refresh_token, _ = create_refresh_token(user.id)
     ip, ua = _request_context(request)
@@ -425,9 +423,7 @@ def refresh_token(payload: RefreshTokenRequest, request: Request, db: Session = 
         ip_address=ip,
         user_agent=ua,
     )
-    return Token(
-        access_token=access_token, refresh_token=new_refresh_token, token_type="bearer"
-    )
+    return Token(access_token=access_token, refresh_token=new_refresh_token, token_type="bearer")
 
 
 @router.post("/forgot-password", response_model=dict)
@@ -467,15 +463,11 @@ def forgot_password(
             user_agent=ua,
         )
     # Intentionally generic response to avoid account enumeration.
-    return {
-        "message": "If this account exists, a password reset email was sent."
-    }
+    return {"message": "If this account exists, a password reset email was sent."}
 
 
 @router.post("/reset-password", response_model=dict)
-def reset_password(
-    payload: ResetPasswordRequest, request: Request, db: Session = Depends(get_db)
-):
+def reset_password(payload: ResetPasswordRequest, request: Request, db: Session = Depends(get_db)):
     rec = (
         db.query(PasswordResetToken)
         .filter(PasswordResetToken.token_hash == hash_token(payload.token))
@@ -494,9 +486,9 @@ def reset_password(
     user.hashed_password = get_password_hash(payload.new_password)
     _reset_failed_attempts(user)
     rec.used_at = datetime.now(timezone.utc)
-    db.query(UserSession).filter(UserSession.user_id == user.id, UserSession.revoked.is_(False)).update(
-        {"revoked": True, "revoked_at": datetime.now(timezone.utc)}
-    )
+    db.query(UserSession).filter(
+        UserSession.user_id == user.id, UserSession.revoked.is_(False)
+    ).update({"revoked": True, "revoked_at": datetime.now(timezone.utc)})
     db.commit()
     ip, ua = _request_context(request)
     write_audit_log(
@@ -512,7 +504,11 @@ def reset_password(
 
 
 @router.post("/logout", response_model=dict)
-def logout(payload: RefreshTokenRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def logout(
+    payload: RefreshTokenRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     session = (
         db.query(UserSession)
         .filter(
