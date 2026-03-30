@@ -49,9 +49,7 @@ def _users_base_query(
     q = db.query(User)
     if search:
         pattern = f"%{search.lower()}%"
-        q = q.filter(
-            (User.email.ilike(pattern)) | (User.full_name.ilike(pattern))
-        )
+        q = q.filter((User.email.ilike(pattern)) | (User.full_name.ilike(pattern)))
     if role:
         q = q.filter(User.role == role.lower())
     if verified is not None:
@@ -213,11 +211,7 @@ def update_user(
         changes["full_name"] = user.full_name
     if payload.phone is not None:
         pn = normalize_phone(payload.phone)
-        if pn and (
-            db.query(User)
-            .filter(User.phone == pn, User.id != user_id)
-            .first()
-        ):
+        if pn and (db.query(User).filter(User.phone == pn, User.id != user_id).first()):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Phone number already registered",
@@ -475,30 +469,18 @@ def get_stats(
     db: Session = Depends(get_db),
 ):
     total = db.query(sa_func.count(User.id)).scalar() or 0
-    candidates = (
-        db.query(sa_func.count(User.id)).filter(User.role == "candidate").scalar() or 0
-    )
-    recruiters = (
-        db.query(sa_func.count(User.id)).filter(User.role == "recruiter").scalar() or 0
-    )
-    admins = (
-        db.query(sa_func.count(User.id)).filter(User.role == "admin").scalar() or 0
-    )
+    candidates = db.query(sa_func.count(User.id)).filter(User.role == "candidate").scalar() or 0
+    recruiters = db.query(sa_func.count(User.id)).filter(User.role == "recruiter").scalar() or 0
+    admins = db.query(sa_func.count(User.id)).filter(User.role == "admin").scalar() or 0
     verified = (
         db.query(sa_func.count(User.id)).filter(User.is_email_verified.is_(True)).scalar() or 0
     )
     active_sessions = (
-        db.query(sa_func.count(UserSession.id))
-        .filter(UserSession.revoked.is_(False))
-        .scalar()
-        or 0
+        db.query(sa_func.count(UserSession.id)).filter(UserSession.revoked.is_(False)).scalar() or 0
     )
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     signups_today = (
-        db.query(sa_func.count(User.id))
-        .filter(User.created_at >= today_start)
-        .scalar()
-        or 0
+        db.query(sa_func.count(User.id)).filter(User.created_at >= today_start).scalar() or 0
     )
     return StatsResponse(
         total_users=total,

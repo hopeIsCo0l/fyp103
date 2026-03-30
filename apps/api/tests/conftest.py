@@ -8,6 +8,8 @@ os.environ.setdefault(
     "postgresql://postgres:postgres@127.0.0.1:5433/recruit_test",
 )
 os.environ.setdefault("SECRET_KEY", "test-secret-key-for-pytest")
+# app.main skips Alembic/seed on import; each test resets schema in _setup_db.
+os.environ["SKIP_STARTUP_DB"] = "1"
 
 from collections import defaultdict
 from unittest.mock import patch
@@ -15,7 +17,11 @@ from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 
+from sqlalchemy import text
+
 from app.database import Base, SessionLocal, engine, get_db
+from app.db_migrate import run_postgresql_migrations
+from app.db_startup import run_alembic_upgrade
 from app.main import app
 
 
@@ -24,11 +30,23 @@ from app.main import app
 # ---------------------------------------------------------------------------
 @pytest.fixture(autouse=True)
 def _setup_db():
-    """Recreate schema before each test; tear down after."""
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
+    """Recreate schema via Alembic (same DDL as production) before each test."""
+    if engine.url.get_backend_name() == "postgresql":
+        with engine.begin() as conn:
+            conn.execute(text("DROP SCHEMA public CASCADE"))
+            conn.execute(text("CREATE SCHEMA public"))
+        run_alembic_upgrade()
+        run_postgresql_migrations(engine)
+    else:
+        Base.metadata.drop_all(bind=engine)
+        Base.metadata.create_all(bind=engine)
     yield
-    Base.metadata.drop_all(bind=engine)
+    if engine.url.get_backend_name() == "postgresql":
+        with engine.begin() as conn:
+            conn.execute(text("DROP SCHEMA public CASCADE"))
+            conn.execute(text("CREATE SCHEMA public"))
+    else:
+        Base.metadata.drop_all(bind=engine)
 
 
 @pytest.fixture()

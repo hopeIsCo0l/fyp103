@@ -42,9 +42,7 @@ def create_refresh_token(user_id: str) -> tuple[str, str]:
 
 def decode_access_token(token: str) -> Optional[dict]:
     try:
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
-        )
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         return payload
     except JWTError:
         return None

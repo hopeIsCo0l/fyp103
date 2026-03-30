@@ -23,6 +23,7 @@
 
 - API database: PostgreSQL (see `docker/docker-compose.yml`; host port `5433` → container `5432`)
 - Frontend talks to API via Vite proxy (`/api`) in dev
+- **Schema:** Alembic (`apps/api/alembic/`) applies versioned DDL on API startup (`run_alembic_upgrade` in `app/main.py`). Additional idempotent patches for legacy DBs live in `app/db_migrate.py` (e.g. `users` column drift, `audit_logs` composite index).
 - Week 1 auth: password sign-in audits `auth.login_success` / `auth.login_failed` / `auth.locked`; optional unique `users.phone`; composite index on `audit_logs(created_at, actor_id, action)` (see `init_db.py` for idempotent PG DDL)
 
 ## CI/CD

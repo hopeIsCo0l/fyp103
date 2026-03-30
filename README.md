@@ -60,6 +60,7 @@ The first run creates `docker/.env` from `docker/.env.example` if missing. Copy 
 ```powershell
 docker compose -f docker/docker-compose.yml exec postgres psql -U postgres -d recruit_db -c "\dt"
 ```
+
 (Run from `docker/` or pass `-f` from repo root.)
 
 ### Optional: processes on the host (limited parity)
@@ -82,21 +83,30 @@ EMAIL_FROM=hello@yourdomain.com
 
 ## CI/CD
 
-- CI: `.github/workflows/ci.yml` (lint + build api/web)
+- CI: `.github/workflows/ci.yml` — backend: `ruff`, import check, `pytest` (PostgreSQL service); frontend: `npm run lint`, `npm run build`
 - CD: `.github/workflows/cd.yml` (build/push Docker images to GHCR)
+
+## API contract (OpenAPI)
+
+- Interactive docs: `GET /docs` (Swagger UI)
+- Machine-readable schema: `GET /openapi.json` (use for codegen or review)
 
 ## Database migrations
 
-- **Runtime:** On API startup, `app/main.py` runs `Base.metadata.create_all` then `run_post_create_all` (legacy `users.role` → `role_id` migration when needed, seed `roles` rows).
-- **Manual / CI:** From `apps/api` with `DATABASE_URL` set (and dependencies installed):
+- **Runtime:** On API startup (unless `SKIP_STARTUP_DB` is set), `app/main.py` runs **`alembic upgrade head`** via `run_alembic_upgrade()`, then **`run_postgresql_migrations(engine)`** for legacy PostgreSQL patches (`app/db_migrate.py`), then **`ensure_super_admin()`**. Same sequence applies when you run `python init_db.py` from `apps/api`.
+- **Alembic:** Versioned DDL lives under `apps/api/alembic/` (e.g. initial revision `001_initial_schema`). Rollback (dev only): `cd apps/api && alembic downgrade -1` (or `downgrade base` to drop migrated state—use with care).
+- **Integration test:** `tests/test_migrations.py` runs Alembic downgrade to base then upgrade to head on PostgreSQL (skipped on non-Postgres engines).
 
-  ```powershell
-  alembic upgrade head
-  ```
+**Manual upgrade (local)**
 
-  First revision (`0001_bootstrap`) runs the same legacy role migration + `ensure_roles`. **Tables must exist** (run `python init_db.py` or start the API once) before Alembic can apply data-only steps on an empty file DB.
+From `apps/api` with `DATABASE_URL` set (e.g. Docker Postgres on port 5433):
 
-- **Roles:** `roles` table (`candidate`, `recruiter`, `admin`); `users.role_id` foreign key. API responses still expose `role` as a string (role code).
+```powershell
+cd apps/api
+python -m alembic upgrade head
+```
+
+Or: `python init_db.py` (Alembic upgrade + legacy patches).
 
 ## Auth Endpoints
 
@@ -117,20 +127,19 @@ EMAIL_FROM=hello@yourdomain.com
 ## Week 1 — Completed by Abdellah
 
 - Signup, email OTP verification, signin (password + OTP)
-- Optional unique **phone** on signup (email + phone uniqueness)
+- Optional unique **phone** on signup (email + phone uniqueness); signup form EN + AM i18n; admin users table shows phone column
 - Refresh token rotation with session persistence
 - Forgot / reset password flow (single-use tokens, email delivery)
 - Account lockout after 5 failed sign-in attempts (15 min, 30 min attempt window)
-- In-memory rate limiting on all sensitive endpoints
-- Role-based access control (candidate, recruiter, admin) — normalized **`roles`** table + **`users.role_id`** FK
-- Audit logging (signup, signin, verify, refresh, reset events, **`auth.locked`** when an account is locked after max failures)
-- Composite index on `audit_logs` (`created_at`, `actor_id`, `action`); `init_db.py` for SQLite column migrations
-- Seed super admin via `apps/api/seed_admin.py`
+- In-memory rate limiting on sensitive endpoints
+- Role-based access control (candidate, recruiter, admin) — normalized **`roles`** table + **`users.role_id`** FK; API still exposes `role` as a string
+- Audit logging (signup, signin, verify, refresh, reset events, **`auth.locked`** when locked after max failures)
+- Composite index on `audit_logs` (`created_at`, `actor_id`, `action`); legacy column drift handled via `init_db` / `db_migrate` where needed
+- Seed super admin via `apps/api/seed_admin.py` / `ensure_super_admin` on startup
 - Frontend auth pages: Signin, Signup, ForgotPassword, ResetPassword, Unauthorized
 - Client-side route guards: RequireAuth, GuestOnly, RequireRole
 - Axios interceptor for automatic access token refresh
 - i18n scaffolding with English and Amharic translations
-- Signup form: optional **phone** field (EN + AM i18n); admin users table shows phone column
-- **Alembic** (`alembic.ini`, `alembic/env.py`, revision `0001_bootstrap`) for versioned DB steps
-- 31 pytest integration tests covering the full auth surface
-- CI pipeline with lint, build, and pytest steps
+- **Database:** Alembic migrations as source of truth; integration test for downgrade → upgrade on PostgreSQL
+- **Observability:** structured request logging (`app.request` logger: method, path, status, duration; `X-Request-ID` response header)
+- **30+** pytest integration tests (auth + admin + migration round-trip); CI runs the suite against Postgres
