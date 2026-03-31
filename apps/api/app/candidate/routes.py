@@ -1,6 +1,5 @@
-from sqlalchemy.orm import Session
-
 from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
 from app.auth.dependencies import require_roles
 from app.candidate.schemas import CandidateApplicationOut

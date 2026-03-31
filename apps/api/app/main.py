@@ -8,10 +8,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.admin.routes import router as admin_router
 from app.auth.routes import router as auth_router
+from app.candidate.routes import router as candidate_router
 from app.database import engine
 from app.db_migrate import run_postgresql_migrations
 from app.db_startup import run_alembic_upgrade
-from app.candidate.routes import router as candidate_router
 from app.jobs.routes import router as jobs_router
 from app.models import (  # noqa: F401 - register models for SQLAlchemy metadata
     OTP,
