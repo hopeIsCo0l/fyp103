@@ -9,7 +9,8 @@
     "signOut": "Sign out",
     "backToHome": "Back to home",
     "backToSignIn": "Back to Sign in",
-    "networkError": "Cannot connect to server. Is the backend running on port 8000?"
+    "networkError": "Cannot connect to server. Is the backend running on port 8000?",
+    "delete": "Delete"
   },
   "home": {
     "welcome": "Welcome, {{name}}",
@@ -104,9 +105,11 @@
     "jobType": {
       "full_time": "Full-time",
       "contract": "Contract",
-      "part_time": "Part-time"
+      "part_time": "Part-time",
+      "internship": "Internship"
     },
     "jobStatus": {
+      "draft": "Draft",
       "open": "Open",
       "paused": "Paused",
       "closed": "Closed"
@@ -159,7 +162,22 @@
       "jobsSubtitle": "Publish roles, track applicants, and collaborate with your team.",
       "newPosting": "New posting",
       "edit": "Edit",
-      "viewApplicants": "View applicants"
+      "viewApplicants": "View applicants",
+      "loadError": "Could not load job postings.",
+      "saveError": "Could not save the job. Try again.",
+      "emptyJobs": "No postings yet. Create one to get started.",
+      "jobsLiveNotice": "Postings below are saved to your account.",
+      "jobFormTitle": "New job posting",
+      "jobTitleLabel": "Title",
+      "descriptionLabel": "Description",
+      "companyLabel": "Company",
+      "locationLabel": "Location",
+      "employmentType": "Employment type",
+      "statusLabel": "Status",
+      "cancel": "Cancel",
+      "saveJob": "Create job",
+      "deleteConfirm": "Delete this job posting?",
+      "deleteError": "Could not delete the job."
     },
     "pipeline": {
       "title": "Candidate pipeline",
