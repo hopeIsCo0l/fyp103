@@ -13,6 +13,24 @@
 - Auth UI: signup, signin, OTP verify
 - Axios API client with bearer token interceptor
 
+## Packages (shared Python)
+
+Install from repo root for local dev (Docker API image still uses `apps/api` only until compose copies `packages/`):
+
+```powershell
+pip install -e ./packages/ai-engine
+pip install -e ./packages/database
+pip install -e ./packages/utils
+```
+
+| Package | Role |
+|--------|------|
+| `packages/ai-engine` (`recruit-ai-engine`) | CV parsing, TF‑IDF / embedding scoring, exams, XAI — **imported by `apps/api`** as logic is implemented. |
+| `packages/database` (`recruit-database`) | Portable types (e.g. `CriteriaWeights`), JSON shapes; **PostgreSQL + pgvector** DDL remains under **Alembic in `apps/api`**. |
+| `packages/utils` (`recruit-utils`) | Shared text utilities; Amharic/Unicode normalization as needed. |
+
+**North star:** phased AI delivery; hybrid lexical + LLM; no replacement of Alembic.
+
 ## Docker
 
 - `docker/api.Dockerfile`: backend image
