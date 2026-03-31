@@ -1,6 +1,6 @@
 import uuid
 
-from ai_engine.match import cv_job_similarity
+from ai_engine.match import cv_job_similarity, weighted_score_breakdown
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -20,6 +20,13 @@ _candidate = require_roles("candidate", "admin")
 def _job_text_for_match(job: Job) -> str:
     parts = [job.title or "", (job.description or "").strip()]
     return "\n".join(p for p in parts if p)
+
+
+def _application_scores(cv_similarity_score: float | None, job: Job) -> dict[str, float]:
+    return weighted_score_breakdown(
+        cv_similarity_score=cv_similarity_score,
+        criteria_weights=job.criteria_weights if isinstance(job.criteria_weights, dict) else None,
+    )
 
 
 @router.post("/{job_id}/apply", response_model=CandidateApplicationOut, status_code=status.HTTP_201_CREATED)
@@ -64,6 +71,7 @@ def apply_to_open_job(
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Already applied to this job") from None
+    scores = _application_scores(row.cv_similarity_score, job)
     return CandidateApplicationOut(
         id=row.id,
         job_id=job.id,
@@ -71,6 +79,8 @@ def apply_to_open_job(
         company_name=job.company_name,
         stage=row.stage,
         cv_similarity_score=row.cv_similarity_score,
+        weighted_total_score=scores["weighted_total_score"],
+        score_breakdown=scores,
         created_at=row.created_at,
         updated_at=row.updated_at,
     )

@@ -180,3 +180,10 @@ Recruiter job list/detail (`GET /api/recruiter/jobs`) includes **`applicants_cou
 - **Database:** Alembic migrations as source of truth; integration test for downgrade → upgrade on PostgreSQL
 - **Observability:** structured request logging (`app.request` logger: method, path, status, duration; `X-Request-ID` response header)
 - **44+** pytest integration tests (auth + admin + migrations + recruiter + public jobs); CI runs the suite against Postgres
+
+## Ops Runbooks
+
+- `docs/ops/backup-restore-runbook.md`
+- `docs/ops/incident-runbook.md`
+- `docs/ops/release-rehearsal-checklist.md`
+- `docs/ops/monitoring-log-checklist.md`
