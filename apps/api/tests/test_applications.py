@@ -7,6 +7,43 @@ def _headers(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
 
 
+def test_apply_with_cv_text_sets_similarity(client: TestClient, make_verified_user):
+    rec = make_verified_user("cvrec@t.com", "Passw0rd!1", role="recruiter")
+    cand = make_verified_user("cvcand@t.com", "Passw0rd!2", role="candidate")
+    h_rec = _headers(rec["access_token"])
+    r = client.post(
+        "/api/recruiter/jobs",
+        json={
+            "title": "Python Developer",
+            "description": "We need Python and FastAPI experience.",
+            "status": "open",
+        },
+        headers=h_rec,
+    )
+    assert r.status_code == 201
+    job_id = r.json()["id"]
+    h_c = _headers(cand["access_token"])
+    cv = "Senior Python developer with FastAPI and SQLAlchemy experience."
+    r = client.post(
+        f"/api/jobs/{job_id}/apply",
+        headers=h_c,
+        json={"cv_text": cv},
+    )
+    assert r.status_code == 201
+    body = r.json()
+    assert body["job_id"] == job_id
+    assert body["cv_similarity_score"] is not None
+    assert 0.0 <= body["cv_similarity_score"] <= 1.0
+
+    listed = client.get("/api/candidate/applications", headers=h_c).json()
+    assert len(listed) == 1
+    assert listed[0]["cv_similarity_score"] == body["cv_similarity_score"]
+
+    rec_list = client.get(f"/api/recruiter/jobs/{job_id}/applications", headers=h_rec).json()
+    assert len(rec_list) == 1
+    assert rec_list[0]["cv_similarity_score"] == body["cv_similarity_score"]
+
+
 def test_candidate_apply_and_list(client: TestClient, make_verified_user):
     rec = make_verified_user("apprec@t.com", "Passw0rd!1", role="recruiter")
     cand = make_verified_user("appcand@t.com", "Passw0rd!2", role="candidate")

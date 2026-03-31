@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class PublicJobOut(BaseModel):
@@ -23,3 +23,9 @@ class PublicJobListResponse(BaseModel):
     total: int
     page: int
     size: int
+
+
+class ApplyBody(BaseModel):
+    """Optional CV text for TF-IDF / cosine match vs job title + description."""
+
+    cv_text: Optional[str] = Field(None, max_length=50000)

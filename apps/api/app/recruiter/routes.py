@@ -146,6 +146,7 @@ def list_all_applications(
                 candidate_email=cand.email,
                 candidate_name=cand.full_name,
                 stage=app_row.stage,
+                cv_similarity_score=app_row.cv_similarity_score,
                 created_at=app_row.created_at,
                 updated_at=app_row.updated_at,
             )
@@ -178,6 +179,7 @@ def list_job_applications(
                 candidate_email=cand.email,
                 candidate_name=cand.full_name,
                 stage=app_row.stage,
+                cv_similarity_score=app_row.cv_similarity_score,
                 created_at=app_row.created_at,
                 updated_at=app_row.updated_at,
             )
@@ -210,6 +212,7 @@ def update_application_stage(
         candidate_email=cand.email,
         candidate_name=cand.full_name,
         stage=app_row.stage,
+        cv_similarity_score=app_row.cv_similarity_score,
         created_at=app_row.created_at,
         updated_at=app_row.updated_at,
     )

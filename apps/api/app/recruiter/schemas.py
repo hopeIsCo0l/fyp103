@@ -61,6 +61,7 @@ class RecruiterApplicationOut(BaseModel):
     candidate_email: str
     candidate_name: str
     stage: str
+    cv_similarity_score: Optional[float] = None
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
 

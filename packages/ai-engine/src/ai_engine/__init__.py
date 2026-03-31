@@ -1,9 +1,10 @@
 """Shared AI pipeline for EAA Recruit (RAG, hybrid search, scoring, XAI).
 
-Phased implementation: CVParserService, ScoringEngine, and XAI flows will live here
-as the API imports this package. Keep side-effect-free imports for FastAPI startup.
+Phased implementation: CV–JD TF-IDF similarity, then richer parsing and XAI.
 """
 
-__version__ = "0.1.0"
+from ai_engine.match import cv_job_similarity
 
-__all__ = ["__version__"]
+__version__ = "0.2.0"
+
+__all__ = ["__version__", "cv_job_similarity"]

@@ -10,6 +10,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Build context must be repo root (see docker-compose.yml) so local packages exist.
 COPY packages/database /packages/database
 RUN pip install --no-cache-dir -e /packages/database
+COPY packages/ai-engine /packages/ai-engine
+RUN pip install --no-cache-dir -e /packages/ai-engine
 
 COPY apps/api/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt

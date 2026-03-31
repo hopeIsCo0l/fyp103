@@ -24,6 +24,11 @@ function fmt(iso: string | null): string {
   }
 }
 
+function fmtMatch(score: number | null | undefined): string {
+  if (score == null) return '—';
+  return `${(score * 100).toFixed(0)}%`;
+}
+
 export default function CandidateApplicationsPage() {
   const { t } = useTranslation();
   const [rows, setRows] = useState<CandidateApplication[]>([]);
@@ -74,6 +79,7 @@ export default function CandidateApplicationsPage() {
                 <TableCell>{t('recruit.applications.colRole')}</TableCell>
                 <TableCell>{t('recruit.applications.colCompany')}</TableCell>
                 <TableCell>{t('recruit.applications.colStage')}</TableCell>
+                <TableCell align="right">{t('recruit.applications.colMatch')}</TableCell>
                 <TableCell align="right">{t('recruit.applications.colUpdated')}</TableCell>
               </TableRow>
             </TableHead>
@@ -85,6 +91,7 @@ export default function CandidateApplicationsPage() {
                   <TableCell>
                     <Chip size="small" label={t(`recruit.stage.${row.stage}`)} />
                   </TableCell>
+                  <TableCell align="right">{fmtMatch(row.cv_similarity_score)}</TableCell>
                   <TableCell align="right">{fmt(row.updated_at || row.created_at)}</TableCell>
                 </TableRow>
               ))}

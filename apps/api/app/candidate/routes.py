@@ -33,6 +33,7 @@ def list_my_applications(
                 job_title=job.title,
                 company_name=job.company_name,
                 stage=app_row.stage,
+                cv_similarity_score=app_row.cv_similarity_score,
                 created_at=app_row.created_at,
                 updated_at=app_row.updated_at,
             )
