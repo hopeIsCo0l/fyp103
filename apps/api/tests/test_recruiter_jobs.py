@@ -114,3 +114,43 @@ def test_list_jobs_filter_by_status(client: TestClient, make_verified_user):
     assert r.status_code == 200
     assert r.json()["total"] == 1
     assert r.json()["items"][0]["status"] == "open"
+
+
+def test_job_criteria_weights_roundtrip(client: TestClient, make_verified_user):
+    u = make_verified_user("cw@t.com", "Passw0rd!1", role="recruiter")
+    h = _headers(u["access_token"])
+    r = client.post(
+        "/api/recruiter/jobs",
+        headers=h,
+        json={
+            "title": "Weighted role",
+            "description": "Desc",
+            "status": "draft",
+            "criteria_weights": {"cv": 0.4, "exam": 0.35, "interview": 0.25},
+        },
+    )
+    assert r.status_code == 201
+    job_id = r.json()["id"]
+    assert r.json()["criteria_weights"]["cv"] == 0.4
+    assert r.json()["criteria_weights"]["exam"] == 0.35
+    assert r.json()["criteria_weights"]["interview"] == 0.25
+
+    r = client.get(f"/api/recruiter/jobs/{job_id}", headers=h)
+    assert r.status_code == 200
+    assert r.json()["criteria_weights"]["interview"] == 0.25
+
+
+def test_job_criteria_weights_invalid_sum(client: TestClient, make_verified_user):
+    u = make_verified_user("cwb@t.com", "Passw0rd!1", role="recruiter")
+    h = _headers(u["access_token"])
+    r = client.post(
+        "/api/recruiter/jobs",
+        headers=h,
+        json={
+            "title": "Bad weights",
+            "description": "Desc",
+            "status": "draft",
+            "criteria_weights": {"cv": 0.5, "exam": 0.5, "interview": 0.5},
+        },
+    )
+    assert r.status_code == 422

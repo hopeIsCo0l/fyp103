@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
+from recruit_database import CriteriaWeights
 
 EmploymentType = Literal["full_time", "part_time", "contract", "internship"]
 JobStatus = Literal["draft", "open", "paused", "closed"]
@@ -14,6 +15,7 @@ class JobCreate(BaseModel):
     location: Optional[str] = Field(None, max_length=255)
     employment_type: EmploymentType = "full_time"
     status: JobStatus = "draft"
+    criteria_weights: Optional[CriteriaWeights] = None
 
 
 class JobUpdate(BaseModel):
@@ -23,6 +25,7 @@ class JobUpdate(BaseModel):
     location: Optional[str] = Field(None, max_length=255)
     employment_type: Optional[EmploymentType] = None
     status: Optional[JobStatus] = None
+    criteria_weights: Optional[CriteriaWeights] = None
 
 
 class JobOut(BaseModel):
@@ -33,6 +36,7 @@ class JobOut(BaseModel):
     location: Optional[str]
     employment_type: str
     status: str
+    criteria_weights: Optional[dict] = None
     created_by: str
     created_at: Optional[datetime]
     updated_at: Optional[datetime]

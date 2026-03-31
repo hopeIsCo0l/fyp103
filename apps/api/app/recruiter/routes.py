@@ -59,6 +59,7 @@ def _job_to_out(job: Job, applicants_count: int = 0) -> JobOut:
         location=job.location,
         employment_type=job.employment_type,
         status=job.status,
+        criteria_weights=job.criteria_weights,
         created_by=job.created_by,
         created_at=job.created_at,
         updated_at=job.updated_at,
@@ -80,6 +81,7 @@ def create_job(
         location=body.location.strip() if body.location else None,
         employment_type=body.employment_type,
         status=body.status,
+        criteria_weights=body.criteria_weights.model_dump() if body.criteria_weights else None,
         created_by=user.id,
     )
     db.add(row)
@@ -236,6 +238,9 @@ def update_job(
         job.employment_type = data["employment_type"]
     if "status" in data and data["status"] is not None:
         job.status = data["status"]
+    if "criteria_weights" in data:
+        cw = body.criteria_weights
+        job.criteria_weights = cw.model_dump() if cw is not None else None
     db.commit()
     db.refresh(job)
     counts = _applicant_counts(db, [job.id])

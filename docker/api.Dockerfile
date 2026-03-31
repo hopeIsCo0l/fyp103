@@ -7,10 +7,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+# Build context must be repo root (see docker-compose.yml) so local packages exist.
+COPY packages/database /packages/database
+RUN pip install --no-cache-dir -e /packages/database
+
+COPY apps/api/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY apps/api .
 
 EXPOSE 8000
 
