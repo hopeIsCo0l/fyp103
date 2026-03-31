@@ -17,6 +17,7 @@ def test_apply_with_cv_text_sets_similarity(client: TestClient, make_verified_us
             "title": "Python Developer",
             "description": "We need Python and FastAPI experience.",
             "status": "open",
+            "criteria_weights": {"cv": 0.6, "exam": 0.2, "interview": 0.2},
         },
         headers=h_rec,
     )
@@ -34,14 +35,22 @@ def test_apply_with_cv_text_sets_similarity(client: TestClient, make_verified_us
     assert body["job_id"] == job_id
     assert body["cv_similarity_score"] is not None
     assert 0.0 <= body["cv_similarity_score"] <= 1.0
+    assert body["weighted_total_score"] is not None
+    assert body["score_breakdown"]["cv_weight"] == 0.6
+    assert body["score_breakdown"]["weighted_total_score"] == body["weighted_total_score"]
+    assert body["weighted_total_score"] == body["cv_similarity_score"] * 0.6
 
     listed = client.get("/api/candidate/applications", headers=h_c).json()
     assert len(listed) == 1
     assert listed[0]["cv_similarity_score"] == body["cv_similarity_score"]
+    assert listed[0]["weighted_total_score"] == body["weighted_total_score"]
+    assert listed[0]["score_breakdown"]["cv_weight"] == 0.6
 
     rec_list = client.get(f"/api/recruiter/jobs/{job_id}/applications", headers=h_rec).json()
     assert len(rec_list) == 1
     assert rec_list[0]["cv_similarity_score"] == body["cv_similarity_score"]
+    assert rec_list[0]["weighted_total_score"] == body["weighted_total_score"]
+    assert rec_list[0]["score_breakdown"]["cv_weight"] == 0.6
 
 
 def test_candidate_apply_and_list(client: TestClient, make_verified_user):
