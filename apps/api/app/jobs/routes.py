@@ -1,11 +1,19 @@
+import uuid
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.auth.dependencies import require_roles
+from app.candidate.schemas import CandidateApplicationOut
 from app.database import get_db
 from app.jobs.schemas import PublicJobListResponse, PublicJobOut
 from app.models.job import Job
+from app.models.job_application import JobApplication
+from app.models.user import User
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
+_candidate = require_roles("candidate", "admin")
 
 
 def _to_public(job: Job) -> PublicJobOut:
@@ -53,6 +61,51 @@ def list_open_jobs(
         total=total,
         page=page,
         size=size,
+    )
+
+
+@router.post("/{job_id}/apply", response_model=CandidateApplicationOut, status_code=status.HTTP_201_CREATED)
+def apply_to_open_job(
+    job_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(_candidate),
+):
+    job = db.query(Job).filter(Job.id == job_id, Job.status == "open").first()
+    if not job:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
+    if job.created_by == user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot apply to your own job posting",
+        )
+    existing = (
+        db.query(JobApplication)
+        .filter(JobApplication.job_id == job_id, JobApplication.candidate_id == user.id)
+        .first()
+    )
+    if existing:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Already applied to this job")
+    row = JobApplication(
+        id=str(uuid.uuid4()),
+        job_id=job.id,
+        candidate_id=user.id,
+        stage="applied",
+    )
+    db.add(row)
+    try:
+        db.commit()
+        db.refresh(row)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Already applied to this job") from None
+    return CandidateApplicationOut(
+        id=row.id,
+        job_id=job.id,
+        job_title=job.title,
+        company_name=job.company_name,
+        stage=row.stage,
+        created_at=row.created_at,
+        updated_at=row.updated_at,
     )
 
 

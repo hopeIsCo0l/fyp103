@@ -1,13 +1,22 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.auth.dependencies import require_roles
 from app.database import get_db
 from app.models.job import Job
+from app.models.job_application import JobApplication
 from app.models.user import User
-from app.recruiter.schemas import JobCreate, JobListResponse, JobOut, JobUpdate
+from app.recruiter.schemas import (
+    ApplicationStageUpdate,
+    JobCreate,
+    JobListResponse,
+    JobOut,
+    JobUpdate,
+    RecruiterApplicationOut,
+)
 
 router = APIRouter(prefix="/recruiter", tags=["recruiter"])
 _recruiter = require_roles("recruiter", "admin")
@@ -29,7 +38,19 @@ def _get_job_or_404(db: Session, job_id: str, user: User) -> Job:
     return job
 
 
-def _job_to_out(job: Job) -> JobOut:
+def _applicant_counts(db: Session, job_ids: list[str]) -> dict[str, int]:
+    if not job_ids:
+        return {}
+    rows = (
+        db.query(JobApplication.job_id, func.count(JobApplication.id))
+        .filter(JobApplication.job_id.in_(job_ids))
+        .group_by(JobApplication.job_id)
+        .all()
+    )
+    return {str(jid): int(c) for jid, c in rows}
+
+
+def _job_to_out(job: Job, applicants_count: int = 0) -> JobOut:
     return JobOut(
         id=job.id,
         title=job.title,
@@ -41,7 +62,7 @@ def _job_to_out(job: Job) -> JobOut:
         created_by=job.created_by,
         created_at=job.created_at,
         updated_at=job.updated_at,
-        applicants_count=0,
+        applicants_count=applicants_count,
     )
 
 
@@ -64,7 +85,7 @@ def create_job(
     db.add(row)
     db.commit()
     db.refresh(row)
-    return _job_to_out(row)
+    return _job_to_out(row, 0)
 
 
 @router.get("/jobs", response_model=JobListResponse)
@@ -81,7 +102,11 @@ def list_jobs(
         pattern = f"%{search.lower()}%"
         q = q.filter((Job.title.ilike(pattern)) | (Job.description.ilike(pattern)))
     rows = q.order_by(Job.created_at.desc()).all()
-    return JobListResponse(items=[_job_to_out(j) for j in rows], total=len(rows))
+    counts = _applicant_counts(db, [j.id for j in rows])
+    return JobListResponse(
+        items=[_job_to_out(j, counts.get(j.id, 0)) for j in rows],
+        total=len(rows),
+    )
 
 
 @router.get("/jobs/{job_id}", response_model=JobOut)
@@ -91,7 +116,101 @@ def get_job(
     user: User = Depends(_recruiter),
 ):
     job = _get_job_or_404(db, job_id, user)
-    return _job_to_out(job)
+    counts = _applicant_counts(db, [job.id])
+    return _job_to_out(job, counts.get(job.id, 0))
+
+
+@router.get("/applications", response_model=list[RecruiterApplicationOut])
+def list_all_applications(
+    db: Session = Depends(get_db),
+    user: User = Depends(_recruiter),
+):
+    q = (
+        db.query(JobApplication, User, Job)
+        .join(Job, Job.id == JobApplication.job_id)
+        .join(User, User.id == JobApplication.candidate_id)
+    )
+    if user.role != "admin":
+        q = q.filter(Job.created_by == user.id)
+    rows = q.order_by(JobApplication.created_at.desc()).all()
+    out: list[RecruiterApplicationOut] = []
+    for app_row, cand, job in rows:
+        out.append(
+            RecruiterApplicationOut(
+                id=app_row.id,
+                job_id=job.id,
+                job_title=job.title,
+                candidate_id=cand.id,
+                candidate_email=cand.email,
+                candidate_name=cand.full_name,
+                stage=app_row.stage,
+                created_at=app_row.created_at,
+                updated_at=app_row.updated_at,
+            )
+        )
+    return out
+
+
+@router.get("/jobs/{job_id}/applications", response_model=list[RecruiterApplicationOut])
+def list_job_applications(
+    job_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(_recruiter),
+):
+    job = _get_job_or_404(db, job_id, user)
+    rows = (
+        db.query(JobApplication, User)
+        .join(User, User.id == JobApplication.candidate_id)
+        .filter(JobApplication.job_id == job.id)
+        .order_by(JobApplication.created_at.desc())
+        .all()
+    )
+    out: list[RecruiterApplicationOut] = []
+    for app_row, cand in rows:
+        out.append(
+            RecruiterApplicationOut(
+                id=app_row.id,
+                job_id=job.id,
+                job_title=job.title,
+                candidate_id=cand.id,
+                candidate_email=cand.email,
+                candidate_name=cand.full_name,
+                stage=app_row.stage,
+                created_at=app_row.created_at,
+                updated_at=app_row.updated_at,
+            )
+        )
+    return out
+
+
+@router.patch("/applications/{application_id}", response_model=RecruiterApplicationOut)
+def update_application_stage(
+    application_id: str,
+    body: ApplicationStageUpdate,
+    db: Session = Depends(get_db),
+    user: User = Depends(_recruiter),
+):
+    app_row = db.query(JobApplication).filter(JobApplication.id == application_id).first()
+    if not app_row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
+    _get_job_or_404(db, app_row.job_id, user)
+    app_row.stage = body.stage
+    db.commit()
+    db.refresh(app_row)
+    cand = db.query(User).filter(User.id == app_row.candidate_id).first()
+    job = db.query(Job).filter(Job.id == app_row.job_id).first()
+    assert cand is not None and job is not None
+    return RecruiterApplicationOut(
+        id=app_row.id,
+        job_id=app_row.job_id,
+        job_title=job.title,
+        candidate_id=cand.id,
+        candidate_email=cand.email,
+        candidate_name=cand.full_name,
+        stage=app_row.stage,
+        created_at=app_row.created_at,
+        updated_at=app_row.updated_at,
+    )
 
 
 @router.patch("/jobs/{job_id}", response_model=JobOut)
@@ -119,7 +238,8 @@ def update_job(
         job.status = data["status"]
     db.commit()
     db.refresh(job)
-    return _job_to_out(job)
+    counts = _applicant_counts(db, [job.id])
+    return _job_to_out(job, counts.get(job.id, 0))
 
 
 @router.delete("/jobs/{job_id}", status_code=status.HTTP_204_NO_CONTENT)

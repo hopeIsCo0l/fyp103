@@ -143,6 +143,21 @@ Recruiter UI: create and **edit** postings from the Jobs page; dashboard stats a
 - `GET /api/jobs` — list open jobs (query: `search`, `employment_type`, `location`, `page`, `size`)
 - `GET /api/jobs/{job_id}` — open job detail (`404` if not open)
 
+## Applications (Week 3)
+
+**Candidates** (`candidate` or `admin` role):
+
+- `POST /api/jobs/{job_id}/apply` — apply to an **open** job (409 if already applied; 400 if you own the posting)
+- `GET /api/candidate/applications` — list your applications with job title, company, stage, timestamps
+
+**Recruiters** (`recruiter` or `admin` role):
+
+- `GET /api/recruiter/applications` — all applications across your postings (admins see all)
+- `GET /api/recruiter/jobs/{job_id}/applications` — applicants for one job
+- `PATCH /api/recruiter/applications/{application_id}` — body `{ "stage": "applied" | "screening" | "interview" | "offer" | "rejected" }`
+
+Recruiter job list/detail (`GET /api/recruiter/jobs`) includes **`applicants_count`** from stored applications.
+
 ## Week 1 — Completed by Abdellah
 
 - Signup, email OTP verification, signin (password + OTP)

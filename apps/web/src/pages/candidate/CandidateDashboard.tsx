@@ -9,20 +9,46 @@ import {
   CardContent,
   Chip,
   Grid,
-  LinearProgress,
   Stack,
   Typography,
 } from '@mui/material';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { MOCK_APPLICATIONS, MOCK_JOBS } from '../../data/mockRecruit';
+import { listCandidateApplications, type CandidateApplication } from '../../api/applications';
+import { listOpenJobs, type PublicJob } from '../../api/publicJobs';
 
 export default function CandidateDashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [applications, setApplications] = useState<CandidateApplication[]>([]);
+  const [openJobs, setOpenJobs] = useState<PublicJob[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const activeApps = MOCK_APPLICATIONS.filter((a) => a.stage !== 'rejected').length;
-  const topJob = MOCK_JOBS[0];
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [apps, jobsRes] = await Promise.all([
+        listCandidateApplications(),
+        listOpenJobs({ page: 1, size: 30 }),
+      ]);
+      setApplications(apps);
+      setOpenJobs(jobsRes.items);
+    } catch {
+      setApplications([]);
+      setOpenJobs([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const activeApps = applications.filter((a) => a.stage !== 'rejected').length;
+  const topJob = openJobs[0];
+  const preview = applications.slice(0, 5);
 
   return (
     <Box>
@@ -43,7 +69,7 @@ export default function CandidateDashboard() {
                   {t('recruit.stats.activeApplications')}
                 </Typography>
               </Stack>
-              <Typography variant="h3">{activeApps}</Typography>
+              <Typography variant="h3">{loading ? '—' : activeApps}</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -56,7 +82,10 @@ export default function CandidateDashboard() {
                   {t('recruit.stats.jobsMatched')}
                 </Typography>
               </Stack>
-              <Typography variant="h3">{MOCK_JOBS.length}</Typography>
+              <Typography variant="h3">{loading ? '—' : openJobs.length}</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                {t('recruit.candidate.openRolesHint')}
+              </Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -69,8 +98,10 @@ export default function CandidateDashboard() {
                   {t('recruit.stats.profileStrength')}
                 </Typography>
               </Stack>
-              <Typography variant="h3">78%</Typography>
-              <LinearProgress variant="determinate" value={78} sx={{ mt: 1, height: 6, borderRadius: 1 }} />
+              <Typography variant="h3">—</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                {t('recruit.candidate.profileHint')}
+              </Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -86,15 +117,28 @@ export default function CandidateDashboard() {
                   {t('recruit.candidate.browseJobs')}
                 </Button>
               </Stack>
-              <Typography variant="subtitle1" fontWeight={700}>
-                {topJob.title}
-              </Typography>
-              <Typography color="text.secondary">{topJob.company}</Typography>
-              <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: 'wrap', gap: 1 }}>
-                <Chip size="small" label={topJob.location} />
-                <Chip size="small" label={t(`recruit.jobType.${topJob.type}`)} variant="outlined" />
-                <Chip size="small" color="primary" label={`${topJob.matchPct}% ${t('recruit.match')}`} />
-              </Stack>
+              {!loading && !topJob ? (
+                <Typography color="text.secondary">{t('recruit.candidate.noOpenJobs')}</Typography>
+              ) : (
+                <>
+                  <Typography variant="subtitle1" fontWeight={700}>
+                    {topJob?.title ?? '…'}
+                  </Typography>
+                  <Typography color="text.secondary">
+                    {topJob?.company_name || t('recruit.jobs.companyTbd')}
+                  </Typography>
+                  {topJob && (
+                    <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: 'wrap', gap: 1 }}>
+                      {topJob.location && <Chip size="small" label={topJob.location} />}
+                      <Chip
+                        size="small"
+                        label={t(`recruit.jobType.${topJob.employment_type}`)}
+                        variant="outlined"
+                      />
+                    </Stack>
+                  )}
+                </>
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -104,32 +148,43 @@ export default function CandidateDashboard() {
               <Typography variant="h6" sx={{ mb: 2 }}>
                 {t('recruit.candidate.pipelinePreview')}
               </Typography>
-              <Stack spacing={1.5}>
-                {MOCK_APPLICATIONS.map((a) => (
-                  <Box
-                    key={a.id}
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      bgcolor: 'action.hover',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      gap: 1,
-                    }}
-                  >
-                    <Box sx={{ minWidth: 0 }}>
-                      <Typography variant="body2" fontWeight={600} noWrap>
-                        {a.jobTitle}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" noWrap>
-                        {a.company}
-                      </Typography>
+              {loading ? (
+                <Typography color="text.secondary">{t('common.loading')}</Typography>
+              ) : preview.length === 0 ? (
+                <Typography color="text.secondary">{t('recruit.candidate.pipelineEmpty')}</Typography>
+              ) : (
+                <Stack spacing={1.5}>
+                  {preview.map((a) => (
+                    <Box
+                      key={a.id}
+                      sx={{
+                        p: 1.5,
+                        borderRadius: 2,
+                        bgcolor: 'action.hover',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}
+                    >
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="body2" fontWeight={600} noWrap>
+                          {a.job_title}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" noWrap>
+                          {a.company_name || '—'}
+                        </Typography>
+                      </Box>
+                      <Chip
+                        size="small"
+                        label={t(`recruit.stage.${a.stage}`)}
+                        color="primary"
+                        variant="outlined"
+                      />
                     </Box>
-                    <Chip size="small" label={t(`recruit.stage.${a.stage}`)} color="primary" variant="outlined" />
-                  </Box>
-                ))}
-              </Stack>
+                  ))}
+                </Stack>
+              )}
               <Button fullWidth sx={{ mt: 2 }} onClick={() => navigate('/candidate/applications')}>
                 {t('recruit.candidate.viewApplications')}
               </Button>

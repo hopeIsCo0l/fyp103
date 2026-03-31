@@ -44,3 +44,22 @@ class JobOut(BaseModel):
 class JobListResponse(BaseModel):
     items: list[JobOut]
     total: int
+
+
+ApplicationStage = Literal["applied", "screening", "interview", "offer", "rejected"]
+
+
+class RecruiterApplicationOut(BaseModel):
+    id: str
+    job_id: str
+    job_title: str
+    candidate_id: str
+    candidate_email: str
+    candidate_name: str
+    stage: str
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+
+
+class ApplicationStageUpdate(BaseModel):
+    stage: ApplicationStage

@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Chip,
   Paper,
@@ -10,11 +11,41 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MOCK_APPLICATIONS } from '../../data/mockRecruit';
+import { listCandidateApplications, type CandidateApplication } from '../../api/applications';
+
+function fmt(iso: string | null): string {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toISOString().slice(0, 10);
+  } catch {
+    return iso;
+  }
+}
 
 export default function CandidateApplicationsPage() {
   const { t } = useTranslation();
+  const [rows, setRows] = useState<CandidateApplication[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await listCandidateApplications();
+      setRows(data);
+    } catch {
+      setError(t('recruit.applications.loadError'));
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   return (
     <Box>
@@ -25,33 +56,45 @@ export default function CandidateApplicationsPage() {
         {t('recruit.applications.subtitle')}
       </Typography>
 
-      <TableContainer component={Paper} variant="outlined">
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('recruit.applications.colRole')}</TableCell>
-              <TableCell>{t('recruit.applications.colCompany')}</TableCell>
-              <TableCell>{t('recruit.applications.colStage')}</TableCell>
-              <TableCell align="right">{t('recruit.applications.colUpdated')}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {MOCK_APPLICATIONS.map((row) => (
-              <TableRow key={row.id} hover>
-                <TableCell>{row.jobTitle}</TableCell>
-                <TableCell>{row.company}</TableCell>
-                <TableCell>
-                  <Chip size="small" label={t(`recruit.stage.${row.stage}`)} />
-                </TableCell>
-                <TableCell align="right">{row.updatedAt}</TableCell>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+
+      {loading ? (
+        <Typography color="text.secondary">{t('common.loading')}</Typography>
+      ) : rows.length === 0 ? (
+        <Typography color="text.secondary">{t('recruit.applications.empty')}</Typography>
+      ) : (
+        <TableContainer component={Paper} variant="outlined">
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>{t('recruit.applications.colRole')}</TableCell>
+                <TableCell>{t('recruit.applications.colCompany')}</TableCell>
+                <TableCell>{t('recruit.applications.colStage')}</TableCell>
+                <TableCell align="right">{t('recruit.applications.colUpdated')}</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {rows.map((row) => (
+                <TableRow key={row.id} hover>
+                  <TableCell>{row.job_title}</TableCell>
+                  <TableCell>{row.company_name || '—'}</TableCell>
+                  <TableCell>
+                    <Chip size="small" label={t(`recruit.stage.${row.stage}`)} />
+                  </TableCell>
+                  <TableCell align="right">{fmt(row.updated_at || row.created_at)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
-        {t('recruit.mockNotice')}
+        {t('recruit.applications.liveNotice')}
       </Typography>
     </Box>
   );
