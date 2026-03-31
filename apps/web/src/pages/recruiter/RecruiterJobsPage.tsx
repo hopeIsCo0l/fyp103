@@ -14,13 +14,21 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
+  Paper,
   Select,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { ApplicationStage } from '../../api/applications';
 import {
   createRecruiterJob,
   deleteRecruiterJob,
@@ -30,6 +38,13 @@ import {
   type JobOut,
   type JobStatus,
 } from '../../api/recruiterJobs';
+import {
+  listJobApplications,
+  updateApplicationStage,
+  type RecruiterApplication,
+} from '../../api/recruiterApplications';
+
+const APP_STAGES: ApplicationStage[] = ['applied', 'screening', 'interview', 'offer', 'rejected'];
 
 function formatPostedAt(iso: string | null): string {
   if (!iso) return '—';
@@ -66,6 +81,11 @@ export default function RecruiterJobsPage() {
   const [employmentType, setEmploymentType] = useState<EmploymentType>('full_time');
   const [jobStatus, setJobStatus] = useState<JobStatus>('draft');
   const [saving, setSaving] = useState(false);
+  const [applicantsJob, setApplicantsJob] = useState<JobOut | null>(null);
+  const [applicants, setApplicants] = useState<RecruiterApplication[]>([]);
+  const [applicantsLoading, setApplicantsLoading] = useState(false);
+  const [applicantsError, setApplicantsError] = useState<string | null>(null);
+  const [stageUpdatingId, setStageUpdatingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -151,6 +171,42 @@ export default function RecruiterJobsPage() {
       setError(t('recruit.recruiter.saveError'));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const openApplicantsDialog = async (job: JobOut) => {
+    setApplicantsJob(job);
+    setApplicants([]);
+    setApplicantsError(null);
+    setApplicantsLoading(true);
+    try {
+      const data = await listJobApplications(job.id);
+      setApplicants(data);
+    } catch {
+      setApplicantsError(t('recruit.recruiter.applicantsLoadError'));
+    } finally {
+      setApplicantsLoading(false);
+    }
+  };
+
+  const closeApplicantsDialog = () => {
+    setApplicantsJob(null);
+    setApplicants([]);
+    setApplicantsError(null);
+  };
+
+  const handleApplicantStageChange = async (applicationId: string, stage: ApplicationStage) => {
+    if (!applicantsJob) return;
+    setStageUpdatingId(applicationId);
+    setApplicantsError(null);
+    try {
+      const updated = await updateApplicationStage(applicationId, stage);
+      setApplicants((prev) => prev.map((a) => (a.id === applicationId ? updated : a)));
+      await load();
+    } catch {
+      setApplicantsError(t('recruit.recruiter.stageUpdateError'));
+    } finally {
+      setStageUpdatingId(null);
     }
   };
 
@@ -245,7 +301,7 @@ export default function RecruiterJobsPage() {
                     <Button size="small" onClick={() => openEditDialog(job)}>
                       {t('recruit.recruiter.edit')}
                     </Button>
-                    <Button size="small" color="secondary" disabled>
+                    <Button size="small" color="secondary" onClick={() => void openApplicantsDialog(job)}>
                       {t('recruit.recruiter.viewApplicants')}
                     </Button>
                     <Button
@@ -347,6 +403,80 @@ export default function RecruiterJobsPage() {
           <Button variant="contained" onClick={() => void handleSave()} disabled={saving || !title.trim()}>
             {dialogMode === 'create' ? t('recruit.recruiter.saveJob') : t('recruit.recruiter.saveJobChanges')}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={applicantsJob !== null}
+        onClose={closeApplicantsDialog}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>
+          {applicantsJob
+            ? t('recruit.recruiter.applicantsDialogTitle', { title: applicantsJob.title })
+            : ''}
+        </DialogTitle>
+        <DialogContent>
+          {applicantsError && (
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setApplicantsError(null)}>
+              {applicantsError}
+            </Alert>
+          )}
+          {applicantsLoading ? (
+            <Typography color="text.secondary">{t('common.loading')}</Typography>
+          ) : applicants.length === 0 ? (
+            <Typography color="text.secondary">{t('recruit.recruiter.applicantsEmpty')}</Typography>
+          ) : (
+            <TableContainer component={Paper} variant="outlined" sx={{ mt: 1 }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t('recruit.recruiter.applicantsColName')}</TableCell>
+                    <TableCell>{t('recruit.recruiter.applicantsColEmail')}</TableCell>
+                    <TableCell sx={{ minWidth: 160 }}>{t('recruit.recruiter.stageLabel')}</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {applicants.map((a) => (
+                    <TableRow key={a.id} hover>
+                      <TableCell>{a.candidate_name}</TableCell>
+                      <TableCell>{a.candidate_email}</TableCell>
+                      <TableCell>
+                        <FormControl
+                          size="small"
+                          fullWidth
+                          disabled={stageUpdatingId === a.id}
+                        >
+                          <InputLabel id={`dlg-st-${a.id}`}>{t('recruit.recruiter.stageLabel')}</InputLabel>
+                          <Select
+                            labelId={`dlg-st-${a.id}`}
+                            label={t('recruit.recruiter.stageLabel')}
+                            value={a.stage}
+                            onChange={(e) =>
+                              void handleApplicantStageChange(
+                                a.id,
+                                e.target.value as ApplicationStage,
+                              )
+                            }
+                          >
+                            {APP_STAGES.map((s) => (
+                              <MenuItem key={s} value={s}>
+                                {t(`recruit.stage.${s}`)}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeApplicantsDialog}>{t('recruit.recruiter.closeApplicants')}</Button>
         </DialogActions>
       </Dialog>
     </Box>

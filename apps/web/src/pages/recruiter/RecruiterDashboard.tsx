@@ -14,6 +14,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { listAllRecruiterApplications, type RecruiterApplication } from '../../api/recruiterApplications';
 import { listRecruiterJobs, type JobOut } from '../../api/recruiterJobs';
 
 function postedDate(iso: string | null): string {
@@ -29,6 +30,7 @@ export default function RecruiterDashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [jobs, setJobs] = useState<JobOut[]>([]);
+  const [pipelinePreview, setPipelinePreview] = useState<RecruiterApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,8 +38,9 @@ export default function RecruiterDashboard() {
     setLoading(true);
     setError(null);
     try {
-      const res = await listRecruiterJobs();
+      const [res, apps] = await Promise.all([listRecruiterJobs(), listAllRecruiterApplications()]);
       setJobs(res.items);
+      setPipelinePreview(apps.slice(0, 6));
     } catch {
       setError(t('recruit.recruiter.dashboardLoadError'));
     } finally {
@@ -109,7 +112,7 @@ export default function RecruiterDashboard() {
               </Stack>
               <Typography variant="h3">0</Typography>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                {t('recruit.recruiter.statsWeek3Hint')}
+                {t('recruit.recruiter.statsNewHint')}
               </Typography>
             </CardContent>
           </Card>
@@ -159,13 +162,37 @@ export default function RecruiterDashboard() {
             <CardContent>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                 <Typography variant="h6">{t('recruit.recruiter.pipelinePreview')}</Typography>
-                <Button size="small" onClick={() => navigate('/recruiter/candidates')} disabled>
+                <Button size="small" onClick={() => navigate('/recruiter/candidates')}>
                   {t('recruit.recruiter.openPipeline')}
                 </Button>
               </Stack>
-              <Typography variant="body2" color="text.secondary">
-                {t('recruit.recruiter.pipelinePlaceholder')}
-              </Typography>
+              {loading ? (
+                <Typography color="text.secondary">{t('common.loading')}</Typography>
+              ) : pipelinePreview.length === 0 ? (
+                <Typography variant="body2" color="text.secondary">
+                  {t('recruit.recruiter.pipelineEmpty')}
+                </Typography>
+              ) : (
+                pipelinePreview.map((a) => (
+                  <Stack
+                    key={a.id}
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    sx={{ py: 1.25, borderBottom: '1px solid', borderColor: 'divider' }}
+                  >
+                    <Box>
+                      <Typography fontWeight={600}>{a.candidate_name}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {a.job_title}
+                      </Typography>
+                    </Box>
+                    <Typography variant="caption" color="primary" fontWeight={600}>
+                      {t(`recruit.stage.${a.stage}`)}
+                    </Typography>
+                  </Stack>
+                ))
+              )}
             </CardContent>
           </Card>
         </Grid>

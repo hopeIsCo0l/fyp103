@@ -133,17 +133,25 @@
       "topMatch": "ለእርስዎ ከፍተኛ ተዛማጅ",
       "browseJobs": "ስራዎችን ይመልከቱ",
       "pipelinePreview": "የማመልከቻ መስመር",
-      "viewApplications": "ሁሉንም ማመልከቻዎች ይመልከቱ"
+      "viewApplications": "ሁሉንም ማመልከቻዎች ይመልከቱ",
+      "openRolesHint": "ለማየት የሚገኙ ክፍት ዝርዝሮች።",
+      "profileHint": "የመገለጽ ውጤት CV ሲገናኝ ሊጨመር ይችላል።",
+      "noOpenJobs": "ለማድመቅ ክፍት ሚና የለም። ዝርዝሩን ይመልከቱ።",
+      "pipelineEmpty": "እስካሁን ማመልከቻ የለም። ለማየት ይመልከቱ።"
     },
     "jobs": {
       "browseTitle": "ስራዎችን ያግኙ",
-      "browseSubtitle": "ከቅጥር ሰዎች የታወቁ ክፍት ሚናዎች። የማመልከቻ ፍሰት በሳምንት 3 ይመጣል።",
+      "browseSubtitle": "ከቅጥር ሰዎች የታወቁ ክፍት ሚናዎች። እንደ እጩ ተወዳዳሪ በመግባት ይመልከቱ።",
       "apply": "ያመልክቱ",
       "save": "አስቀምጥ",
       "loadError": "ስራዎችን መጫን አልተቻለም። API እየሰራ ነው?",
       "empty": "እስካሁን ክፍት ሚና የለም። ቆይተው ይመልከቱ።",
       "companyTbd": "ኩባንያ",
-      "browseNotice": "ዝርዝሩ ክፍት ማስታወሻዎችን ብቻ ያሳያል።"
+      "browseNotice": "ዝርዝሩ ክፍት ማስታወሻዎችን ብቻ ያሳያል።",
+      "applySuccess": "ማመልከቻ ተላልፏል።",
+      "applyError": "ማመልከቻ ማስገባት አልተቻለም። እንደገና ይሞክሩ።",
+      "alreadyApplied": "ለዚህ ሚና አስቀድመው ተመልክተዋል።",
+      "appliedBadge": "ተመልክቷል"
     },
     "applications": {
       "title": "የእኔ ማመልከቻዎች",
@@ -151,7 +159,10 @@
       "colRole": "ሚና",
       "colCompany": "ኩባንያ",
       "colStage": "ደረጃ",
-      "colUpdated": "ተዘምኗል"
+      "colUpdated": "ተዘምኗል",
+      "loadError": "ማመልከቻዎችን መጫን አልተቻለም።",
+      "empty": "እስካሁን ለምንም ሚና አላመለከቱም።",
+      "liveNotice": "ደረጃዎች በቅጥር ሰዎች በመስመር ላይ በሚንቀሳቀሱበት ጊዜ ይዘምናሉ።"
     },
     "recruiter": {
       "dashboardTitle": "የቅጥር መስመር",
@@ -186,8 +197,16 @@
       "saveJobChanges": "ለውጦችን አስቀምጥ",
       "dashboardLoadError": "የዳሽቦርድ ውሂብ መጫን አልተቻለም።",
       "statsApplicantsHint": "በማስታወሻዎችዎ ላይ የአመልካች ቁጥሮች ድምር።",
-      "statsWeek3Hint": "ሳምንት 3፡ የዓመልካት ጊዜ መስመር መለኪያዎች።",
-      "pipelinePlaceholder": "የመስመር ደረጃዎች እና የአመልካች ካርዶች ሲገኙ ይታያሉ (ሳምንት 3)።"
+      "statsNewHint": "የሳምንት ልዩነት በኋላ ሊጨመር ይችላል።",
+      "applicantsDialogTitle": "አመልካቾች — {{title}}",
+      "applicantsEmpty": "እስካሁን አመልካች የለም።",
+      "applicantsLoadError": "አመልካቾችን መጫን አልተቻለም።",
+      "applicantsColName": "ስም",
+      "applicantsColEmail": "ኢሜይል",
+      "stageLabel": "ደረጃ",
+      "stageUpdateError": "ደረጃ ማዘመን አልተቻለም።",
+      "closeApplicants": "ዝጋ",
+      "pipelineEmpty": "እስካሁን ማመልከቻ የለም። እጩዎች ሲመልከቱ እዚህ ይታያሉ።"
     },
     "pipeline": {
       "title": "የእምሰራተኛ መስመር",
@@ -195,7 +214,8 @@
       "colCandidate": "እምሰራተኛ",
       "colRole": "ሚና",
       "colStage": "ደረጃ",
-      "colUpdated": "ተዘምኗል"
+      "colUpdated": "ተዘምኗል",
+      "liveNotice": "የመስመር ሰሌዳ በኋላ ሊጨመር ይችላል፤ ደረጃዎች ወዲያውኑ ይዘምናሉ።"
     },
     "profile": {
       "title": "መገለጫ",

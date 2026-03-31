@@ -133,17 +133,25 @@
       "topMatch": "Top match for you",
       "browseJobs": "Browse jobs",
       "pipelinePreview": "Application pipeline",
-      "viewApplications": "View all applications"
+      "viewApplications": "View all applications",
+      "openRolesHint": "Open listings you can browse.",
+      "profileHint": "Profile scoring can be added when your CV is wired in.",
+      "noOpenJobs": "No open roles to highlight. Browse the job board.",
+      "pipelineEmpty": "No applications yet. Apply to a role to see it here."
     },
     "jobs": {
       "browseTitle": "Discover roles",
-      "browseSubtitle": "Open roles published by recruiters. Apply flow comes with applications (Week 3).",
+      "browseSubtitle": "Open roles published by recruiters. Sign in as a candidate to apply.",
       "apply": "Apply",
       "save": "Save",
       "loadError": "Could not load jobs. Is the API running?",
       "empty": "No open roles yet. Check back later.",
       "companyTbd": "Company",
-      "browseNotice": "Listings show open postings only. AI match scores will appear when scoring is enabled."
+      "browseNotice": "Listings show open postings only. AI match scores will appear when scoring is enabled.",
+      "applySuccess": "Application submitted.",
+      "applyError": "Could not submit application. Try again.",
+      "alreadyApplied": "You have already applied to this role.",
+      "appliedBadge": "Applied"
     },
     "applications": {
       "title": "My applications",
@@ -151,7 +159,10 @@
       "colRole": "Role",
       "colCompany": "Company",
       "colStage": "Stage",
-      "colUpdated": "Updated"
+      "colUpdated": "Updated",
+      "loadError": "Could not load your applications.",
+      "empty": "You have not applied to any roles yet.",
+      "liveNotice": "Statuses are updated by recruiters as you move through the pipeline."
     },
     "recruiter": {
       "dashboardTitle": "Recruiting pipeline",
@@ -186,8 +197,16 @@
       "saveJobChanges": "Save changes",
       "dashboardLoadError": "Could not load dashboard data.",
       "statsApplicantsHint": "Sum of applicant counts on your postings.",
-      "statsWeek3Hint": "Week 3: application timeline metrics.",
-      "pipelinePlaceholder": "Pipeline stages and candidate cards will appear when applications are wired (Week 3)."
+      "statsNewHint": "Weekly trends can be added in a later iteration.",
+      "applicantsDialogTitle": "Applicants — {{title}}",
+      "applicantsEmpty": "No applicants yet.",
+      "applicantsLoadError": "Could not load applicants.",
+      "applicantsColName": "Name",
+      "applicantsColEmail": "Email",
+      "stageLabel": "Stage",
+      "stageUpdateError": "Could not update stage.",
+      "closeApplicants": "Close",
+      "pipelineEmpty": "No applications yet. When candidates apply, they appear here."
     },
     "pipeline": {
       "title": "Candidate pipeline",
@@ -195,7 +214,8 @@
       "colCandidate": "Candidate",
       "colRole": "Role",
       "colStage": "Stage",
-      "colUpdated": "Updated"
+      "colUpdated": "Updated",
+      "liveNotice": "Drag-and-drop boards can be added later; stages update instantly."
     },
     "profile": {
       "title": "Profile",

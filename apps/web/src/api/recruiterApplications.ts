@@ -1,0 +1,31 @@
+import { api } from './client';
+import type { ApplicationStage } from './applications';
+
+export type RecruiterApplication = {
+  id: string;
+  job_id: string;
+  job_title: string;
+  candidate_id: string;
+  candidate_email: string;
+  candidate_name: string;
+  stage: string;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+export async function listAllRecruiterApplications() {
+  const { data } = await api.get<RecruiterApplication[]>('/recruiter/applications');
+  return data;
+}
+
+export async function listJobApplications(jobId: string) {
+  const { data } = await api.get<RecruiterApplication[]>(`/recruiter/jobs/${jobId}/applications`);
+  return data;
+}
+
+export async function updateApplicationStage(applicationId: string, stage: ApplicationStage) {
+  const { data } = await api.patch<RecruiterApplication>(`/recruiter/applications/${applicationId}`, {
+    stage,
+  });
+  return data;
+}

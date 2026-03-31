@@ -10,8 +10,13 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  applyToJob,
+  listCandidateApplications,
+  type CandidateApplication,
+} from '../../api/applications';
 import { listOpenJobs, type PublicJob } from '../../api/publicJobs';
 
 function postedDate(iso: string | null): string {
@@ -23,18 +28,42 @@ function postedDate(iso: string | null): string {
   }
 }
 
+function isConflict(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'response' in err &&
+    typeof (err as { response?: { status?: number } }).response?.status === 'number' &&
+    (err as { response: { status: number } }).response.status === 409
+  );
+}
+
 export default function CandidateJobsPage() {
   const { t } = useTranslation();
   const [jobs, setJobs] = useState<PublicJob[]>([]);
+  const [applications, setApplications] = useState<CandidateApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [applyingId, setApplyingId] = useState<string | null>(null);
+
+  const appliedJobIds = useMemo(
+    () => new Set(applications.map((a) => a.job_id)),
+    [applications],
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await listOpenJobs({ page: 1, size: 50 });
-      setJobs(res.items);
+      const jobsRes = await listOpenJobs({ page: 1, size: 50 });
+      setJobs(jobsRes.items);
+      try {
+        const apps = await listCandidateApplications();
+        setApplications(apps);
+      } catch {
+        setApplications([]);
+      }
     } catch {
       setError(t('recruit.jobs.loadError'));
     } finally {
@@ -45,6 +74,28 @@ export default function CandidateJobsPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const handleApply = async (jobId: string) => {
+    setSuccess(null);
+    setError(null);
+    setApplyingId(jobId);
+    try {
+      await applyToJob(jobId);
+      const apps = await listCandidateApplications();
+      setApplications(apps);
+      setSuccess(t('recruit.jobs.applySuccess'));
+    } catch (e) {
+      if (isConflict(e)) {
+        setError(t('recruit.jobs.alreadyApplied'));
+        const apps = await listCandidateApplications().catch(() => []);
+        setApplications(apps);
+      } else {
+        setError(t('recruit.jobs.applyError'));
+      }
+    } finally {
+      setApplyingId(null);
+    }
+  };
 
   return (
     <Box>
@@ -60,6 +111,11 @@ export default function CandidateJobsPage() {
           {error}
         </Alert>
       )}
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess(null)}>
+          {success}
+        </Alert>
+      )}
 
       {loading ? (
         <Typography color="text.secondary">{t('common.loading')}</Typography>
@@ -67,45 +123,56 @@ export default function CandidateJobsPage() {
         <Typography color="text.secondary">{t('recruit.jobs.empty')}</Typography>
       ) : (
         <Stack spacing={2}>
-          {jobs.map((job) => (
-            <Card key={job.id} variant="outlined">
-              <CardContent>
-                <Stack
-                  direction={{ xs: 'column', sm: 'row' }}
-                  justifyContent="space-between"
-                  alignItems={{ xs: 'flex-start', sm: 'flex-start' }}
-                  spacing={2}
-                >
-                  <Box>
-                    <Typography variant="h6">{job.title}</Typography>
-                    <Typography color="text.secondary">
-                      {job.company_name || t('recruit.jobs.companyTbd')}
-                    </Typography>
-                    {job.location && (
-                      <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
-                        <LocationOnIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                        <Typography variant="body2" color="text.secondary">
-                          {job.location}
-                        </Typography>
+          {jobs.map((job) => {
+            const applied = appliedJobIds.has(job.id);
+            return (
+              <Card key={job.id} variant="outlined">
+                <CardContent>
+                  <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    justifyContent="space-between"
+                    alignItems={{ xs: 'flex-start', sm: 'flex-start' }}
+                    spacing={2}
+                  >
+                    <Box>
+                      <Typography variant="h6">{job.title}</Typography>
+                      <Typography color="text.secondary">
+                        {job.company_name || t('recruit.jobs.companyTbd')}
+                      </Typography>
+                      {job.location && (
+                        <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
+                          <LocationOnIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                          <Typography variant="body2" color="text.secondary">
+                            {job.location}
+                          </Typography>
+                        </Stack>
+                      )}
+                      <Stack direction="row" spacing={1} sx={{ mt: 1.5, flexWrap: 'wrap', gap: 1 }}>
+                        <Chip size="small" label={t(`recruit.jobType.${job.employment_type}`)} />
+                        <Chip size="small" label={postedDate(job.created_at)} variant="outlined" />
+                        {applied && (
+                          <Chip size="small" color="success" label={t('recruit.jobs.appliedBadge')} />
+                        )}
                       </Stack>
-                    )}
-                    <Stack direction="row" spacing={1} sx={{ mt: 1.5, flexWrap: 'wrap', gap: 1 }}>
-                      <Chip size="small" label={t(`recruit.jobType.${job.employment_type}`)} />
-                      <Chip size="small" label={postedDate(job.created_at)} variant="outlined" />
-                    </Stack>
-                  </Box>
-                </Stack>
-              </CardContent>
-              <CardActions sx={{ px: 2, pb: 2, pt: 0 }}>
-                <Button variant="contained" size="small" disabled>
-                  {t('recruit.jobs.apply')}
-                </Button>
-                <Button size="small" disabled>
-                  {t('recruit.jobs.save')}
-                </Button>
-              </CardActions>
-            </Card>
-          ))}
+                    </Box>
+                  </Stack>
+                </CardContent>
+                <CardActions sx={{ px: 2, pb: 2, pt: 0 }}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    disabled={applied || applyingId === job.id}
+                    onClick={() => void handleApply(job.id)}
+                  >
+                    {applied ? t('recruit.jobs.appliedBadge') : t('recruit.jobs.apply')}
+                  </Button>
+                  <Button size="small" disabled>
+                    {t('recruit.jobs.save')}
+                  </Button>
+                </CardActions>
+              </Card>
+            );
+          })}
         </Stack>
       )}
 
