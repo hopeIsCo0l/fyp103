@@ -137,9 +137,13 @@
     },
     "jobs": {
       "browseTitle": "Discover roles",
-      "browseSubtitle": "AI-ranked matches based on your profile (placeholder).",
+      "browseSubtitle": "Open roles published by recruiters. Apply flow comes with applications (Week 3).",
       "apply": "Apply",
-      "save": "Save"
+      "save": "Save",
+      "loadError": "Could not load jobs. Is the API running?",
+      "empty": "No open roles yet. Check back later.",
+      "companyTbd": "Company",
+      "browseNotice": "Listings show open postings only. AI match scores will appear when scoring is enabled."
     },
     "applications": {
       "title": "My applications",

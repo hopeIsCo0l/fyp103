@@ -134,6 +134,13 @@ Requires **`recruiter`** or **`admin`** role. Recruiters see only jobs they crea
 - `PATCH /api/recruiter/jobs/{job_id}` — update fields
 - `DELETE /api/recruiter/jobs/{job_id}` — delete posting
 
+## Public job discovery (Week 2)
+
+**No authentication.** Only listings with **`status=open`** are returned (draft/paused/closed are hidden).
+
+- `GET /api/jobs` — list open jobs (query: `search`, `employment_type`, `location`, `page`, `size`)
+- `GET /api/jobs/{job_id}` — open job detail (`404` if not open)
+
 ## Week 1 — Completed by Abdellah
 
 - Signup, email OTP verification, signin (password + OTP)
@@ -152,4 +159,4 @@ Requires **`recruiter`** or **`admin`** role. Recruiters see only jobs they crea
 - i18n scaffolding with English and Amharic translations
 - **Database:** Alembic migrations as source of truth; integration test for downgrade → upgrade on PostgreSQL
 - **Observability:** structured request logging (`app.request` logger: method, path, status, duration; `X-Request-ID` response header)
-- **39+** pytest integration tests (auth + admin + migrations + recruiter jobs); CI runs the suite against Postgres
+- **44+** pytest integration tests (auth + admin + migrations + recruiter + public jobs); CI runs the suite against Postgres
