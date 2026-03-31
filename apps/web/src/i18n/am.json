@@ -9,7 +9,8 @@
     "signOut": "ውጣ",
     "backToHome": "ወደ መነሻ ተመለስ",
     "backToSignIn": "ወደ መግቢያ ተመለስ",
-    "networkError": "ከሰርቨር ጋር መገናኘት አልተቻለም። የጀርባ ስርዓቱ እየሰራ ነው?"
+    "networkError": "ከሰርቨር ጋር መገናኘት አልተቻለም። የጀርባ ስርዓቱ እየሰራ ነው?",
+    "delete": "ሰርዝ"
   },
   "home": {
     "welcome": "እንኳን ደህና መጡ፣ {{name}}",
@@ -104,9 +105,11 @@
     "jobType": {
       "full_time": "ሙሉ ጊዜ",
       "contract": "ኮንትራት",
-      "part_time": "ከፊል ጊዜ"
+      "part_time": "ከፊል ጊዜ",
+      "internship": "ስልጠና"
     },
     "jobStatus": {
+      "draft": "ረቂቅ",
       "open": "ክፍት",
       "paused": "ተቆሟል",
       "closed": "ተዘጋ"
@@ -159,7 +162,22 @@
       "jobsSubtitle": "ሚናዎችን ያስታውቁ፣ አመልካቾችን ይከታተሉ።",
       "newPosting": "አዲስ ማስታወሻ",
       "edit": "አርም",
-      "viewApplicants": "አመልካቾችን ይመልከቱ"
+      "viewApplicants": "አመልካቾችን ይመልከቱ",
+      "loadError": "የስራ ማስታወሻዎችን መጫን አልተቻለም።",
+      "saveError": "ስራውን ማስቀመጥ አልተቻለም። እንደገና ይሞክሩ።",
+      "emptyJobs": "እስካሁን ማስታወሻ የለም። ለመጀመር አንድ ይፍጠሩ።",
+      "jobsLiveNotice": "ከታች ያሉ ማስታወሻዎች በአካውንትዎ ይቀመጣሉ።",
+      "jobFormTitle": "አዲስ የስራ ማስታወሻ",
+      "jobTitleLabel": "ርዕስ",
+      "descriptionLabel": "መግለጫ",
+      "companyLabel": "ኩባንያ",
+      "locationLabel": "ቦታ",
+      "employmentType": "የይፋ ጊዜ አይነት",
+      "statusLabel": "ሁኔታ",
+      "cancel": "ሰርዝ",
+      "saveJob": "ስራ ፍጠር",
+      "deleteConfirm": "ይህን የስራ ማስታወሻ ይሰረዝ?",
+      "deleteError": "ስራውን መሰረዝ አልተቻለም።"
     },
     "pipeline": {
       "title": "የእምሰራተኛ መስመር",

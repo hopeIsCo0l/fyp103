@@ -4,8 +4,8 @@
 
 ### `apps/api`
 - FastAPI application
-- SQLAlchemy models (`User`, `OTP`)
-- JWT auth + OTP verification/login
+- SQLAlchemy models (`User`, `Job`, sessions, OTP, audit, password reset)
+- JWT auth + OTP verification/login; recruiter job CRUD under `/api/recruiter/jobs`
 - SMTP email delivery (dev fallback to console logging)
 
 ### `apps/web`

@@ -14,10 +14,12 @@ from app.db_startup import run_alembic_upgrade
 from app.models import (  # noqa: F401 - register models for SQLAlchemy metadata
     OTP,
     AuditLog,
+    Job,
     PasswordResetToken,
     User,
     UserSession,
 )
+from app.recruiter.routes import router as recruiter_router
 from app.seed_admin_service import ensure_super_admin
 
 if not logging.root.handlers:
@@ -57,6 +59,7 @@ app.add_middleware(
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
+app.include_router(recruiter_router, prefix="/api")
 
 
 @app.middleware("http")

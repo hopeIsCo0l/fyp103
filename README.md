@@ -124,6 +124,16 @@ Or: `python init_db.py` (Alembic upgrade + legacy patches).
 - `GET /api/auth/recruiter-only`
 - `GET /api/auth/admin-only`
 
+## Recruiter job postings (Week 2)
+
+Requires **`recruiter`** or **`admin`** role. Recruiters see only jobs they created; admins see all.
+
+- `POST /api/recruiter/jobs` — create posting (`title`, `description`, optional `company_name`, `location`, `employment_type`, `status`)
+- `GET /api/recruiter/jobs` — list (query: `status`, `search`)
+- `GET /api/recruiter/jobs/{job_id}` — detail (404 if not owned / not admin)
+- `PATCH /api/recruiter/jobs/{job_id}` — update fields
+- `DELETE /api/recruiter/jobs/{job_id}` — delete posting
+
 ## Week 1 — Completed by Abdellah
 
 - Signup, email OTP verification, signin (password + OTP)
@@ -142,4 +152,4 @@ Or: `python init_db.py` (Alembic upgrade + legacy patches).
 - i18n scaffolding with English and Amharic translations
 - **Database:** Alembic migrations as source of truth; integration test for downgrade → upgrade on PostgreSQL
 - **Observability:** structured request logging (`app.request` logger: method, path, status, duration; `X-Request-ID` response header)
-- **30+** pytest integration tests (auth + admin + migration round-trip); CI runs the suite against Postgres
+- **39+** pytest integration tests (auth + admin + migrations + recruiter jobs); CI runs the suite against Postgres
