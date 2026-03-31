@@ -9,6 +9,7 @@ export type RecruiterApplication = {
   candidate_email: string;
   candidate_name: string;
   stage: string;
+  cv_similarity_score: number | null;
   created_at: string | null;
   updated_at: string | null;
 };

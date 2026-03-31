@@ -8,6 +8,7 @@ import {
   CardContent,
   Chip,
   Stack,
+  TextField,
   Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -46,6 +47,7 @@ export default function CandidateJobsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [applyingId, setApplyingId] = useState<string | null>(null);
+  const [optionalCvText, setOptionalCvText] = useState('');
 
   const appliedJobIds = useMemo(
     () => new Set(applications.map((a) => a.job_id)),
@@ -80,7 +82,9 @@ export default function CandidateJobsPage() {
     setError(null);
     setApplyingId(jobId);
     try {
-      await applyToJob(jobId);
+      await applyToJob(jobId, {
+        cvText: optionalCvText.trim() || undefined,
+      });
       const apps = await listCandidateApplications();
       setApplications(apps);
       setSuccess(t('recruit.jobs.applySuccess'));
@@ -116,6 +120,17 @@ export default function CandidateJobsPage() {
           {success}
         </Alert>
       )}
+
+      <TextField
+        label={t('recruit.jobs.optionalCvLabel')}
+        placeholder={t('recruit.jobs.optionalCvPlaceholder')}
+        value={optionalCvText}
+        onChange={(e) => setOptionalCvText(e.target.value)}
+        multiline
+        minRows={2}
+        fullWidth
+        sx={{ mb: 3 }}
+      />
 
       {loading ? (
         <Typography color="text.secondary">{t('common.loading')}</Typography>

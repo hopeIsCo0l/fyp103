@@ -10,6 +10,7 @@ class CandidateApplicationOut(BaseModel):
     job_title: str
     company_name: Optional[str]
     stage: str
+    cv_similarity_score: Optional[float] = None
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
 

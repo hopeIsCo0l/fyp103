@@ -55,6 +55,11 @@ function formatPostedAt(iso: string | null): string {
   }
 }
 
+function fmtMatch(score: number | null | undefined): string {
+  if (score == null) return '—';
+  return `${(score * 100).toFixed(0)}%`;
+}
+
 function emptyForm() {
   return {
     title: '',
@@ -434,6 +439,7 @@ export default function RecruiterJobsPage() {
                   <TableRow>
                     <TableCell>{t('recruit.recruiter.applicantsColName')}</TableCell>
                     <TableCell>{t('recruit.recruiter.applicantsColEmail')}</TableCell>
+                    <TableCell align="right">{t('recruit.recruiter.applicantsColMatch')}</TableCell>
                     <TableCell sx={{ minWidth: 160 }}>{t('recruit.recruiter.stageLabel')}</TableCell>
                   </TableRow>
                 </TableHead>
@@ -442,6 +448,7 @@ export default function RecruiterJobsPage() {
                     <TableRow key={a.id} hover>
                       <TableCell>{a.candidate_name}</TableCell>
                       <TableCell>{a.candidate_email}</TableCell>
+                      <TableCell align="right">{fmtMatch(a.cv_similarity_score)}</TableCell>
                       <TableCell>
                         <FormControl
                           size="small"

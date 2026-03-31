@@ -1,5 +1,5 @@
-# Monorepo shared types (SRS FR-01 scoring weights); path relative to this file
--e ../../packages/database
+# Install monorepo packages from repo root before this file, e.g.:
+#   pip install -e packages/database -e packages/ai-engine
 
 fastapi==0.109.2
 uvicorn[standard]==0.27.1
