@@ -131,10 +131,10 @@ Or: `python init_db.py` (Alembic upgrade + legacy patches).
 
 Requires **`recruiter`** or **`admin`** role. Recruiters see only jobs they created; admins see all.
 
-- `POST /api/recruiter/jobs` — create posting (`title`, `description`, optional `company_name`, `location`, `employment_type`, `status`)
+- `POST /api/recruiter/jobs` — create posting (`title`, `description`, optional `company_name`, `location`, `employment_type`, `status`, optional `criteria_weights` — SRS FR-01: `{cv, exam, interview}` summing to 1.0)
 - `GET /api/recruiter/jobs` — list (query: `status`, `search`)
 - `GET /api/recruiter/jobs/{job_id}` — detail (404 if not owned / not admin)
-- `PATCH /api/recruiter/jobs/{job_id}` — update fields
+- `PATCH /api/recruiter/jobs/{job_id}` — update fields (including optional `criteria_weights`)
 - `DELETE /api/recruiter/jobs/{job_id}` — delete posting
 
 Recruiter UI: create and **edit** postings from the Jobs page; dashboard stats and “Your postings” use the **live** job list from `GET /api/recruiter/jobs`.

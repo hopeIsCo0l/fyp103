@@ -4,7 +4,7 @@
 
 ### `apps/api`
 - FastAPI application
-- SQLAlchemy models (`User`, `Job`, sessions, OTP, audit, password reset)
+- SQLAlchemy models (`User`, `Job` + optional `criteria_weights` JSONB from `recruit_database.CriteriaWeights`, sessions, OTP, audit, password reset)
 - JWT auth + OTP verification/login; recruiter job CRUD under `/api/recruiter/jobs`; public open-job browse under `/api/jobs`; job applications (`/api/jobs/{id}/apply`, `/api/candidate/applications`, recruiter applicant pipeline)
 - SMTP email delivery (dev fallback to console logging)
 
@@ -15,7 +15,7 @@
 
 ## Packages (shared Python)
 
-Install from repo root for local dev (Docker API image still uses `apps/api` only until compose copies `packages/`):
+Install from repo root for local dev. **Docker:** `docker-compose` builds the API with **repo root** context so `packages/database` is installed into the image (see `docker/api.Dockerfile`).
 
 ```powershell
 pip install -e ./packages/ai-engine

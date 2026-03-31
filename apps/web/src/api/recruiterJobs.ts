@@ -3,6 +3,13 @@ import { api } from './client';
 export type EmploymentType = 'full_time' | 'part_time' | 'contract' | 'internship';
 export type JobStatus = 'draft' | 'open' | 'paused' | 'closed';
 
+/** SRS FR-01: CV / exam / interview weights (sum 1.0) when set */
+export type CriteriaWeights = {
+  cv: number;
+  exam: number;
+  interview: number;
+};
+
 export type JobOut = {
   id: string;
   title: string;
@@ -11,6 +18,7 @@ export type JobOut = {
   location: string | null;
   employment_type: EmploymentType;
   status: JobStatus;
+  criteria_weights: CriteriaWeights | null;
   created_by: string;
   created_at: string | null;
   updated_at: string | null;
@@ -29,6 +37,7 @@ export type JobCreateBody = {
   location?: string | null;
   employment_type?: EmploymentType;
   status?: JobStatus;
+  criteria_weights?: CriteriaWeights;
 };
 
 export type JobUpdateBody = Partial<{
@@ -38,6 +47,7 @@ export type JobUpdateBody = Partial<{
   location: string | null;
   employment_type: EmploymentType;
   status: JobStatus;
+  criteria_weights: CriteriaWeights | null;
 }>;
 
 export async function listRecruiterJobs(params?: { status?: string; search?: string }) {

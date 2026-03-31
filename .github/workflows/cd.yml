@@ -34,7 +34,7 @@ jobs:
       - name: Build and push backend
         uses: docker/build-push-action@v6
         with:
-          context: ./apps/api
+          context: .
           file: ./docker/api.Dockerfile
           push: true
           tags: ${{ steps.meta-backend.outputs.tags }}
