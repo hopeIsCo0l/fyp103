@@ -25,6 +25,7 @@ import {
   createRecruiterJob,
   deleteRecruiterJob,
   listRecruiterJobs,
+  updateRecruiterJob,
   type EmploymentType,
   type JobOut,
   type JobStatus,
@@ -39,12 +40,25 @@ function formatPostedAt(iso: string | null): string {
   }
 }
 
+function emptyForm() {
+  return {
+    title: '',
+    description: '',
+    companyName: '',
+    location: '',
+    employmentType: 'full_time' as EmploymentType,
+    jobStatus: 'draft' as JobStatus,
+  };
+}
+
 export default function RecruiterJobsPage() {
   const { t } = useTranslation();
   const [jobs, setJobs] = useState<JobOut[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [companyName, setCompanyName] = useState('');
@@ -70,26 +84,68 @@ export default function RecruiterJobsPage() {
     void load();
   }, [load]);
 
-  const handleCreate = async () => {
+  const openCreateDialog = () => {
+    const f = emptyForm();
+    setDialogMode('create');
+    setEditingId(null);
+    setTitle(f.title);
+    setDescription(f.description);
+    setCompanyName(f.companyName);
+    setLocation(f.location);
+    setEmploymentType(f.employmentType);
+    setJobStatus(f.jobStatus);
+    setDialogOpen(true);
+  };
+
+  const openEditDialog = (job: JobOut) => {
+    setDialogMode('edit');
+    setEditingId(job.id);
+    setTitle(job.title);
+    setDescription(job.description || '');
+    setCompanyName(job.company_name || '');
+    setLocation(job.location || '');
+    setEmploymentType(job.employment_type);
+    setJobStatus(job.status);
+    setDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setDialogOpen(false);
+    setEditingId(null);
+  };
+
+  const handleSave = async () => {
     if (!title.trim()) return;
     setSaving(true);
     setError(null);
     try {
-      await createRecruiterJob({
-        title: title.trim(),
-        description: description.trim(),
-        company_name: companyName.trim() || undefined,
-        location: location.trim() || undefined,
-        employment_type: employmentType,
-        status: jobStatus,
-      });
-      setDialogOpen(false);
-      setTitle('');
-      setDescription('');
-      setCompanyName('');
-      setLocation('');
-      setEmploymentType('full_time');
-      setJobStatus('draft');
+      if (dialogMode === 'create') {
+        await createRecruiterJob({
+          title: title.trim(),
+          description: description.trim(),
+          company_name: companyName.trim() || undefined,
+          location: location.trim() || undefined,
+          employment_type: employmentType,
+          status: jobStatus,
+        });
+      } else if (editingId) {
+        await updateRecruiterJob(editingId, {
+          title: title.trim(),
+          description: description.trim(),
+          company_name: companyName.trim() || null,
+          location: location.trim() || null,
+          employment_type: employmentType,
+          status: jobStatus,
+        });
+      }
+      const f = emptyForm();
+      setTitle(f.title);
+      setDescription(f.description);
+      setCompanyName(f.companyName);
+      setLocation(f.location);
+      setEmploymentType(f.employmentType);
+      setJobStatus(f.jobStatus);
+      closeDialog();
       await load();
     } catch {
       setError(t('recruit.recruiter.saveError'));
@@ -135,7 +191,7 @@ export default function RecruiterJobsPage() {
           color="secondary"
           startIcon={<AddIcon />}
           size="large"
-          onClick={() => setDialogOpen(true)}
+          onClick={() => openCreateDialog()}
         >
           {t('recruit.recruiter.newPosting')}
         </Button>
@@ -186,7 +242,7 @@ export default function RecruiterJobsPage() {
                     </Stack>
                   </Box>
                   <Stack direction="row" spacing={1} alignItems="center">
-                    <Button size="small" disabled>
+                    <Button size="small" onClick={() => openEditDialog(job)}>
                       {t('recruit.recruiter.edit')}
                     </Button>
                     <Button size="small" color="secondary" disabled>
@@ -212,8 +268,19 @@ export default function RecruiterJobsPage() {
         {t('recruit.recruiter.jobsLiveNotice')}
       </Typography>
 
-      <Dialog open={dialogOpen} onClose={() => !saving && setDialogOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>{t('recruit.recruiter.jobFormTitle')}</DialogTitle>
+      <Dialog
+        open={dialogOpen}
+        onClose={() => {
+          if (!saving) closeDialog();
+        }}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>
+          {dialogMode === 'create'
+            ? t('recruit.recruiter.jobFormTitle')
+            : t('recruit.recruiter.jobFormEditTitle')}
+        </DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
             <TextField
@@ -274,11 +341,11 @@ export default function RecruiterJobsPage() {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)} disabled={saving}>
+          <Button onClick={closeDialog} disabled={saving}>
             {t('recruit.recruiter.cancel')}
           </Button>
-          <Button variant="contained" onClick={() => void handleCreate()} disabled={saving || !title.trim()}>
-            {t('recruit.recruiter.saveJob')}
+          <Button variant="contained" onClick={() => void handleSave()} disabled={saving || !title.trim()}>
+            {dialogMode === 'create' ? t('recruit.recruiter.saveJob') : t('recruit.recruiter.saveJobChanges')}
           </Button>
         </DialogActions>
       </Dialog>

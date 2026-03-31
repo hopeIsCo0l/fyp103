@@ -31,6 +31,15 @@ export type JobCreateBody = {
   status?: JobStatus;
 };
 
+export type JobUpdateBody = Partial<{
+  title: string;
+  description: string;
+  company_name: string | null;
+  location: string | null;
+  employment_type: EmploymentType;
+  status: JobStatus;
+}>;
+
 export async function listRecruiterJobs(params?: { status?: string; search?: string }) {
   const searchParams = new URLSearchParams();
   if (params?.status) searchParams.set('status', params.status);
@@ -42,6 +51,11 @@ export async function listRecruiterJobs(params?: { status?: string; search?: str
 
 export async function createRecruiterJob(body: JobCreateBody) {
   const { data } = await api.post<JobOut>('/recruiter/jobs', body);
+  return data;
+}
+
+export async function updateRecruiterJob(jobId: string, body: JobUpdateBody) {
+  const { data } = await api.patch<JobOut>(`/recruiter/jobs/${jobId}`, body);
   return data;
 }
 

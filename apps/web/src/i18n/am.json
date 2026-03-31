@@ -181,7 +181,13 @@
       "cancel": "ሰርዝ",
       "saveJob": "ስራ ፍጠር",
       "deleteConfirm": "ይህን የስራ ማስታወሻ ይሰረዝ?",
-      "deleteError": "ስራውን መሰረዝ አልተቻለም።"
+      "deleteError": "ስራውን መሰረዝ አልተቻለም።",
+      "jobFormEditTitle": "የስራ ማስታወሻ አርም",
+      "saveJobChanges": "ለውጦችን አስቀምጥ",
+      "dashboardLoadError": "የዳሽቦርድ ውሂብ መጫን አልተቻለም።",
+      "statsApplicantsHint": "በማስታወሻዎችዎ ላይ የአመልካች ቁጥሮች ድምር።",
+      "statsWeek3Hint": "ሳምንት 3፡ የዓመልካት ጊዜ መስመር መለኪያዎች።",
+      "pipelinePlaceholder": "የመስመር ደረጃዎች እና የአመልካች ካርዶች ሲገኙ ይታያሉ (ሳምንት 3)።"
     },
     "pipeline": {
       "title": "የእምሰራተኛ መስመር",

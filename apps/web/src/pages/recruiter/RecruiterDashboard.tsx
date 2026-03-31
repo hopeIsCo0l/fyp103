@@ -2,26 +2,56 @@ import GroupIcon from '@mui/icons-material/Group';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import WorkIcon from '@mui/icons-material/Work';
 import {
+  Alert,
   Box,
   Button,
   Card,
   CardContent,
   Grid,
-  LinearProgress,
   Stack,
   Typography,
 } from '@mui/material';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { MOCK_PIPELINE, MOCK_RECRUITER_JOBS } from '../../data/mockRecruit';
+import { listRecruiterJobs, type JobOut } from '../../api/recruiterJobs';
+
+function postedDate(iso: string | null): string {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toISOString().slice(0, 10);
+  } catch {
+    return iso;
+  }
+}
 
 export default function RecruiterDashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [jobs, setJobs] = useState<JobOut[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const openRoles = MOCK_RECRUITER_JOBS.filter((j) => j.status === 'open').length;
-  const totalApplicants = MOCK_RECRUITER_JOBS.reduce((s, j) => s + j.applicants, 0);
-  const newLeads = MOCK_PIPELINE.filter((p) => p.stage === 'new').length;
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await listRecruiterJobs();
+      setJobs(res.items);
+    } catch {
+      setError(t('recruit.recruiter.dashboardLoadError'));
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const openRoles = jobs.filter((j) => j.status === 'open').length;
+  const totalApplicants = jobs.reduce((s, j) => s + (j.applicants_count || 0), 0);
+  const postingPreview = jobs.slice(0, 8);
 
   return (
     <Box>
@@ -31,6 +61,12 @@ export default function RecruiterDashboard() {
       <Typography color="text.secondary" sx={{ mb: 3 }}>
         {t('recruit.recruiter.dashboardSubtitle')}
       </Typography>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 4 }}>
@@ -42,7 +78,7 @@ export default function RecruiterDashboard() {
                   {t('recruit.stats.openRoles')}
                 </Typography>
               </Stack>
-              <Typography variant="h3">{openRoles}</Typography>
+              <Typography variant="h3">{loading ? '—' : openRoles}</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -55,7 +91,10 @@ export default function RecruiterDashboard() {
                   {t('recruit.stats.totalApplicants')}
                 </Typography>
               </Stack>
-              <Typography variant="h3">{totalApplicants}</Typography>
+              <Typography variant="h3">{loading ? '—' : totalApplicants}</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                {t('recruit.recruiter.statsApplicantsHint')}
+              </Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -68,8 +107,10 @@ export default function RecruiterDashboard() {
                   {t('recruit.stats.newThisWeek')}
                 </Typography>
               </Stack>
-              <Typography variant="h3">{newLeads}</Typography>
-              <LinearProgress value={65} variant="determinate" sx={{ mt: 1, height: 6, borderRadius: 1 }} />
+              <Typography variant="h3">0</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                {t('recruit.recruiter.statsWeek3Hint')}
+              </Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -85,25 +126,31 @@ export default function RecruiterDashboard() {
                   {t('recruit.recruiter.manageJobs')}
                 </Button>
               </Stack>
-              {MOCK_RECRUITER_JOBS.map((j) => (
-                <Stack
-                  key={j.id}
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  sx={{ py: 1.25, borderBottom: '1px solid', borderColor: 'divider' }}
-                >
-                  <Box>
-                    <Typography fontWeight={600}>{j.title}</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {t('recruit.recruiter.posted', { date: j.postedAt })}
+              {loading ? (
+                <Typography color="text.secondary">{t('common.loading')}</Typography>
+              ) : postingPreview.length === 0 ? (
+                <Typography color="text.secondary">{t('recruit.recruiter.emptyJobs')}</Typography>
+              ) : (
+                postingPreview.map((j) => (
+                  <Stack
+                    key={j.id}
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    sx={{ py: 1.25, borderBottom: '1px solid', borderColor: 'divider' }}
+                  >
+                    <Box>
+                      <Typography fontWeight={600}>{j.title}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {t('recruit.recruiter.posted', { date: postedDate(j.created_at) })}
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="primary" fontWeight={700}>
+                      {j.applicants_count} {t('recruit.recruiter.applicants')}
                     </Typography>
-                  </Box>
-                  <Typography variant="body2" color="primary" fontWeight={700}>
-                    {j.applicants} {t('recruit.recruiter.applicants')}
-                  </Typography>
-                </Stack>
-              ))}
+                  </Stack>
+                ))
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -112,28 +159,13 @@ export default function RecruiterDashboard() {
             <CardContent>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                 <Typography variant="h6">{t('recruit.recruiter.pipelinePreview')}</Typography>
-                <Button size="small" onClick={() => navigate('/recruiter/candidates')}>
+                <Button size="small" onClick={() => navigate('/recruiter/candidates')} disabled>
                   {t('recruit.recruiter.openPipeline')}
                 </Button>
               </Stack>
-              {MOCK_PIPELINE.slice(0, 4).map((p) => (
-                <Stack
-                  key={p.id}
-                  direction="row"
-                  justifyContent="space-between"
-                  sx={{ py: 1.25, borderBottom: '1px solid', borderColor: 'divider' }}
-                >
-                  <Box>
-                    <Typography fontWeight={600}>{p.candidateName}</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {p.jobTitle}
-                    </Typography>
-                  </Box>
-                  <Typography variant="caption" sx={{ textTransform: 'capitalize' }}>
-                    {t(`recruit.pipelineStage.${p.stage}`)}
-                  </Typography>
-                </Stack>
-              ))}
+              <Typography variant="body2" color="text.secondary">
+                {t('recruit.recruiter.pipelinePlaceholder')}
+              </Typography>
             </CardContent>
           </Card>
         </Grid>
