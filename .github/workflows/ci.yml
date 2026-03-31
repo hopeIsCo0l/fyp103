@@ -37,6 +37,13 @@ jobs:
           pip install -r requirements.txt
           pip install ruff
 
+      - name: Verify shared packages
+        run: |
+          pip install -e packages/ai-engine
+          pip install -e packages/database
+          pip install -e packages/utils
+          python -c "from ai_engine import __version__; from recruit_database import CriteriaWeights; from recruit_utils import normalize_whitespace; CriteriaWeights(); assert normalize_whitespace('  a  b  ') == 'a b'"
+
       - name: Lint (ruff)
         run: |
           cd apps/api

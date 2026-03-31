@@ -13,7 +13,10 @@ fypimp103/
 │  ├─ api.Dockerfile
 │  ├─ web.Dockerfile
 │  └─ docker-compose.yml
-├─ packages/                  # Reserved for shared libs
+├─ packages/                  # Shared Python libs (install with pip -e; see ARCHITECTURE.md)
+│  ├─ ai-engine/              # CV parsing, scoring, XAI (scaffold)
+│  ├─ database/               # Shared Pydantic types / JSON shapes (Alembic stays in apps/api)
+│  └─ utils/                  # Text helpers, future Amharic normalization
 ├─ scripts/
 ├─ .github/workflows/
 ├─ ARCHITECTURE.md
