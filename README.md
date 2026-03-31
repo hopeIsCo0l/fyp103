@@ -134,6 +134,8 @@ Requires **`recruiter`** or **`admin`** role. Recruiters see only jobs they crea
 - `PATCH /api/recruiter/jobs/{job_id}` — update fields
 - `DELETE /api/recruiter/jobs/{job_id}` — delete posting
 
+Recruiter UI: create and **edit** postings from the Jobs page; dashboard stats and “Your postings” use the **live** job list from `GET /api/recruiter/jobs`.
+
 ## Public job discovery (Week 2)
 
 **No authentication.** Only listings with **`status=open`** are returned (draft/paused/closed are hidden).

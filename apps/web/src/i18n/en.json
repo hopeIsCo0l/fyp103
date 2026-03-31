@@ -181,7 +181,13 @@
       "cancel": "Cancel",
       "saveJob": "Create job",
       "deleteConfirm": "Delete this job posting?",
-      "deleteError": "Could not delete the job."
+      "deleteError": "Could not delete the job.",
+      "jobFormEditTitle": "Edit job posting",
+      "saveJobChanges": "Save changes",
+      "dashboardLoadError": "Could not load dashboard data.",
+      "statsApplicantsHint": "Sum of applicant counts on your postings.",
+      "statsWeek3Hint": "Week 3: application timeline metrics.",
+      "pipelinePlaceholder": "Pipeline stages and candidate cards will appear when applications are wired (Week 3)."
     },
     "pipeline": {
       "title": "Candidate pipeline",
