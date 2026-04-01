@@ -47,3 +47,4 @@ Use this checklist before production cut.
 - Frontend quality gate: `cd apps/web && npm run lint && npm run build` (pass).
 - DB rollback rehearsal: `pg_dump` + `pg_restore --clean --if-exists` validated in local Docker Postgres.
 - Formal migration verification evidence: `docs/ops/migration-verification.md` (`base -> head` and `003 -> head` scenarios passed).
+- Week-2 bundled evidence: `docs/ops/week2-p0-ai-scoring-data-reliability-evidence.md`.
