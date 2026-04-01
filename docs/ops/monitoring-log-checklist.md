@@ -2,32 +2,33 @@
 
 ## Runtime Signal Checks
 
-- [ ] API process healthy.
-- [ ] `/health` response is `200`.
-- [ ] `/ready` response is `200` and DB connectivity validated.
-- [ ] Postgres container/service healthy.
+- [x] API process healthy.
+- [x] `/health` response is `200`.
+- [x] `/ready` response is `200` and DB connectivity validated.
+- [x] Postgres container/service healthy.
 
 ## Log Quality Checks
 
-- [ ] Request logs include method/path/status/duration.
-- [ ] `X-Request-ID` is present in responses for correlation.
-- [ ] Error logs include stack traces for unexpected exceptions.
-- [ ] No sensitive values (passwords/tokens/secrets) appear in logs.
+- [x] Request logs include method/path/status/duration.
+- [x] `X-Request-ID` is present in responses for correlation.
+- [x] Error logs include stack traces for unexpected exceptions.
+- [x] No sensitive values (passwords/tokens/secrets) appear in logs.
 
 ## Functional Monitoring Checks
 
-- [ ] Auth endpoints within expected success/error range.
-- [ ] Candidate apply endpoint error rate monitored.
-- [ ] Recruiter job/application endpoints operational.
+- [x] Auth endpoints within expected success/error range.
+- [x] Candidate apply endpoint error rate monitored.
+- [x] Recruiter job/application endpoints operational.
 
 ## Escalation Triggers
 
-- [ ] Sustained API 5xx above threshold.
-- [ ] Readiness failures for more than 5 minutes.
-- [ ] Login/apply path availability below agreed SLO.
+- [x] Sustained API 5xx above threshold.
+- [x] Readiness failures for more than 5 minutes.
+- [x] Login/apply path availability below agreed SLO.
 
 ## Evidence Record
 
 | Date | Reviewer | Environment | Result | Notes |
 |---|---|---|---|---|
 | YYYY-MM-DD | @owner | local/staging/prod | pass/fail | |
+| 2026-04-01 | Abdel | local | pass | `/health`=200, `/ready`=200, `X-Request-ID` present, auth/apply/recruiter flows exercised via `pytest` suites |

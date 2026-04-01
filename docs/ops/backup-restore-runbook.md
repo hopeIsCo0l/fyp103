@@ -50,3 +50,4 @@ Pass criteria:
 | Date | Operator | Environment | Backup path | Restore target | Result | Notes |
 |---|---|---|---|---|---|---|
 | YYYY-MM-DD | @owner | local/staging | `artifacts/recruit_db.dump` | `recruit_db` | pass/fail | observations |
+| 2026-04-01 | Abdel | local | `artifacts/recruit_db.dump` | `recruit_db` | pass | `pg_dump` + `pg_restore --clean --if-exists`; verified tables via `\dt` and `/ready` 200 |
