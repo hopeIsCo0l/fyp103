@@ -46,3 +46,4 @@ Use this checklist before production cut.
 - Backend smoke: `apps/api/venv311/Scripts/python.exe -m pytest apps/api/tests/test_auth.py -q` (31 passed), `... test_applications.py -q` (6 passed).
 - Frontend quality gate: `cd apps/web && npm run lint && npm run build` (pass).
 - DB rollback rehearsal: `pg_dump` + `pg_restore --clean --if-exists` validated in local Docker Postgres.
+- Formal migration verification evidence: `docs/ops/migration-verification.md` (`base -> head` and `003 -> head` scenarios passed).
