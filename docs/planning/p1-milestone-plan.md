@@ -13,6 +13,7 @@ Deliver all P1 backlog items with implementation evidence (API/UI/tests/docs), w
 1. Security dependency remediation:
    - Upgrade and validate `python-jose`, `python-multipart`, and framework-compatible `fastapi`/`starlette`.
    - Re-run backend vulnerability scan and record clean output.
+   - Execute the phased runbook in `docs/ops/security-dependency-remediation-plan.md`.
 2. Exam workflow:
    - Recruiter exam authoring.
    - Candidate exam submission.

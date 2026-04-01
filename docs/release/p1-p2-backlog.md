@@ -10,7 +10,7 @@ This backlog captures non-P0 items with ownership and target windows.
 | Interview score input and weighting in composite score | backend + recruiter UI | Week 3 | Interview module not yet implemented | `interview_score` no longer placeholder |
 | Recruiter filtering/sorting by weighted score | web | Week 3-4 | UX enhancement after core score API | Recruiter tables sort/filter by score |
 | Readiness SLO alert automation | devops | Week 4 | Needs infra alerting integration | Alert trigger documented and tested |
-| Security dependency remediation (`fastapi`/`starlette`, `python-jose`, `python-multipart`) | backend | Week 1 (next cycle) | Requires coordinated framework/dependency upgrade and regression run | `pip-audit` returns 0 high/critical findings for API lockfile/requirements |
+| Security dependency remediation (`fastapi`/`starlette`, `python-jose`, `python-multipart`) | backend | Week 1 (next cycle) | Requires coordinated framework/dependency upgrade and regression run | `pip-audit` returns 0 high/critical findings for API lockfile/requirements; execution tracked in `docs/ops/security-dependency-remediation-plan.md` |
 
 ## P2 (Later / Nice-to-Have)
 

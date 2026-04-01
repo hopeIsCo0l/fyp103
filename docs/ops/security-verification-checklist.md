@@ -26,6 +26,7 @@ Environment: local (Docker Postgres + host API/web)
 
 - [x] Exception recorded for unresolved backend dependency CVEs pending coordinated framework upgrade.
 - [x] Follow-up backlog item added in `docs/release/p1-p2-backlog.md` with owner and target window.
+- [x] Remediation execution plan documented in `docs/ops/security-dependency-remediation-plan.md`.
 
 ## Signoff
 
