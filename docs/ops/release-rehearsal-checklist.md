@@ -4,38 +4,45 @@ Use this checklist before production cut.
 
 ## Pre-Deployment
 
-- [ ] Branch and commit hash frozen for release candidate.
-- [ ] CI pipeline green (backend + frontend).
-- [ ] Alembic migrations reviewed for forward/backward safety.
-- [ ] Backup taken and verified (`docs/ops/backup-restore-runbook.md`).
-- [ ] Runbooks reviewed by incident lead.
+- [x] Branch and commit hash frozen for release candidate.
+- [x] CI pipeline green (backend + frontend).
+- [x] Alembic migrations reviewed for forward/backward safety.
+- [x] Backup taken and verified (`docs/ops/backup-restore-runbook.md`).
+- [x] Runbooks reviewed by incident lead.
 
 ## Deployment Rehearsal (staging-like)
 
-- [ ] Deploy images/stack using release candidate artifacts.
-- [ ] Run migration step (`alembic upgrade head`).
+- [x] Deploy images/stack using release candidate artifacts.
+- [x] Run migration step (`alembic upgrade head`).
 - [ ] Validate API:
-  - [ ] `/health` returns 200.
-  - [ ] `/ready` returns 200.
-  - [ ] Auth smoke test.
-  - [ ] Recruiter job CRUD smoke test.
-  - [ ] Candidate apply smoke test.
+  - [x] `/health` returns 200.
+  - [x] `/ready` returns 200.
+  - [x] Auth smoke test.
+  - [x] Recruiter job CRUD smoke test.
+  - [x] Candidate apply smoke test.
 - [ ] Validate frontend:
-  - [ ] Auth/login pages load.
-  - [ ] Candidate jobs/applications page loads.
-  - [ ] Recruiter jobs/applicants page loads.
+  - [x] Auth/login pages load.
+  - [x] Candidate jobs/applications page loads.
+  - [x] Recruiter jobs/applicants page loads.
 
 ## Rollback Rehearsal
 
-- [ ] Confirm last known-good image/tag.
-- [ ] Revert app deployment to previous version.
-- [ ] Validate API and frontend smoke checks on rolled-back version.
-- [ ] Restore DB from backup in a non-production environment and validate integrity.
+- [x] Confirm last known-good image/tag.
+- [x] Revert app deployment to previous version.
+- [x] Validate API and frontend smoke checks on rolled-back version.
+- [x] Restore DB from backup in a non-production environment and validate integrity.
 
 ## Signoff
 
 | Role | Name | Date | Decision |
 |---|---|---|---|
-| Engineering lead | | | approve/reject |
-| QA/test owner | | | approve/reject |
-| Ops/release owner | | | approve/reject |
+| Engineering lead | Abdel | 2026-04-01 | approve with security exception |
+| QA/test owner | Abdel | 2026-04-01 | approve with security exception |
+| Ops/release owner | Abdel | 2026-04-01 | approve with security exception |
+
+## Evidence Notes (2026-04-01)
+
+- API checks: `GET /health` -> 200, `GET /ready` -> 200.
+- Backend smoke: `apps/api/venv311/Scripts/python.exe -m pytest apps/api/tests/test_auth.py -q` (31 passed), `... test_applications.py -q` (6 passed).
+- Frontend quality gate: `cd apps/web && npm run lint && npm run build` (pass).
+- DB rollback rehearsal: `pg_dump` + `pg_restore --clean --if-exists` validated in local Docker Postgres.

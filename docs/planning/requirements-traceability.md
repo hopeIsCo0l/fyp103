@@ -24,8 +24,9 @@ Status values:
 | NFR-OPS-HEALTH | Service health endpoint available for runtime checks | P0 | 1 | backend | `apps/api/app/main.py` | done |
 | NFR-TRACE-LOG | Structured request logging with request correlation ID | P0 | 2 | backend | `apps/api/app/main.py` | done |
 | NFR-SEC-CI | CI validates backend/frontend quality gates | P0 | 1 | devops | `.github/workflows/ci.yml` | done |
-| NFR-OPS-BACKUP | Postgres backup/restore runbook documented and rehearsal evidence tracked | P0 | 3 | devops | `docs/ops/backup-restore-runbook.md` | in_progress |
-| NFR-OPS-INCIDENT | Incident response and rollback runbooks documented | P0 | 3 | devops | `docs/ops/incident-runbook.md`, `docs/ops/release-rehearsal-checklist.md` | in_progress |
+| NFR-OPS-BACKUP | Postgres backup/restore runbook documented and rehearsal evidence tracked | P0 | 3 | devops | `docs/ops/backup-restore-runbook.md` | done |
+| NFR-OPS-INCIDENT | Incident response and rollback runbooks documented | P0 | 3 | devops | `docs/ops/incident-runbook.md`, `docs/ops/release-rehearsal-checklist.md` | done |
+| NFR-SEC-SCAN | Dependency vulnerability + secrets hygiene review attached to release evidence | P0 | 4 | backend/devops | `docs/ops/security-verification-checklist.md` | done |
 | FR-EXAM | Exam authoring/submission/grading workflow | P1 | 3 | backend/web | `TBD` | not_started |
 | FR-XAI | Explainable AI output for score breakdown and rationale | P1 | 4 | backend/web | `TBD` | not_started |
 | NFR-FAIRNESS | Bias/fairness checks and audit trail policy | P2 | 4 | ai/backend | `TBD` | not_started |

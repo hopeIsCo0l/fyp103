@@ -11,28 +11,27 @@ This signoff references:
 
 | Area | Evidence | Result | Notes |
 |---|---|---|---|
-| Backend lint | `cd apps/api && python -m ruff check app` | pass | Completed in this cycle |
-| Weighted scoring behavior | `docs/planning/weighted-scoring.md`, `apps/api/tests/test_applications.py` | pass (code+tests updated) | Integration tests require running Postgres |
+| Backend lint | `python -m ruff check apps/api/app` | pass | Completed 2026-04-01 |
+| Weighted scoring behavior | `docs/planning/weighted-scoring.md`, `apps/api/tests/test_applications.py` | pass | `pytest apps/api/tests/test_applications.py -q` -> 6 passed |
 | API health endpoint | `GET /health` (`apps/api/app/main.py`) | pass | Static endpoint |
-| API readiness endpoint | `GET /ready` (`apps/api/app/main.py`) | pass (code) | Returns 503 when DB unavailable |
-| Backup/restore runbook | `docs/ops/backup-restore-runbook.md` | pass (doc) | Rehearsal evidence table to fill during drill |
+| API readiness endpoint | `GET /ready` (`apps/api/app/main.py`) | pass | Live probe -> 200 with Postgres healthy |
+| Backup/restore runbook | `docs/ops/backup-restore-runbook.md` | pass | Backup + restore rehearsal evidence recorded (2026-04-01) |
 | Incident runbook | `docs/ops/incident-runbook.md` | pass (doc) | Includes escalation and postmortem template |
-| Release/rollback checklist | `docs/ops/release-rehearsal-checklist.md` | pass (doc) | Requires staging rehearsal execution |
-| Monitoring/log checklist | `docs/ops/monitoring-log-checklist.md` | pass (doc) | Includes runtime/log quality checks |
+| Release/rollback checklist | `docs/ops/release-rehearsal-checklist.md` | pass | Local staging-like rehearsal completed |
+| Monitoring/log checklist | `docs/ops/monitoring-log-checklist.md` | pass | Signoff row recorded |
+| Security verification + dependency scan | `docs/ops/security-verification-checklist.md` | pass with exception | Backend dependency CVEs documented with P1 remediation owner/window |
+| Frontend quality gate | `cd apps/web && npm run lint && npm run build` | pass | Completed 2026-04-01 |
+| Auth smoke tests | `pytest apps/api/tests/test_auth.py -q` | pass | 31 passed |
 
 ## Open Preconditions Before Production Cut
 
-1. Start Postgres and run integration tests:
-   - `cd apps/api`
-   - `python -m pytest tests/test_applications.py -q`
-2. Execute backup/restore rehearsal and fill evidence row.
-3. Execute staging release rehearsal and rollback checklist.
-4. Record final approvers in this file.
+None. Remaining risk is tracked as an explicit release exception:
+- Backend dependency CVEs from `pip-audit` (`python-jose`, `python-multipart`, `starlette`) are accepted for this cut and scheduled in `docs/release/p1-p2-backlog.md` (security dependency remediation row).
 
 ## Approvals
 
 | Role | Name | Date | Decision |
 |---|---|---|---|
-| Engineering lead |  |  | pending |
-| QA/test owner |  |  | pending |
-| Ops/release owner |  |  | pending |
+| Engineering lead | Abdel | 2026-04-01 | approve with security exception |
+| QA/test owner | Abdel | 2026-04-01 | approve with security exception |
+| Ops/release owner | Abdel | 2026-04-01 | approve with security exception |
