@@ -1,6 +1,6 @@
-# FYP103 - AI Recruitment Platform
+# EAA Recruit
 
-A clean monorepo-style structure for an AI-powered recruitment system.
+AI-powered recruitment platform built in a clean monorepo structure.
 
 ## Repository Structure
 

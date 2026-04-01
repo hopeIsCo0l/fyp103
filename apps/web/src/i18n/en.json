@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "AI-Powered Recruitment System",
+    "appName": "EAA Recruit",
     "loading": "Loading...",
     "email": "Email",
     "password": "Password",
@@ -15,8 +15,16 @@
   "home": {
     "welcome": "Welcome, {{name}}",
     "signedInAs": "Signed in as {{email}} ({{role}})",
-    "guestHeading": "AI-Powered Recruitment System",
-    "guestSubtext": "Sign in or create an account to get started"
+    "eyebrow": "Smarter hiring starts here",
+    "guestHeading": "EAA Recruit",
+    "guestSubtext": "A modern workspace for candidates, recruiters, and admins with transparent AI-assisted matching.",
+    "primaryCta": "Create your account",
+    "valueFast": "Faster hiring workflow",
+    "valueFastDesc": "Publish jobs, track applicants, and move through stages with fewer manual steps.",
+    "valueTransparent": "Transparent matching",
+    "valueTransparentDesc": "TF-IDF scoring and weighted breakdowns help teams understand why results rank the way they do.",
+    "valueCollaborative": "Built for every role",
+    "valueCollaborativeDesc": "Candidates discover roles, recruiters manage pipelines, and admins keep operations healthy."
   },
   "signin": {
     "title": "Sign in",

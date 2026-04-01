@@ -40,8 +40,8 @@ if not os.getenv("SKIP_STARTUP_DB"):
 _request_log = logging.getLogger("app.request")
 
 app = FastAPI(
-    title="Recruitment AI API",
-    description="AI-powered recruitment system",
+    title="EAA Recruit API",
+    description="EAA Recruit — AI-powered recruitment platform API",
     version="1.0.0",
 )
 

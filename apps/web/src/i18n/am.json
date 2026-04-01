@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "በአይ የሚሰራ የቅጥር ስርዓት",
+    "appName": "EAA Recruit",
     "loading": "በመጫን ላይ...",
     "email": "ኢሜይል",
     "password": "የይለፍ ቃል",
@@ -15,8 +15,16 @@
   "home": {
     "welcome": "እንኳን ደህና መጡ፣ {{name}}",
     "signedInAs": "እንደ {{email}} ({{role}}) ገብተዋል",
-    "guestHeading": "በአይ የሚሰራ የቅጥር ስርዓት",
-    "guestSubtext": "ለመጀመር ይግቡ ወይም አካውንት ይፍጠሩ"
+    "eyebrow": "ብልጥ ቅጥር ከዚህ ይጀምራል",
+    "guestHeading": "EAA Recruit",
+    "guestSubtext": "ለእጩ ተወዳዳሪዎች፣ ለቀጣሪዎች እና ለአስተዳዳሪዎች ግልፅ የAI የማዛመድ እገዛ ያለው ዘመናዊ የስራ ቦታ።",
+    "primaryCta": "አካውንት ይፍጠሩ",
+    "valueFast": "ፈጣን የቅጥር ሂደት",
+    "valueFastDesc": "ስራዎችን ይለጥፉ፣ አመልካቾችን ይከታተሉ፣ እና ደረጃዎችን በቀላሉ ያስተዳድሩ።",
+    "valueTransparent": "ግልፅ የማዛመድ ውጤት",
+    "valueTransparentDesc": "የTF-IDF ውጤት እና የክብደት ትንተና ውጤቶች የተራ ምክንያትን ግልፅ ያደርጋሉ።",
+    "valueCollaborative": "ለሁሉም ሚና የተዘጋጀ",
+    "valueCollaborativeDesc": "እጩዎች ሚናዎችን ያግኛሉ፣ ቀጣሪዎች ቧንቧን ያስተዳድራሉ፣ አስተዳዳሪዎችም ስርዓቱን ያስታድጋሉ።"
   },
   "signin": {
     "title": "ግባ",
