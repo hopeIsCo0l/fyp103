@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Alert,
@@ -18,6 +18,7 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import type { AuditLogOut } from '../../api/admin';
@@ -29,6 +30,71 @@ import {
 import { useAuth } from '../../contexts/useAuth';
 
 const PAGE_SIZE = 20;
+
+/** Column keys for resizable audit log table (px widths, min 80). */
+type AuditColKey = 'time' | 'action' | 'actor' | 'target' | 'ip' | 'meta';
+
+const DEFAULT_COL_WIDTHS: Record<AuditColKey, number> = {
+  time: 168,
+  action: 168,
+  actor: 200,
+  target: 220,
+  ip: 128,
+  meta: 280,
+};
+
+function formatMetadataDisplay(raw: string | null): string {
+  if (!raw || raw === '{}') return '—';
+  try {
+    return JSON.stringify(JSON.parse(raw), null, 2);
+  } catch {
+    return raw;
+  }
+}
+
+function ResizableTh({
+  width,
+  minWidth = 80,
+  onResizeStart,
+  children,
+}: {
+  width: number;
+  minWidth?: number;
+  onResizeStart: (e: React.MouseEvent) => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <TableCell
+      sx={{
+        width,
+        minWidth,
+        maxWidth: width,
+        position: 'relative',
+        verticalAlign: 'middle',
+        userSelect: 'none',
+        borderRight: '1px solid',
+        borderColor: 'divider',
+        pr: 0,
+      }}
+    >
+      <Box sx={{ pr: 1.5, overflow: 'hidden', textOverflow: 'ellipsis' }}>{children}</Box>
+      <Box
+        onMouseDown={onResizeStart}
+        sx={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          width: 6,
+          height: '100%',
+          cursor: 'col-resize',
+          zIndex: 1,
+          '&:hover': { bgcolor: 'action.hover' },
+        }}
+        aria-hidden
+      />
+    </TableCell>
+  );
+}
 
 const ACTION_OPTIONS = [
   '',
@@ -64,6 +130,27 @@ export default function AdminAuditLogs() {
   const [error, setError] = useState('');
   const [snack, setSnack] = useState('');
   const [exporting, setExporting] = useState(false);
+  const [colWidths, setColWidths] = useState<Record<AuditColKey, number>>(DEFAULT_COL_WIDTHS);
+  const resizeRef = useRef<{ key: AuditColKey; startX: number; startW: number } | null>(null);
+
+  const handleResizeStart = (key: AuditColKey) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    resizeRef.current = { key, startX: e.clientX, startW: colWidths[key] };
+    const onMove = (ev: MouseEvent) => {
+      if (!resizeRef.current) return;
+      const { key: k, startX: sx, startW: sw } = resizeRef.current;
+      const next = Math.max(80, sw + (ev.clientX - sx));
+      setColWidths((w) => ({ ...w, [k]: next }));
+    };
+    const onUp = () => {
+      resizeRef.current = null;
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  };
 
   const load = useCallback(async () => {
     try {
@@ -181,43 +268,168 @@ export default function AdminAuditLogs() {
         </Alert>
       )}
 
-      <TableContainer component={Paper}>
-        <Table size="small">
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+        {t('admin.audit.resizeHint')}
+      </Typography>
+
+      <TableContainer
+        component={Paper}
+        sx={{
+          overflow: 'auto',
+          maxWidth: '100%',
+        }}
+      >
+        <Table
+          size="small"
+          sx={{
+            tableLayout: 'fixed',
+            width: Object.values(colWidths).reduce((a, b) => a + b, 0),
+            minWidth: '100%',
+          }}
+        >
           <TableHead>
             <TableRow>
-              <TableCell>{t('admin.audit.colTime')}</TableCell>
-              <TableCell>{t('admin.audit.colAction')}</TableCell>
-              <TableCell>{t('admin.audit.colActor')}</TableCell>
-              <TableCell>{t('admin.audit.colTarget')}</TableCell>
-              <TableCell>{t('admin.audit.colIp')}</TableCell>
-              <TableCell>{t('admin.audit.colMeta')}</TableCell>
+              <ResizableTh width={colWidths.time} onResizeStart={handleResizeStart('time')}>
+                {t('admin.audit.colTime')}
+              </ResizableTh>
+              <ResizableTh width={colWidths.action} onResizeStart={handleResizeStart('action')}>
+                {t('admin.audit.colAction')}
+              </ResizableTh>
+              <ResizableTh width={colWidths.actor} onResizeStart={handleResizeStart('actor')}>
+                {t('admin.audit.colActor')}
+              </ResizableTh>
+              <ResizableTh width={colWidths.target} onResizeStart={handleResizeStart('target')}>
+                {t('admin.audit.colTarget')}
+              </ResizableTh>
+              <ResizableTh width={colWidths.ip} onResizeStart={handleResizeStart('ip')}>
+                {t('admin.audit.colIp')}
+              </ResizableTh>
+              <ResizableTh width={colWidths.meta} onResizeStart={handleResizeStart('meta')}>
+                {t('admin.audit.colMeta')}
+              </ResizableTh>
             </TableRow>
           </TableHead>
           <TableBody>
-            {logs.map((log) => (
-              <TableRow key={log.id}>
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>{fmtDate(log.created_at)}</TableCell>
-                <TableCell>{log.action}</TableCell>
-                <TableCell sx={{ fontSize: '0.8rem' }}>
-                  {log.actor_email ||
-                    (log.actor_id ? `${log.actor_id.slice(0, 8)}…` : '—')}
-                </TableCell>
-                <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
-                  {log.target_id ? `${log.target_type || ''}:${log.target_id.slice(0, 8)}…` : '—'}
-                </TableCell>
-                <TableCell>{log.ip_address || '—'}</TableCell>
-                <TableCell
-                  sx={{
-                    maxWidth: 200,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {log.metadata_json && log.metadata_json !== '{}' ? log.metadata_json : '—'}
-                </TableCell>
-              </TableRow>
-            ))}
+            {logs.map((log) => {
+              const actorLabel = log.actor_email || log.actor_id || '—';
+              const targetLabel =
+                log.target_id && log.target_type
+                  ? `${log.target_type}:${log.target_id}`
+                  : log.target_id
+                    ? log.target_id
+                    : '—';
+              const metaFormatted = formatMetadataDisplay(log.metadata_json);
+              const metaForTooltip =
+                metaFormatted !== '—' ? metaFormatted : '';
+
+              return (
+                <TableRow key={log.id} hover>
+                  <TableCell
+                    sx={{
+                      width: colWidths.time,
+                      maxWidth: colWidths.time,
+                      whiteSpace: 'nowrap',
+                      verticalAlign: 'top',
+                      borderRight: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    {fmtDate(log.created_at)}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      width: colWidths.action,
+                      maxWidth: colWidths.action,
+                      verticalAlign: 'top',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      borderRight: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    {log.action}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      width: colWidths.actor,
+                      maxWidth: colWidths.actor,
+                      fontSize: '0.8rem',
+                      verticalAlign: 'top',
+                      wordBreak: 'break-word',
+                      borderRight: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    <Tooltip title={actorLabel} placement="top-start" enterDelay={400}>
+                      <span>{actorLabel}</span>
+                    </Tooltip>
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      width: colWidths.target,
+                      maxWidth: colWidths.target,
+                      fontFamily: 'monospace',
+                      fontSize: '0.75rem',
+                      verticalAlign: 'top',
+                      wordBreak: 'break-all',
+                      borderRight: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    <Tooltip title={targetLabel} placement="top-start" enterDelay={400}>
+                      <span>{targetLabel}</span>
+                    </Tooltip>
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      width: colWidths.ip,
+                      maxWidth: colWidths.ip,
+                      verticalAlign: 'top',
+                      borderRight: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    {log.ip_address || '—'}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      width: colWidths.meta,
+                      maxWidth: colWidths.meta,
+                      verticalAlign: 'top',
+                      borderRight: '1px solid',
+                      borderColor: 'divider',
+                      p: 1,
+                    }}
+                  >
+                    {metaFormatted === '—' ? (
+                      '—'
+                    ) : (
+                      <Tooltip
+                        title={<Box sx={{ whiteSpace: 'pre-wrap', maxWidth: 520 }}>{metaForTooltip}</Box>}
+                        placement="top-start"
+                        enterDelay={300}
+                      >
+                        <Box
+                          component="pre"
+                          sx={{
+                            m: 0,
+                            maxHeight: 160,
+                            overflow: 'auto',
+                            fontFamily: 'monospace',
+                            fontSize: '0.7rem',
+                            lineHeight: 1.4,
+                            whiteSpace: 'pre-wrap',
+                            wordBreak: 'break-word',
+                          }}
+                        >
+                          {metaFormatted}
+                        </Box>
+                      </Tooltip>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
             {logs.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} align="center">

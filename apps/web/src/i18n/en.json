@@ -376,6 +376,7 @@
       "colTarget": "Target",
       "colIp": "IP",
       "colMeta": "Metadata",
+      "resizeHint": "Drag the right edge of a column header to resize. Scroll horizontally if the table is wider than the screen.",
       "noLogs": "No audit logs found",
       "loadError": "Failed to load audit logs"
     }
