@@ -67,7 +67,7 @@ Notes:
 | FR-42 | legacy-data-export-erasure | Personal data export and erasure | P2 | 4 | backend | `TBD` | deferred |
 | FR-43 | legacy-bulk-actions | Bulk operations on requests | P2 | 4 | backend/web | `TBD` | deferred |
 | FR-44 | legacy-integration-hooks | Integration hooks | P2 | 4 | backend | `TBD` | deferred |
-| NFR-01 | legacy-perf-budget | Performance | P0 | 2 | backend/web/devops | `TBD` | in_progress |
+| NFR-01 | legacy-perf-budget | Performance | P0 | 2 | backend/web/devops | `apps/api/tests/test_performance_smoke.py`, `docs/ops/performance-latency-baseline.md` | done |
 | NFR-02 | NFR-OPS-HEALTH | Availability and reliability | P0 | 1 | backend | `apps/api/app/main.py` | done |
 | NFR-03 | NFR-SEC-SCAN | Security | P0 | 3 | backend/devops | `docs/ops/security-verification-checklist.md`, `apps/api/tests/test_auth.py` | done |
 | NFR-04 | legacy-privacy-baseline | Privacy and data protection | P2 | 4 | backend/devops | `TBD` | deferred |
