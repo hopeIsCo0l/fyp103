@@ -60,7 +60,7 @@ Notes:
 | FR-35 | legacy-sla-deadline | Track SLA/deadline compliance | P2 | 4 | backend/devops | `TBD` | deferred |
 | FR-36 | NFR-TRACE-LOG (legacy overlap) | Audit user actions | P1 | 4 | backend | `apps/api/app/main.py`, `docs/ops/monitoring-log-checklist.md` | in_progress |
 | FR-37 | legacy-system-config | System configuration | P2 | 4 | backend | `TBD` | deferred |
-| FR-38 | legacy-error-feedback | Error handling and user feedback | P1 | 3 | backend/web | `apps/api/app/main.py`, `apps/web/src/lib/api.ts` | in_progress |
+| FR-38 | legacy-error-feedback | Error handling and user feedback | P0 | 1 | backend/web | `apps/api/app/main.py`, `apps/web/src/utils/apiError.ts`, `apps/web/src/pages/Signin.tsx`, `apps/web/src/pages/AdminSignin.tsx`, `apps/web/src/pages/ForgotPassword.tsx`, `apps/web/src/pages/ResetPassword.tsx`, `apps/web/src/pages/ChangePasswordRequired.tsx` | done |
 | FR-39 | legacy-email-verification | Account verification (activation) | P0 | 1 | backend/web | `apps/api/app/auth/routes.py`, `apps/api/tests/test_auth.py` | done |
 | FR-40 | legacy-lockout-session-policy | Session and account security policy | P0 | 1 | backend | `apps/api/app/auth/security.py`, `apps/api/tests/test_auth.py` | done |
 | FR-41 | legacy-concurrency | Concurrent edit protection | P2 | 4 | backend | `TBD` | deferred |

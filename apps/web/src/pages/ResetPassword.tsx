@@ -5,6 +5,7 @@ import { Alert, Box, Button, Paper, TextField, Typography } from '@mui/material'
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 import { resetPassword } from '../api/auth';
+import { getApiErrorMessage } from '../utils/apiError';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -25,8 +26,7 @@ export default function ResetPassword() {
       setMessage(res.message);
       setTimeout(() => navigate('/signin'), 1200);
     } catch (err: unknown) {
-      const ax = err as { response?: { data?: { detail?: string } } };
-      setError(ax?.response?.data?.detail || t('resetPassword.failedDefault'));
+      setError(getApiErrorMessage(err, t('resetPassword.failedDefault'), t('common.networkError')));
     } finally {
       setLoading(false);
     }

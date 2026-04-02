@@ -10,9 +10,13 @@ export function getApiErrorMessage(
     message?: string;
   };
   const data = ax.response?.data;
+  const status = ax.response?.status;
   if (data && typeof data === 'object' && data !== null && 'detail' in data) {
     const detail = (data as { detail: unknown }).detail;
-    if (typeof detail === 'string') return detail;
+    if (typeof detail === 'string') {
+      if (status && status >= 500) return fallback;
+      return detail;
+    }
     if (Array.isArray(detail)) {
       return detail
         .map((item) => {
@@ -27,11 +31,26 @@ export function getApiErrorMessage(
         .join(', ');
     }
   }
+  if (status === 401) {
+    return 'Your session is invalid or expired. Please sign in again.';
+  }
+  if (status === 403) {
+    return 'You do not have permission to perform this action.';
+  }
+  if (status === 404) {
+    return 'The requested resource was not found.';
+  }
+  if (status === 429) {
+    return 'Too many requests. Please try again later.';
+  }
+  if (status && status >= 500) {
+    return fallback;
+  }
   if (typeof data === 'string' && data.trim()) {
     return data.slice(0, 200);
   }
-  if (ax.response?.status) {
-    return `Request failed (HTTP ${ax.response.status})`;
+  if (status) {
+    return `Request failed (HTTP ${status})`;
   }
   if (ax?.code === 'ERR_NETWORK' || ax?.message?.includes('Network Error')) {
     return networkFallback ?? fallback;
