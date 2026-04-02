@@ -82,7 +82,7 @@ def test_alembic_upgrade_from_003_to_head_adds_scoring_columns():
 
     with engine.connect() as conn:
         head_rev = conn.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
-        assert head_rev == "005_add_application_cv_match"
+        assert head_rev == "008_add_must_change_password"
         app_cols = {
             row[0]
             for row in conn.execute(

@@ -276,13 +276,13 @@ def delete_user(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    if _is_admin_role(user):
-        _require_super(admin)
     if user.id == admin.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot deactivate your own account",
         )
+    if _is_admin_role(user):
+        _require_super(admin)
     user.is_active = False
     db.commit()
     ip = request.client.host if request.client else None
@@ -316,13 +316,13 @@ def admin_reset_password(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    if _is_admin_role(user):
-        _require_super(admin)
     if user.id == admin.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot reset your own password from the admin panel",
         )
+    if _is_admin_role(user):
+        _require_super(admin)
     if payload.new_password:
         if len(payload.new_password) < 8:
             raise HTTPException(
