@@ -113,6 +113,50 @@ class TestSignupVerifySignin:
         resp = client.get("/api/auth/me")
         assert resp.status_code == 401
 
+    def test_update_me_updates_full_name_and_phone(self, client, make_verified_user):
+        tokens = make_verified_user(EMAIL, PASSWORD)
+        headers = {"Authorization": f"Bearer {tokens['access_token']}"}
+
+        resp = client.patch(
+            "/api/auth/me",
+            json={"full_name": "  Updated User  ", "phone": " +1555000222 "},
+            headers=headers,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["full_name"] == "Updated User"
+        assert data["phone"] == "+1555000222"
+
+        me = client.get("/api/auth/me", headers=headers)
+        assert me.status_code == 200
+        assert me.json()["full_name"] == "Updated User"
+        assert me.json()["phone"] == "+1555000222"
+
+    def test_update_me_rejects_duplicate_phone(self, client, captured_otps, make_verified_user):
+        phone = "+1555011111"
+        owner_email = "phone-owner@test.com"
+        signup = client.post(
+            "/api/auth/signup",
+            json={
+                "email": owner_email,
+                "password": PASSWORD,
+                "full_name": "Phone Owner",
+                "phone": phone,
+            },
+        )
+        assert signup.status_code == 200
+        owner_otp = captured_otps[owner_email][-1]
+        verify = client.post(
+            "/api/auth/verify-email", json={"email": owner_email, "otp": owner_otp}
+        )
+        assert verify.status_code == 200
+
+        other = make_verified_user("other-user@test.com", PASSWORD)
+        headers = {"Authorization": f"Bearer {other['access_token']}"}
+        resp = client.patch("/api/auth/me", json={"phone": phone}, headers=headers)
+        assert resp.status_code == 400
+        assert "phone" in resp.json()["detail"].lower()
+
 
 # ── 2. Refresh Token Rotation ────────────────────────────────────────────
 

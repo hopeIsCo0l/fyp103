@@ -17,6 +17,7 @@ from app.auth.schemas import (
     RequestOTP,
     ResetPasswordRequest,
     Token,
+    UpdateProfileRequest,
     UserResponse,
     UserSignin,
     UserSignup,
@@ -610,6 +611,64 @@ def logout(
 
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
+@router.patch("/me", response_model=UserResponse)
+def update_me(
+    payload: UpdateProfileRequest,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    provided_fields = payload.model_fields_set
+    if not provided_fields:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No profile fields provided for update",
+        )
+
+    updated_fields: list[str] = []
+
+    if "full_name" in provided_fields:
+        full_name = (payload.full_name or "").strip()
+        if not full_name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Full name cannot be empty",
+            )
+        current_user.full_name = full_name
+        updated_fields.append("full_name")
+
+    if "phone" in provided_fields:
+        phone_norm = normalize_phone(payload.phone)
+        if phone_norm:
+            existing_phone = (
+                db.query(User)
+                .filter(User.phone == phone_norm, User.id != current_user.id)
+                .first()
+            )
+            if existing_phone:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Phone number already registered",
+                )
+        current_user.phone = phone_norm
+        updated_fields.append("phone")
+
+    db.commit()
+    ip, ua = _request_context(request)
+    write_audit_log(
+        db,
+        action="auth.update_profile",
+        actor_id=current_user.id,
+        target_type="user",
+        target_id=current_user.id,
+        ip_address=ip,
+        user_agent=ua,
+        metadata={"updated_fields": updated_fields},
+    )
+    db.refresh(current_user)
     return current_user
 
 
