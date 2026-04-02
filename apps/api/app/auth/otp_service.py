@@ -16,10 +16,11 @@ def generate_otp() -> str:
     return "".join(secrets.choice("0123456789") for _ in range(length))
 
 
-def create_and_send_otp(db: Session, email: str, purpose: str) -> bool:
+def create_and_send_otp(
+    db: Session, email: str, purpose: str, signup_data: str | None = None
+) -> bool:
     """Create OTP, invalidate previous for same email+purpose, send email. Returns True if sent."""
     email = email.lower()
-    # Invalidate previous OTPs for this email+purpose
     db.query(OTP).filter(OTP.email == email, OTP.purpose == purpose).delete()
     otp = generate_otp()
     expires_at = datetime.now(timezone.utc) + timedelta(minutes=settings.OTP_EXPIRE_MINUTES)
@@ -28,6 +29,7 @@ def create_and_send_otp(db: Session, email: str, purpose: str) -> bool:
         email=email,
         otp_hash=pwd_context.hash(otp),
         purpose=purpose,
+        signup_data=signup_data,
         expires_at=expires_at,
     )
     db.add(otp_record)
@@ -35,8 +37,8 @@ def create_and_send_otp(db: Session, email: str, purpose: str) -> bool:
     return send_otp_email(email, otp, purpose)
 
 
-def verify_otp(db: Session, email: str, otp: str, purpose: str) -> bool:
-    """Verify OTP. Returns True if valid. Deletes OTP on success."""
+def verify_otp(db: Session, email: str, otp: str, purpose: str) -> dict | bool:
+    """Verify OTP. Returns signup_data dict for signup purpose, True for others, False on failure."""
     email = email.lower()
     record = (
         db.query(OTP)
@@ -55,6 +57,11 @@ def verify_otp(db: Session, email: str, otp: str, purpose: str) -> bool:
         return False
     if not pwd_context.verify(otp, record.otp_hash):
         return False
+    signup_data = record.signup_data
     db.delete(record)
     db.commit()
+    if purpose == "signup" and signup_data:
+        import json
+
+        return json.loads(signup_data)
     return True

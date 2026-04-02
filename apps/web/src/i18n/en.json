@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "AI-Powered Recruitment System",
+    "appName": "EAA Recruit",
     "loading": "Loading...",
     "email": "Email",
     "password": "Password",
@@ -15,8 +15,16 @@
   "home": {
     "welcome": "Welcome, {{name}}",
     "signedInAs": "Signed in as {{email}} ({{role}})",
-    "guestHeading": "AI-Powered Recruitment System",
-    "guestSubtext": "Sign in or create an account to get started"
+    "eyebrow": "Smarter hiring starts here",
+    "guestHeading": "EAA Recruit",
+    "guestSubtext": "A modern workspace for candidates, recruiters, and admins with transparent AI-assisted matching.",
+    "primaryCta": "Create your account",
+    "valueFast": "Faster hiring workflow",
+    "valueFastDesc": "Publish jobs, track applicants, and move through stages with fewer manual steps.",
+    "valueTransparent": "Transparent matching",
+    "valueTransparentDesc": "TF-IDF scoring and weighted breakdowns help teams understand why results rank the way they do.",
+    "valueCollaborative": "Built for every role",
+    "valueCollaborativeDesc": "Candidates discover roles, recruiters manage pipelines, and admins keep operations healthy."
   },
   "signin": {
     "title": "Sign in",
@@ -75,6 +83,16 @@
     "updating": "Updating...",
     "updatePassword": "Update password",
     "failedDefault": "Failed to reset password"
+  },
+  "changePasswordRequired": {
+    "title": "Choose a new password",
+    "subtitle": "An administrator reset your password. Sign in with the temporary password you were given, then set your own password here.",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "passwordHelp": "At least 8 characters",
+    "saving": "Saving...",
+    "submit": "Save new password",
+    "failedDefault": "Could not update password"
   },
   "unauthorized": {
     "title": "Unauthorized",
@@ -232,6 +250,13 @@
   },
   "admin": {
     "title": "Admin Dashboard",
+    "signin": {
+      "title": "Admin sign in",
+      "subtitle": "Staff access only. Use your administrator credentials.",
+      "submit": "Sign in to admin",
+      "notAdmin": "This account is not an administrator. Use the regular sign-in page.",
+      "backToSignIn": "Regular user sign in"
+    },
     "goToDashboard": "Admin Dashboard",
     "nav": {
       "dashboard": "Dashboard",
@@ -266,6 +291,7 @@
       "colRole": "Role",
       "colStatus": "Status",
       "colVerified": "Verified",
+      "colSuper": "Super admin",
       "colActions": "Actions",
       "active": "Active",
       "inactive": "Inactive",
@@ -282,6 +308,8 @@
       "reactivate": "Reactivate",
       "statusActive": "Account active",
       "emailVerified": "Email verified",
+      "superAdminLabel": "Super administrator",
+      "cannotDemoteOwnSuperHint": "You cannot remove your own super admin flag here.",
       "confirmDeactivateTitle": "Deactivate user?",
       "confirmReactivateTitle": "Reactivate user?",
       "confirmDeactivateBody": "User {{email}} will not be able to sign in until reactivated.",

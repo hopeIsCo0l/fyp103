@@ -24,6 +24,9 @@ def ensure_super_admin() -> None:
             if existing.role != "admin":
                 existing.role = "admin"
                 changed = True
+            if not existing.is_super_admin:
+                existing.is_super_admin = True
+                changed = True
             if not existing.is_email_verified:
                 existing.is_email_verified = True
                 changed = True
@@ -41,6 +44,7 @@ def ensure_super_admin() -> None:
                 hashed_password=get_password_hash(password),
                 full_name=name,
                 role="admin",
+                is_super_admin=True,
                 is_email_verified=True,
                 is_active=True,
             )

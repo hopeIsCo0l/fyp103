@@ -7,6 +7,7 @@ export interface UserOut {
   role: string;
   is_active: boolean;
   is_email_verified: boolean;
+  is_super_admin?: boolean;
   phone?: string | null;
   last_login_at: string | null;
   created_at: string | null;
@@ -33,6 +34,7 @@ export interface UpdateUserPayload {
   role?: string;
   is_active?: boolean;
   is_email_verified?: boolean;
+  is_super_admin?: boolean;
   full_name?: string;
   phone?: string | null;
 }

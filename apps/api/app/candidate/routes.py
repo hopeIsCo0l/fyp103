@@ -1,3 +1,4 @@
+from ai_engine.match import weighted_score_breakdown
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -26,6 +27,10 @@ def list_my_applications(
     )
     out: list[CandidateApplicationOut] = []
     for app_row, job in rows:
+        scores = weighted_score_breakdown(
+            cv_similarity_score=app_row.cv_similarity_score,
+            criteria_weights=job.criteria_weights if isinstance(job.criteria_weights, dict) else None,
+        )
         out.append(
             CandidateApplicationOut(
                 id=app_row.id,
@@ -34,6 +39,8 @@ def list_my_applications(
                 company_name=job.company_name,
                 stage=app_row.stage,
                 cv_similarity_score=app_row.cv_similarity_score,
+                weighted_total_score=scores["weighted_total_score"],
+                score_breakdown=scores,
                 created_at=app_row.created_at,
                 updated_at=app_row.updated_at,
             )

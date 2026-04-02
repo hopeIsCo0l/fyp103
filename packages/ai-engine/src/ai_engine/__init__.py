@@ -3,8 +3,8 @@
 Phased implementation: CV–JD TF-IDF similarity, then richer parsing and XAI.
 """
 
-from ai_engine.match import cv_job_similarity
+from ai_engine.match import cv_job_similarity, weighted_score_breakdown
 
 __version__ = "0.2.0"
 
-__all__ = ["__version__", "cv_job_similarity"]
+__all__ = ["__version__", "cv_job_similarity", "weighted_score_breakdown"]

@@ -5,13 +5,14 @@ import uuid
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
 from app.admin.routes import router as admin_router
 from app.auth.routes import router as auth_router
 from app.candidate.routes import router as candidate_router
 from app.database import engine
 from app.db_migrate import run_postgresql_migrations
-from app.db_startup import run_alembic_upgrade
+from app.db_startup import run_alembic_upgrade, wait_for_database
 from app.jobs.routes import router as jobs_router
 from app.models import (  # noqa: F401 - register models for SQLAlchemy metadata
     OTP,
@@ -32,6 +33,7 @@ if not logging.root.handlers:
     )
 
 if not os.getenv("SKIP_STARTUP_DB"):
+    wait_for_database()
     run_alembic_upgrade()
     run_postgresql_migrations(engine)
     ensure_super_admin()
@@ -39,8 +41,8 @@ if not os.getenv("SKIP_STARTUP_DB"):
 _request_log = logging.getLogger("app.request")
 
 app = FastAPI(
-    title="Recruitment AI API",
-    description="AI-powered recruitment system",
+    title="EAA Recruit API",
+    description="EAA Recruit — AI-powered recruitment platform API",
     version="1.0.0",
 )
 
@@ -110,3 +112,13 @@ async def request_logging_middleware(request: Request, call_next):
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/ready")
+def readiness():
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        return {"status": "ready", "database": "ok"}
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="Database not ready") from exc

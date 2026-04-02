@@ -14,6 +14,8 @@ class User(Base):
     full_name = Column(String(255), nullable=False)
     role = Column(String(50), default="candidate", nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
+    is_super_admin = Column(Boolean, default=False, nullable=False)
+    must_change_password = Column(Boolean, default=False, nullable=False)
     is_email_verified = Column(Boolean, default=False, nullable=False)
     failed_login_attempts = Column(Integer, default=0, nullable=False)
     failed_login_window_started_at = Column(DateTime(timezone=True), nullable=True)

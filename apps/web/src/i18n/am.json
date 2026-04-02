@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "በአይ የሚሰራ የቅጥር ስርዓት",
+    "appName": "EAA Recruit",
     "loading": "በመጫን ላይ...",
     "email": "ኢሜይል",
     "password": "የይለፍ ቃል",
@@ -15,8 +15,16 @@
   "home": {
     "welcome": "እንኳን ደህና መጡ፣ {{name}}",
     "signedInAs": "እንደ {{email}} ({{role}}) ገብተዋል",
-    "guestHeading": "በአይ የሚሰራ የቅጥር ስርዓት",
-    "guestSubtext": "ለመጀመር ይግቡ ወይም አካውንት ይፍጠሩ"
+    "eyebrow": "ብልጥ ቅጥር ከዚህ ይጀምራል",
+    "guestHeading": "EAA Recruit",
+    "guestSubtext": "ለእጩ ተወዳዳሪዎች፣ ለቀጣሪዎች እና ለአስተዳዳሪዎች ግልፅ የAI የማዛመድ እገዛ ያለው ዘመናዊ የስራ ቦታ።",
+    "primaryCta": "አካውንት ይፍጠሩ",
+    "valueFast": "ፈጣን የቅጥር ሂደት",
+    "valueFastDesc": "ስራዎችን ይለጥፉ፣ አመልካቾችን ይከታተሉ፣ እና ደረጃዎችን በቀላሉ ያስተዳድሩ።",
+    "valueTransparent": "ግልፅ የማዛመድ ውጤት",
+    "valueTransparentDesc": "የTF-IDF ውጤት እና የክብደት ትንተና ውጤቶች የተራ ምክንያትን ግልፅ ያደርጋሉ።",
+    "valueCollaborative": "ለሁሉም ሚና የተዘጋጀ",
+    "valueCollaborativeDesc": "እጩዎች ሚናዎችን ያግኛሉ፣ ቀጣሪዎች ቧንቧን ያስተዳድራሉ፣ አስተዳዳሪዎችም ስርዓቱን ያስታድጋሉ።"
   },
   "signin": {
     "title": "ግባ",
@@ -75,6 +83,16 @@
     "updating": "በማዘመን ላይ...",
     "updatePassword": "የይለፍ ቃል አዘምን",
     "failedDefault": "የይለፍ ቃል መቀየር አልተቻለም"
+  },
+  "changePasswordRequired": {
+    "title": "አዲስ የይለፍ ቃል ይምረጡ",
+    "subtitle": "አስተዳዳሪ የይለፍ ቃልዎን አድስቷል። በተሰጥዎት ጊዜያዊ የይለፍ ቃል ይግቡ፣ ከዚያም የራስዎን እዚህ ያዘጋጁ።",
+    "currentPassword": "አሁን ያለ የይለፍ ቃል",
+    "newPassword": "አዲስ የይለፍ ቃል",
+    "passwordHelp": "ቢያንስ 8 ቁምፊዎች",
+    "saving": "በማስቀመጥ ላይ...",
+    "submit": "አዲስ የይለፍ ቃል አስቀምጥ",
+    "failedDefault": "የይለፍ ቃል ማዘመን አልተቻለም"
   },
   "unauthorized": {
     "title": "ያልተፈቀደ",
@@ -232,6 +250,13 @@
   },
   "admin": {
     "title": "የአስተዳዳሪ ዳሽቦርድ",
+    "signin": {
+      "title": "የአስተዳዳሪ መግባት",
+      "subtitle": "ለሰራተኞች ብቻ። የአስተዳዳሪ መግቢያዎን ይጠቀሙ።",
+      "submit": "ወደ አስተዳዳሪ ግባ",
+      "notAdmin": "ይህ መለያ አስተዳዳሪ አይደለም። የተለመደውን መግቢያ ይጠቀሙ።",
+      "backToSignIn": "የተለመደ ተጠቃሚ መግባት"
+    },
     "goToDashboard": "የአስተዳዳሪ ዳሽቦርድ",
     "nav": {
       "dashboard": "ዳሽቦርድ",
@@ -266,6 +291,7 @@
       "colRole": "ሚና",
       "colStatus": "ሁኔታ",
       "colVerified": "የተረጋገጠ",
+      "colSuper": "ከፍተኛ አስተዳዳሪ",
       "colActions": "ድርጊቶች",
       "active": "ንቁ",
       "inactive": "ንቁ ያልሆነ",
@@ -282,6 +308,8 @@
       "reactivate": "አግብር",
       "statusActive": "አካውንት ንቁ",
       "emailVerified": "ኢሜይል የተረጋገጠ",
+      "superAdminLabel": "ከፍተኛ አስተዳዳሪ",
+      "cannotDemoteOwnSuperHint": "የራስዎን ከፍተኛ አስተዳዳሪ ምልክት እዚህ ማስወረድ አይችሉም።",
       "confirmDeactivateTitle": "ተጠቃሚዎን ያቦዙ?",
       "confirmReactivateTitle": "ተጠቃሚዎን ያግቡ?",
       "confirmDeactivateBody": "ተጠቃሚ {{email}} እስኪነቃ ድረስ መግባት አይችልም።",

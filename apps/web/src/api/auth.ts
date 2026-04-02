@@ -19,7 +19,16 @@ export interface User {
   role: string;
   is_active: boolean;
   is_email_verified?: boolean;
+  /** True only when role is admin; set by API for admin accounts. */
+  is_super_admin?: boolean;
+  /** Set after an admin reset; user must choose a new password before using the app. */
+  must_change_password?: boolean;
   phone?: string | null;
+}
+
+export interface ChangePasswordPayload {
+  current_password: string;
+  new_password: string;
 }
 
 export interface TokenResponse {
@@ -102,5 +111,10 @@ export const logoutApi = async () => {
 
 export const getMe = async () => {
   const res = await api.get<User>('/auth/me');
+  return res.data;
+};
+
+export const changePassword = async (data: ChangePasswordPayload) => {
+  const res = await api.post<TokenResponse>('/auth/change-password', data);
   return res.data;
 };

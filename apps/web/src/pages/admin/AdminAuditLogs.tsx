@@ -26,6 +26,7 @@ import {
   exportAuditLogsCsv,
   getAuditLogs,
 } from '../../api/admin';
+import { useAuth } from '../../contexts/useAuth';
 
 const PAGE_SIZE = 20;
 
@@ -51,6 +52,8 @@ const ACTION_OPTIONS = [
 
 export default function AdminAuditLogs() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === 'admin' && !!user?.is_super_admin;
   const [logs, setLogs] = useState<AuditLogOut[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -111,9 +114,11 @@ export default function AdminAuditLogs() {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h5">{t('admin.nav.auditLogs')}</Typography>
-        <Button variant="outlined" onClick={handleExport} disabled={exporting}>
-          {exporting ? t('admin.audit.exporting') : t('admin.audit.exportCsv')}
-        </Button>
+        {isSuperAdmin && (
+          <Button variant="outlined" onClick={handleExport} disabled={exporting}>
+            {exporting ? t('admin.audit.exporting') : t('admin.audit.exportCsv')}
+          </Button>
+        )}
       </Box>
 
       <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>

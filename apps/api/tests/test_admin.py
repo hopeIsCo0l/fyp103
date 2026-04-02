@@ -27,6 +27,7 @@ def _make_admin_and_target(client, captured_otps) -> tuple[str, str]:
     u = session.query(User).filter(User.email == ADMIN_EMAIL.lower()).first()
     assert u
     u.role = "admin"
+    u.is_super_admin = False
     session.commit()
     session.close()
 
@@ -71,6 +72,40 @@ def test_admin_reset_password_returns_plain_and_revokes_sessions(client: TestCli
     assert good.status_code == 200
 
     session = SessionLocal()
+    tu = session.query(User).filter(User.id == target_id).first()
+    assert tu is not None
+    assert tu.must_change_password is True
+    session.close()
+
+    temp_token = good.json()["access_token"]
+    h_target = {"Authorization": f"Bearer {temp_token}"}
+    blocked = client.get("/api/candidate/applications", headers=h_target)
+    assert blocked.status_code == 403
+    assert "password" in blocked.json()["detail"].lower()
+
+    changed = client.post(
+        "/api/auth/change-password",
+        headers=h_target,
+        json={
+            "current_password": data["temporary_password"],
+            "new_password": "UserChosenPass99!",
+        },
+    )
+    assert changed.status_code == 200
+    assert "access_token" in changed.json()
+
+    session = SessionLocal()
+    tu2 = session.query(User).filter(User.id == target_id).first()
+    assert tu2 is not None
+    assert tu2.must_change_password is False
+    session.close()
+
+    new_tok = changed.json()["access_token"]
+    h2 = {"Authorization": f"Bearer {new_tok}"}
+    ok = client.get("/api/candidate/applications", headers=h2)
+    assert ok.status_code == 200
+
+    session = SessionLocal()
     open_sess = (
         session.query(UserSession)
         .filter(UserSession.user_id == target_id, UserSession.revoked.is_(False))
@@ -78,6 +113,28 @@ def test_admin_reset_password_returns_plain_and_revokes_sessions(client: TestCli
     )
     session.close()
     assert open_sess == 1
+
+
+def test_export_users_csv_requires_super_admin(client: TestClient, captured_otps):
+    admin_token, _ = _make_admin_and_target(client, captured_otps)
+    h = {"Authorization": f"Bearer {admin_token}"}
+    resp = client.get("/api/admin/users/export", headers=h)
+    assert resp.status_code == 403
+    assert "super" in resp.json()["detail"].lower()
+
+
+def test_export_users_csv_super_admin_ok(client: TestClient, captured_otps):
+    admin_token, _ = _make_admin_and_target(client, captured_otps)
+    session = SessionLocal()
+    u = session.query(User).filter(User.email == ADMIN_EMAIL.lower()).first()
+    assert u
+    u.is_super_admin = True
+    session.commit()
+    session.close()
+    h = {"Authorization": f"Bearer {admin_token}"}
+    resp = client.get("/api/admin/users/export", headers=h)
+    assert resp.status_code == 200
+    assert "text/csv" in resp.headers.get("content-type", "")
 
 
 def test_admin_cannot_reset_own_password(client: TestClient, captured_otps):

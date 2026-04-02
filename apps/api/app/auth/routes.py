@@ -11,6 +11,7 @@ from app.auth.otp_service import create_and_send_otp, verify_otp
 from app.auth.phone_util import normalize_phone
 from app.auth.rate_limit import enforce_rate_limit
 from app.auth.schemas import (
+    ChangePasswordRequest,
     ForgotPasswordRequest,
     RefreshTokenRequest,
     RequestOTP,
@@ -31,6 +32,7 @@ from app.auth.security import (
 )
 from app.config import settings
 from app.database import get_db
+from app.models.otp import OTP
 from app.models.password_reset_token import PasswordResetToken
 from app.models.user import User
 from app.models.user_session import UserSession
@@ -98,6 +100,8 @@ def signup(
     request: Request,
     db: Session = Depends(get_db),
 ):
+    import json
+
     enforce_rate_limit(
         f"signup:{payload.email.lower()}",
         max_attempts=5,
@@ -117,29 +121,16 @@ def signup(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Phone number already registered",
             )
-    role = "candidate"
-    user = User(
-        id=str(uuid.uuid4()),
-        email=payload.email.lower(),
-        phone=phone_norm,
-        hashed_password=get_password_hash(payload.password),
-        full_name=payload.full_name.strip(),
-        role=role,
-        is_email_verified=False,
+    signup_data = json.dumps(
+        {
+            "email": payload.email.lower(),
+            "phone": phone_norm,
+            "hashed_password": get_password_hash(payload.password),
+            "full_name": payload.full_name.strip(),
+            "role": "candidate",
+        }
     )
-    db.add(user)
-    db.commit()
-    ip, ua = _request_context(request)
-    write_audit_log(
-        db,
-        action="auth.signup",
-        actor_id=user.id,
-        target_type="user",
-        target_id=user.id,
-        ip_address=ip,
-        user_agent=ua,
-    )
-    if not create_and_send_otp(db, payload.email, "signup"):
+    if not create_and_send_otp(db, payload.email, "signup", signup_data=signup_data):
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Failed to send email. Check backend console for details.",
@@ -159,19 +150,46 @@ def verify_email(
         period_seconds=60 * 60,
         error_message="Too many OTP verification attempts. Try again later.",
     )
-    if not verify_otp(db, payload.email, payload.otp, "signup"):
+    result = verify_otp(db, payload.email, payload.otp, "signup")
+    if not result:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired OTP",
         )
-    user = db.query(User).filter(User.email == payload.email.lower()).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    user.is_email_verified = True
+    existing = db.query(User).filter(User.email == payload.email.lower()).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered",
+        )
+    if not isinstance(result, dict):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Signup data missing. Please sign up again.",
+        )
+    user = User(
+        id=str(uuid.uuid4()),
+        email=result["email"],
+        phone=result.get("phone"),
+        hashed_password=result["hashed_password"],
+        full_name=result["full_name"],
+        role=result.get("role", "candidate"),
+        is_email_verified=True,
+    )
+    db.add(user)
     user.last_login_at = datetime.now(timezone.utc)
     access_token, refresh_token = _issue_session_tokens(db, user, request)
     db.commit()
     ip, ua = _request_context(request)
+    write_audit_log(
+        db,
+        action="auth.signup",
+        actor_id=user.id,
+        target_type="user",
+        target_id=user.id,
+        ip_address=ip,
+        user_agent=ua,
+    )
     write_audit_log(
         db,
         action="auth.verify_email",
@@ -246,6 +264,11 @@ def signin(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User account is inactive",
         )
+    if not user.is_email_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Email not verified. Please complete OTP verification first.",
+        )
     _reset_failed_attempts(user)
     user.last_login_at = datetime.now(timezone.utc)
     access_token, refresh_token = _issue_session_tokens(db, user, request)
@@ -268,22 +291,31 @@ def resend_otp(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    """Resend OTP for signup verification (user must exist from signup step)."""
+    """Resend OTP for signup verification. Requires a pending signup OTP to exist."""
     enforce_rate_limit(
         f"resend-otp:{payload.email.lower()}",
         max_attempts=3,
         period_seconds=60 * 60,
         error_message="Too many OTP resend attempts. Try again later.",
     )
-    user = db.query(User).filter(User.email == payload.email.lower()).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    if user.is_email_verified:
+    existing_user = db.query(User).filter(User.email == payload.email.lower()).first()
+    if existing_user and existing_user.is_email_verified:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already verified",
         )
-    if not create_and_send_otp(db, payload.email, "signup"):
+    pending = (
+        db.query(OTP)
+        .filter(OTP.email == payload.email.lower(), OTP.purpose == "signup")
+        .first()
+    )
+    if not pending or not pending.signup_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No pending signup found. Please sign up first.",
+        )
+    saved_signup_data = pending.signup_data
+    if not create_and_send_otp(db, payload.email, "signup", signup_data=saved_signup_data):
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Failed to send email. Check backend console for details.",
@@ -292,9 +324,9 @@ def resend_otp(
     write_audit_log(
         db,
         action="auth.resend_otp",
-        actor_id=user.id,
-        target_type="user",
-        target_id=user.id,
+        actor_id=None,
+        target_type="email",
+        target_id=payload.email.lower(),
         ip_address=ip,
         user_agent=ua,
     )
@@ -323,6 +355,11 @@ def request_login_otp(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User account is inactive",
+        )
+    if not user.is_email_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Email not verified. Please complete signup verification first.",
         )
     if not create_and_send_otp(db, payload.email, "login"):
         raise HTTPException(
@@ -408,6 +445,11 @@ def refresh_token(payload: RefreshTokenRequest, request: Request, db: Session = 
     user = db.query(User).filter(User.id == session.user_id).first()
     if not user or not user.is_active:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+    if not user.is_email_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Email not verified",
+        )
 
     session.revoked = True
     session.revoked_at = datetime.now(timezone.utc)
@@ -484,6 +526,7 @@ def reset_password(payload: ResetPasswordRequest, request: Request, db: Session 
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     user.hashed_password = get_password_hash(payload.new_password)
+    user.must_change_password = False
     _reset_failed_attempts(user)
     rec.used_at = datetime.now(timezone.utc)
     db.query(UserSession).filter(
@@ -501,6 +544,46 @@ def reset_password(payload: ResetPasswordRequest, request: Request, db: Session 
         user_agent=ua,
     )
     return {"message": "Password updated successfully"}
+
+
+@router.post("/change-password", response_model=Token)
+def change_password(
+    payload: ChangePasswordRequest,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not verify_password(payload.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
+    if payload.new_password == payload.current_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must differ from the current password",
+        )
+    current_user.hashed_password = get_password_hash(payload.new_password)
+    current_user.must_change_password = False
+    _reset_failed_attempts(current_user)
+    now = datetime.now(timezone.utc)
+    db.query(UserSession).filter(
+        UserSession.user_id == current_user.id,
+        UserSession.revoked.is_(False),
+    ).update({"revoked": True, "revoked_at": now}, synchronize_session=False)
+    access_token, refresh_token = _issue_session_tokens(db, current_user, request)
+    db.commit()
+    ip, ua = _request_context(request)
+    write_audit_log(
+        db,
+        action="auth.change_password",
+        actor_id=current_user.id,
+        target_type="user",
+        target_id=current_user.id,
+        ip_address=ip,
+        user_agent=ua,
+    )
+    return Token(access_token=access_token, refresh_token=refresh_token, token_type="bearer")
 
 
 @router.post("/logout", response_model=dict)

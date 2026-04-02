@@ -62,6 +62,8 @@ class RecruiterApplicationOut(BaseModel):
     candidate_name: str
     stage: str
     cv_similarity_score: Optional[float] = None
+    weighted_total_score: Optional[float] = None
+    score_breakdown: Optional[dict] = None
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
 

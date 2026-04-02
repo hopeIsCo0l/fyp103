@@ -33,13 +33,22 @@ class TestSignupVerifySignin:
         assert data["email"] == EMAIL
         assert len(captured_otps[EMAIL]) == 1
 
-    def test_duplicate_signup_rejected(self, client):
+    def test_duplicate_signup_before_verify_allowed(self, client, captured_otps):
+        """Before OTP verification, re-signing up with the same email re-sends OTP."""
         _signup(client)
+        resp = _signup(client)
+        assert resp.status_code == 200
+        assert len(captured_otps[EMAIL]) == 2
+
+    def test_duplicate_signup_after_verify_rejected(self, client, captured_otps):
+        _signup(client)
+        otp = captured_otps[EMAIL][-1]
+        _verify(client, EMAIL, otp)
         resp = _signup(client)
         assert resp.status_code == 400
         assert "already registered" in resp.json()["detail"].lower()
 
-    def test_duplicate_phone_signup_rejected(self, client):
+    def test_duplicate_phone_signup_after_verify_rejected(self, client, captured_otps):
         r1 = client.post(
             "/api/auth/signup",
             json={
@@ -50,6 +59,8 @@ class TestSignupVerifySignin:
             },
         )
         assert r1.status_code == 200
+        otp = captured_otps["phone-a@test.com"][-1]
+        client.post("/api/auth/verify-email", json={"email": "phone-a@test.com", "otp": otp})
         r2 = client.post(
             "/api/auth/signup",
             json={
@@ -285,6 +296,8 @@ class TestAuditLog:
         from app.models.audit_log import AuditLog
 
         _signup(client)
+        otp = captured_otps[EMAIL][-1]
+        _verify(client, EMAIL, otp)
         logs = db.query(AuditLog).filter(AuditLog.action == "auth.signup").all()
         assert len(logs) >= 1
 
