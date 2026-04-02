@@ -37,7 +37,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import LogoutIcon from '@mui/icons-material/Logout';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import type { CreateUserPayload, UserOut } from '../../api/admin';
+import type { CreateUserPayload, UpdateUserPayload, UserOut } from '../../api/admin';
 import {
   createUser,
   downloadBlob,
@@ -79,6 +79,7 @@ export default function AdminUsers() {
   const [editRole, setEditRole] = useState('');
   const [editActive, setEditActive] = useState(true);
   const [editVerified, setEditVerified] = useState(false);
+  const [editSuper, setEditSuper] = useState(false);
 
   const [confirm, setConfirm] = useState<{ kind: ConfirmKind; user: UserOut | null }>({
     kind: null,
@@ -131,6 +132,8 @@ export default function AdminUsers() {
   }, [load]);
 
   const isSelf = (u: UserOut) => currentUser?.id === u.id;
+  const isSuperAdmin = currentUser?.role === 'admin' && !!currentUser?.is_super_admin;
+  const canEditUser = (u: UserOut) => isSuperAdmin || u.role !== 'admin';
 
   const fmtDate = (d: string | null) => {
     if (!d) return '—';
@@ -177,19 +180,24 @@ export default function AdminUsers() {
     setEditRole(u.role);
     setEditActive(u.is_active);
     setEditVerified(u.is_email_verified);
+    setEditSuper(!!u.is_super_admin);
     setEditOpen(true);
   };
 
   const handleEditSave = async () => {
     if (!editUser) return;
     try {
-      await updateUser(editUser.id, {
+      const payload: UpdateUserPayload = {
         full_name: editFullName,
         phone: editPhone.trim() || null,
         role: editRole,
         is_active: editActive,
         is_email_verified: editVerified,
-      });
+      };
+      if (isSuperAdmin && editRole === 'admin') {
+        payload.is_super_admin = editSuper;
+      }
+      await updateUser(editUser.id, payload);
       setEditOpen(false);
       setSnack(t('admin.users.successUpdated'));
       load();
@@ -221,9 +229,11 @@ export default function AdminUsers() {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h5">{t('admin.nav.users')}</Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button variant="outlined" onClick={handleExportCsv} disabled={exporting}>
-            {exporting ? t('admin.users.exporting') : t('admin.users.exportCsv')}
-          </Button>
+          {isSuperAdmin && (
+            <Button variant="outlined" onClick={handleExportCsv} disabled={exporting}>
+              {exporting ? t('admin.users.exporting') : t('admin.users.exportCsv')}
+            </Button>
+          )}
           <Button variant="contained" onClick={() => setCreateOpen(true)}>
             {t('admin.users.createBtn')}
           </Button>
@@ -287,6 +297,7 @@ export default function AdminUsers() {
               <TableCell>{t('admin.users.colRole')}</TableCell>
               <TableCell>{t('admin.users.colStatus')}</TableCell>
               <TableCell>{t('admin.users.colVerified')}</TableCell>
+              <TableCell>{t('admin.users.colSuper')}</TableCell>
               <TableCell align="right">{t('admin.users.colActions')}</TableCell>
             </TableRow>
           </TableHead>
@@ -313,18 +324,29 @@ export default function AdminUsers() {
                   />
                 </TableCell>
                 <TableCell>{u.is_email_verified ? t('admin.users.yes') : t('admin.users.no')}</TableCell>
+                <TableCell>
+                  {u.role === 'admin'
+                    ? u.is_super_admin
+                      ? t('admin.users.yes')
+                      : t('admin.users.no')
+                    : '—'}
+                </TableCell>
                 <TableCell align="right">
-                  <Tooltip title={t('admin.users.editUserFull')}>
-                    <IconButton size="small" color="primary" onClick={() => openEdit(u)} aria-label={t('admin.users.editUser')}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                  {canEditUser(u) ? (
+                    <Tooltip title={t('admin.users.editUserFull')}>
+                      <IconButton size="small" color="primary" onClick={() => openEdit(u)} aria-label={t('admin.users.editUser')}>
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  ) : (
+                    '—'
+                  )}
                 </TableCell>
               </TableRow>
             ))}
             {users.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} align="center">
+                <TableCell colSpan={8} align="center">
                   {t('admin.users.noUsers')}
                 </TableCell>
               </TableRow>
@@ -353,6 +375,7 @@ export default function AdminUsers() {
 
       <CreateUserDialog
         open={createOpen}
+        isSuperAdmin={isSuperAdmin}
         onClose={() => setCreateOpen(false)}
         onCreated={() => {
           load();
@@ -417,11 +440,15 @@ export default function AdminUsers() {
                     value={editRole}
                     label={t('admin.users.colRole')}
                     disabled={isSelf(editUser)}
-                    onChange={(e) => setEditRole(e.target.value)}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setEditRole(v);
+                      if (v !== 'admin') setEditSuper(false);
+                    }}
                   >
                     <MenuItem value="candidate">{t('admin.users.candidate')}</MenuItem>
                     <MenuItem value="recruiter">{t('admin.users.recruiter')}</MenuItem>
-                    <MenuItem value="admin">{t('admin.users.admin')}</MenuItem>
+                    {isSuperAdmin && <MenuItem value="admin">{t('admin.users.admin')}</MenuItem>}
                   </Select>
                 </FormControl>
                 {isSelf(editUser) && (
@@ -450,6 +477,23 @@ export default function AdminUsers() {
                   }
                   label={t('admin.users.emailVerified')}
                 />
+                {isSuperAdmin && editRole === 'admin' && (
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={editSuper}
+                        onChange={(_, v) => setEditSuper(v)}
+                        disabled={isSelf(editUser)}
+                      />
+                    }
+                    label={t('admin.users.superAdminLabel')}
+                  />
+                )}
+                {isSelf(editUser) && editRole === 'admin' && (
+                  <Typography variant="caption" color="text.secondary">
+                    {t('admin.users.cannotDemoteOwnSuperHint')}
+                  </Typography>
+                )}
               </Stack>
 
               <Divider sx={{ my: 2 }} />
@@ -563,10 +607,12 @@ export default function AdminUsers() {
 
 function CreateUserDialog({
   open,
+  isSuperAdmin,
   onClose,
   onCreated,
 }: {
   open: boolean;
+  isSuperAdmin: boolean;
   onClose: () => void;
   onCreated: () => void;
 }) {
@@ -653,7 +699,7 @@ function CreateUserDialog({
             >
               <MenuItem value="candidate">{t('admin.users.candidate')}</MenuItem>
               <MenuItem value="recruiter">{t('admin.users.recruiter')}</MenuItem>
-              <MenuItem value="admin">{t('admin.users.admin')}</MenuItem>
+              {isSuperAdmin && <MenuItem value="admin">{t('admin.users.admin')}</MenuItem>}
             </Select>
           </FormControl>
         </DialogContent>

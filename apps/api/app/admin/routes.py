@@ -24,7 +24,7 @@ from app.admin.schemas import (
     UserOut,
 )
 from app.auth.audit_service import write_audit_log
-from app.auth.dependencies import require_roles
+from app.auth.dependencies import require_roles, require_super_admin
 from app.auth.phone_util import normalize_phone
 from app.auth.security import get_password_hash
 from app.database import get_db
@@ -35,6 +35,18 @@ from app.models.user_session import UserSession
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 _admin_dep = require_roles("admin")
+
+
+def _is_admin_role(user: User) -> bool:
+    return user.role.lower() == "admin"
+
+
+def _require_super(admin: User) -> None:
+    if not admin.is_super_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Super admin access required",
+        )
 
 
 # ── Users ────────────────────────────────────────────────────────────────
@@ -83,7 +95,7 @@ def export_users_csv(
     search: str = Query("", max_length=200),
     role: str = Query("", max_length=50),
     verified: Optional[bool] = Query(None),
-    _admin: User = Depends(_admin_dep),
+    _super: User = Depends(require_super_admin),
     db: Session = Depends(get_db),
 ):
     q = _users_base_query(db, search, role, verified)
@@ -148,6 +160,8 @@ def create_user(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Phone number already registered",
             )
+    if payload.role.lower() == "admin":
+        _require_super(admin)
     user = User(
         id=str(uuid.uuid4()),
         email=payload.email.lower(),
@@ -157,6 +171,7 @@ def create_user(
         role=payload.role.lower(),
         is_email_verified=True,
         is_active=True,
+        is_super_admin=False,
     )
     db.add(user)
     db.commit()
@@ -186,6 +201,17 @@ def update_user(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if _is_admin_role(user):
+        _require_super(admin)
+    if payload.role is not None and payload.role.lower() == "admin" and not _is_admin_role(user):
+        _require_super(admin)
+    if payload.is_super_admin is not None:
+        _require_super(admin)
+        if user.id == admin.id and payload.is_super_admin is False:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot remove your own super admin status",
+            )
     if user.id == admin.id and payload.role and payload.role != admin.role:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -200,12 +226,18 @@ def update_user(
     if payload.role is not None:
         user.role = payload.role.lower()
         changes["role"] = user.role
+        if user.role != "admin":
+            user.is_super_admin = False
+            changes["is_super_admin"] = False
     if payload.is_active is not None:
         user.is_active = payload.is_active
         changes["is_active"] = user.is_active
     if payload.is_email_verified is not None:
         user.is_email_verified = payload.is_email_verified
         changes["is_email_verified"] = user.is_email_verified
+    if payload.is_super_admin is not None:
+        user.is_super_admin = payload.is_super_admin
+        changes["is_super_admin"] = user.is_super_admin
     if payload.full_name is not None:
         user.full_name = payload.full_name.strip()
         changes["full_name"] = user.full_name
@@ -244,6 +276,8 @@ def delete_user(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if _is_admin_role(user):
+        _require_super(admin)
     if user.id == admin.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -282,6 +316,8 @@ def admin_reset_password(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if _is_admin_role(user):
+        _require_super(admin)
     if user.id == admin.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -298,6 +334,7 @@ def admin_reset_password(
         plain = secrets.token_urlsafe(24)
 
     user.hashed_password = get_password_hash(plain)
+    user.must_change_password = True
     _clear_lockout(user)
     now = datetime.now(timezone.utc)
     db.query(UserSession).filter(
@@ -332,6 +369,8 @@ def admin_revoke_sessions(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if _is_admin_role(user):
+        _require_super(admin)
     now = datetime.now(timezone.utc)
     n = (
         db.query(UserSession)
@@ -418,7 +457,7 @@ def export_audit_logs_csv(
     actor_id: str = Query("", max_length=36),
     date_from: Optional[date_type] = Query(None),
     date_to: Optional[date_type] = Query(None),
-    _admin: User = Depends(_admin_dep),
+    _super: User = Depends(require_super_admin),
     db: Session = Depends(get_db),
 ):
     q = _audit_base_query(db, action, actor_id, date_from, date_to)

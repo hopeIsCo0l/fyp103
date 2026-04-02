@@ -23,6 +23,7 @@ class AdminUpdateUser(BaseModel):
     role: Optional[str] = Field(None, pattern="^(candidate|recruiter|admin)$")
     is_active: Optional[bool] = None
     is_email_verified: Optional[bool] = None
+    is_super_admin: Optional[bool] = None
     full_name: Optional[str] = Field(None, min_length=1, max_length=255)
     phone: Optional[str] = Field(None, max_length=32)
 
@@ -44,6 +45,8 @@ class UserOut(BaseModel):
     role: str
     is_active: bool
     is_email_verified: bool
+    is_super_admin: bool = False
+    must_change_password: bool = False
     phone: Optional[str] = None
     last_login_at: Optional[datetime] = None
     created_at: Optional[datetime] = None

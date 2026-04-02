@@ -3,9 +3,11 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CircularProgress, ThemeProvider, CssBaseline } from '@mui/material';
 import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './contexts/useAuth';
+import AdminSignin from './pages/AdminSignin';
 import ForgotPassword from './pages/ForgotPassword';
 import Home from './pages/Home';
 import ResetPassword from './pages/ResetPassword';
+import ChangePasswordRequired from './pages/ChangePasswordRequired';
 import Signin from './pages/Signin';
 import Signup from './pages/Signup';
 import Unauthorized from './pages/Unauthorized';
@@ -32,6 +34,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<DashboardRedirect />} />
+            <Route path="/change-password" element={<ChangePasswordRoute />} />
             <Route
               path="/signin"
               element={
@@ -53,6 +56,14 @@ function App() {
               element={
                 <GuestOnly>
                   <ForgotPassword />
+                </GuestOnly>
+              }
+            />
+            <Route
+              path="/admin/signin"
+              element={
+                <GuestOnly>
+                  <AdminSignin />
                 </GuestOnly>
               }
             />
@@ -132,6 +143,7 @@ function DashboardRedirect() {
     );
   }
   if (!isAuthenticated) return <Navigate to="/signin" replace />;
+  if (user?.must_change_password) return <Navigate to="/change-password" replace />;
   const r = (user?.role || '').toLowerCase();
   if (r === 'admin') return <Navigate to="/admin" replace />;
   if (r === 'recruiter') return <Navigate to="/recruiter/dashboard" replace />;
@@ -139,16 +151,42 @@ function DashboardRedirect() {
 }
 
 function GuestOnly({ children }: { children: ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   if (isLoading) return null;
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+  if (isAuthenticated) {
+    if (user?.must_change_password) return <Navigate to="/change-password" replace />;
+    return <Navigate to="/dashboard" replace />;
+  }
   return children;
+}
+
+function ChangePasswordRoute() {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: 'background.default',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+  if (!isAuthenticated) return <Navigate to="/signin" replace />;
+  if (!user?.must_change_password) return <Navigate to="/dashboard" replace />;
+  return <ChangePasswordRequired />;
 }
 
 function RequireRole({ role, children }: { role: string; children: ReactNode }) {
   const { user, isAuthenticated, isLoading } = useAuth();
   if (isLoading) return null;
   if (!isAuthenticated) return <Navigate to="/signin" replace />;
+  if (user?.must_change_password) return <Navigate to="/change-password" replace />;
   const r = (user?.role || '').toLowerCase();
   const need = role.toLowerCase();
   if (r !== need && r !== 'admin') {

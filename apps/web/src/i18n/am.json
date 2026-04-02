@@ -84,6 +84,16 @@
     "updatePassword": "የይለፍ ቃል አዘምን",
     "failedDefault": "የይለፍ ቃል መቀየር አልተቻለም"
   },
+  "changePasswordRequired": {
+    "title": "አዲስ የይለፍ ቃል ይምረጡ",
+    "subtitle": "አስተዳዳሪ የይለፍ ቃልዎን አድስቷል። በተሰጥዎት ጊዜያዊ የይለፍ ቃል ይግቡ፣ ከዚያም የራስዎን እዚህ ያዘጋጁ።",
+    "currentPassword": "አሁን ያለ የይለፍ ቃል",
+    "newPassword": "አዲስ የይለፍ ቃል",
+    "passwordHelp": "ቢያንስ 8 ቁምፊዎች",
+    "saving": "በማስቀመጥ ላይ...",
+    "submit": "አዲስ የይለፍ ቃል አስቀምጥ",
+    "failedDefault": "የይለፍ ቃል ማዘመን አልተቻለም"
+  },
   "unauthorized": {
     "title": "ያልተፈቀደ",
     "message": "ይህን ገጽ ለመድረስ ፈቃድ የለዎትም።"
@@ -240,6 +250,13 @@
   },
   "admin": {
     "title": "የአስተዳዳሪ ዳሽቦርድ",
+    "signin": {
+      "title": "የአስተዳዳሪ መግባት",
+      "subtitle": "ለሰራተኞች ብቻ። የአስተዳዳሪ መግቢያዎን ይጠቀሙ።",
+      "submit": "ወደ አስተዳዳሪ ግባ",
+      "notAdmin": "ይህ መለያ አስተዳዳሪ አይደለም። የተለመደውን መግቢያ ይጠቀሙ።",
+      "backToSignIn": "የተለመደ ተጠቃሚ መግባት"
+    },
     "goToDashboard": "የአስተዳዳሪ ዳሽቦርድ",
     "nav": {
       "dashboard": "ዳሽቦርድ",
@@ -274,6 +291,7 @@
       "colRole": "ሚና",
       "colStatus": "ሁኔታ",
       "colVerified": "የተረጋገጠ",
+      "colSuper": "ከፍተኛ አስተዳዳሪ",
       "colActions": "ድርጊቶች",
       "active": "ንቁ",
       "inactive": "ንቁ ያልሆነ",
@@ -290,6 +308,8 @@
       "reactivate": "አግብር",
       "statusActive": "አካውንት ንቁ",
       "emailVerified": "ኢሜይል የተረጋገጠ",
+      "superAdminLabel": "ከፍተኛ አስተዳዳሪ",
+      "cannotDemoteOwnSuperHint": "የራስዎን ከፍተኛ አስተዳዳሪ ምልክት እዚህ ማስወረድ አይችሉም።",
       "confirmDeactivateTitle": "ተጠቃሚዎን ያቦዙ?",
       "confirmReactivateTitle": "ተጠቃሚዎን ያግቡ?",
       "confirmDeactivateBody": "ተጠቃሚ {{email}} እስኪነቃ ድረስ መግባት አይችልም።",

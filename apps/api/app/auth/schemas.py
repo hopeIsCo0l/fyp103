@@ -31,10 +31,17 @@ class UserResponse(BaseModel):
     role: str
     is_active: bool
     is_email_verified: bool = False
+    is_super_admin: bool = False
+    must_change_password: bool = False
     phone: str | None = None
 
     class Config:
         from_attributes = True
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(..., min_length=8)
 
 
 class RequestOTP(BaseModel):

@@ -11,6 +11,7 @@ from app.auth.otp_service import create_and_send_otp, verify_otp
 from app.auth.phone_util import normalize_phone
 from app.auth.rate_limit import enforce_rate_limit
 from app.auth.schemas import (
+    ChangePasswordRequest,
     ForgotPasswordRequest,
     RefreshTokenRequest,
     RequestOTP,
@@ -525,6 +526,7 @@ def reset_password(payload: ResetPasswordRequest, request: Request, db: Session 
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     user.hashed_password = get_password_hash(payload.new_password)
+    user.must_change_password = False
     _reset_failed_attempts(user)
     rec.used_at = datetime.now(timezone.utc)
     db.query(UserSession).filter(
@@ -542,6 +544,46 @@ def reset_password(payload: ResetPasswordRequest, request: Request, db: Session 
         user_agent=ua,
     )
     return {"message": "Password updated successfully"}
+
+
+@router.post("/change-password", response_model=Token)
+def change_password(
+    payload: ChangePasswordRequest,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not verify_password(payload.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
+    if payload.new_password == payload.current_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must differ from the current password",
+        )
+    current_user.hashed_password = get_password_hash(payload.new_password)
+    current_user.must_change_password = False
+    _reset_failed_attempts(current_user)
+    now = datetime.now(timezone.utc)
+    db.query(UserSession).filter(
+        UserSession.user_id == current_user.id,
+        UserSession.revoked.is_(False),
+    ).update({"revoked": True, "revoked_at": now}, synchronize_session=False)
+    access_token, refresh_token = _issue_session_tokens(db, current_user, request)
+    db.commit()
+    ip, ua = _request_context(request)
+    write_audit_log(
+        db,
+        action="auth.change_password",
+        actor_id=current_user.id,
+        target_type="user",
+        target_id=current_user.id,
+        ip_address=ip,
+        user_agent=ua,
+    )
+    return Token(access_token=access_token, refresh_token=refresh_token, token_type="bearer")
 
 
 @router.post("/logout", response_model=dict)

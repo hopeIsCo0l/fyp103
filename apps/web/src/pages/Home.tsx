@@ -92,6 +92,9 @@ export default function Home() {
               <Button color="inherit" size="large" onClick={() => navigate('/forgot-password')}>
                 {t('signin.forgotPassword')}
               </Button>
+              <Button color="inherit" size="large" onClick={() => navigate('/admin/signin')}>
+                {t('admin.signin.title')}
+              </Button>
             </Stack>
           </Stack>
 

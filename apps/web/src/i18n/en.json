@@ -84,6 +84,16 @@
     "updatePassword": "Update password",
     "failedDefault": "Failed to reset password"
   },
+  "changePasswordRequired": {
+    "title": "Choose a new password",
+    "subtitle": "An administrator reset your password. Sign in with the temporary password you were given, then set your own password here.",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "passwordHelp": "At least 8 characters",
+    "saving": "Saving...",
+    "submit": "Save new password",
+    "failedDefault": "Could not update password"
+  },
   "unauthorized": {
     "title": "Unauthorized",
     "message": "You do not have permission to access this page."
@@ -240,6 +250,13 @@
   },
   "admin": {
     "title": "Admin Dashboard",
+    "signin": {
+      "title": "Admin sign in",
+      "subtitle": "Staff access only. Use your administrator credentials.",
+      "submit": "Sign in to admin",
+      "notAdmin": "This account is not an administrator. Use the regular sign-in page.",
+      "backToSignIn": "Regular user sign in"
+    },
     "goToDashboard": "Admin Dashboard",
     "nav": {
       "dashboard": "Dashboard",
@@ -274,6 +291,7 @@
       "colRole": "Role",
       "colStatus": "Status",
       "colVerified": "Verified",
+      "colSuper": "Super admin",
       "colActions": "Actions",
       "active": "Active",
       "inactive": "Inactive",
@@ -290,6 +308,8 @@
       "reactivate": "Reactivate",
       "statusActive": "Account active",
       "emailVerified": "Email verified",
+      "superAdminLabel": "Super administrator",
+      "cannotDemoteOwnSuperHint": "You cannot remove your own super admin flag here.",
       "confirmDeactivateTitle": "Deactivate user?",
       "confirmReactivateTitle": "Reactivate user?",
       "confirmDeactivateBody": "User {{email}} will not be able to sign in until reactivated.",

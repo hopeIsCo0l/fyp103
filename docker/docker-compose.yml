@@ -42,10 +42,10 @@ services:
       context: ../apps/web
       dockerfile: ../../docker/web.Dockerfile
     ports:
-      - "5173:5173"
+      # Host 3000: avoid Windows reserved ranges that often block 5173–5174.
+      - "3000:5173"
     environment:
-      # Do not set VITE_API_URL here: the browser must use same-origin `/api` so it works for both
-      # http://localhost:5173 and http://127.0.0.1:5173. Vite proxies /api → backend (below).
+      # Do not set VITE_API_URL here: the browser must use same-origin `/api` (e.g. localhost:5174).
       VITE_API_PROXY_TARGET: http://backend:8000
     depends_on:
       - backend
