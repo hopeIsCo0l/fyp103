@@ -4,10 +4,10 @@ import logging
 import time
 from pathlib import Path
 
-from alembic import command
 from alembic.config import Config
 from sqlalchemy import text
 
+from alembic import command
 from app.database import engine
 
 logger = logging.getLogger(__name__)
