@@ -25,9 +25,9 @@ def _send_email(to_email: str, subject: str, body: str) -> bool:
             return True
         except Exception as e:
             logger.exception(f"Failed to send email: {e}")
-            print(f"[ERROR] Email send failed: {e}")
+            print(f"[ERROR] Email send failed: {e}", flush=True)
             return False
-    print(f"[DEV] Email to {to_email} | {subject}\n{body.strip()}")
+    print(f"[DEV] Email to {to_email} | {subject}\n{body.strip()}", flush=True)
     return True
 
 

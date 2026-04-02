@@ -16,3 +16,5 @@ for port in 5432 5173 8000; do
   fi
 done
 echo "Done. Wait a few seconds, then run: docker-compose -f ./docker/docker-compose.yml up --build"
+
+
