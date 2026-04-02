@@ -16,7 +16,6 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { changePassword, setAuthTokens } from '../api/auth';
 import { useAuth } from '../contexts/useAuth';
-import { getApiErrorMessage } from '../utils/apiError';
 
 export default function ChangePasswordRequired() {
   const navigate = useNavigate();
@@ -42,9 +41,8 @@ export default function ChangePasswordRequired() {
       await refreshUser();
       navigate('/dashboard', { replace: true });
     } catch (err: unknown) {
-      setError(
-        getApiErrorMessage(err, t('changePasswordRequired.failedDefault'), t('common.networkError'))
-      );
+      const ax = err as { response?: { data?: { detail?: string } } };
+      setError(ax?.response?.data?.detail || t('changePasswordRequired.failedDefault'));
     } finally {
       setLoading(false);
     }

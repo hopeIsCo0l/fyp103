@@ -17,7 +17,6 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { requestLoginOtp, setAuthTokens, signin, verifyLoginOtp } from '../api/auth';
-import { getApiErrorMessage } from '../utils/apiError';
 
 type LoginTab = 'password' | 'otp';
 
@@ -43,7 +42,7 @@ export default function Signin() {
       navigate('/dashboard', { replace: true });
       window.location.reload();
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, t('signin.failedDefault'), t('common.networkError')));
+      setError(getErrorMessage(err, t('signin.failedDefault')));
     } finally {
       setLoading(false);
     }
@@ -57,7 +56,7 @@ export default function Signin() {
       await requestLoginOtp(email);
       setOtpSent(true);
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, t('signin.failedOtpSend'), t('common.networkError')));
+      setError(getErrorMessage(err, t('signin.failedOtpSend')));
     } finally {
       setLoading(false);
     }
@@ -73,7 +72,7 @@ export default function Signin() {
       navigate('/dashboard', { replace: true });
       window.location.reload();
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, t('signin.failedOtpVerify'), t('common.networkError')));
+      setError(getErrorMessage(err, t('signin.failedOtpVerify')));
     } finally {
       setLoading(false);
     }
@@ -231,4 +230,22 @@ export default function Signin() {
       </Paper>
     </Box>
   );
+}
+
+function getErrorMessage(err: unknown, fallback: string): string {
+  const ax = err as {
+    response?: { data?: { detail?: string | string[] } };
+    code?: string;
+    message?: string;
+  };
+  if (ax?.response?.data?.detail) {
+    const d = ax.response.data.detail;
+    return Array.isArray(d)
+      ? (d as { msg?: string }[]).map((x) => x.msg || x).join(', ')
+      : String(d);
+  }
+  if (ax?.code === 'ERR_NETWORK' || ax?.message?.includes('Network Error')) {
+    return fallback;
+  }
+  return fallback;
 }

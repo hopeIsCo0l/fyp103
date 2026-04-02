@@ -4,9 +4,7 @@ import time
 import uuid
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
 from app.admin.routes import router as admin_router
@@ -74,7 +72,6 @@ app.include_router(jobs_router, prefix="/api")
 @app.middleware("http")
 async def request_logging_middleware(request: Request, call_next):
     request_id = str(uuid.uuid4())[:8]
-    request.state.request_id = request_id
     start = time.perf_counter()
     try:
         response = await call_next(request)
@@ -110,48 +107,6 @@ async def request_logging_middleware(request: Request, call_next):
             elapsed_ms,
         )
         raise
-
-
-def _request_id_from_request(request: Request) -> str:
-    rid = getattr(request.state, "request_id", None)
-    return rid if isinstance(rid, str) and rid else str(uuid.uuid4())[:8]
-
-
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
-    request_id = _request_id_from_request(request)
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"detail": exc.detail},
-        headers={"X-Request-ID": request_id},
-    )
-
-
-@app.exception_handler(RequestValidationError)
-async def request_validation_exception_handler(request: Request, exc: RequestValidationError):
-    request_id = _request_id_from_request(request)
-    _request_log.warning(
-        "%s %s %s validation_error %s",
-        request_id,
-        request.method,
-        request.url.path,
-        exc.errors(),
-    )
-    return JSONResponse(
-        status_code=422,
-        content={"detail": exc.errors()},
-        headers={"X-Request-ID": request_id},
-    )
-
-
-@app.exception_handler(Exception)
-async def unhandled_exception_handler(request: Request, exc: Exception):
-    request_id = _request_id_from_request(request)
-    return JSONResponse(
-        status_code=500,
-        content={"detail": "Something went wrong. Please try again later."},
-        headers={"X-Request-ID": request_id},
-    )
 
 
 @app.get("/health")
