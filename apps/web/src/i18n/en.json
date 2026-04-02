@@ -244,7 +244,12 @@
       "title": "Profile",
       "subtitle": "Account information from your profile.",
       "role": "Role",
-      "editHint": "Profile editing will be available when your backend exposes update endpoints."
+      "editHint": "Profile editing is available below.",
+      "editTitle": "Edit profile",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "updateSuccess": "Profile updated successfully.",
+      "updateError": "Could not update profile."
     },
     "adminPanel": "Admin panel"
   },

@@ -3,21 +3,59 @@ import PersonIcon from '@mui/icons-material/Person';
 import PhoneIcon from '@mui/icons-material/Phone';
 import ShieldIcon from '@mui/icons-material/Shield';
 import {
+  Alert,
   Box,
+  Button,
   Card,
   CardContent,
   Divider,
   Stack,
+  TextField,
   Typography,
 } from '@mui/material';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { updateMe } from '../../api/auth';
+import { getApiErrorMessage } from '../../utils/apiError';
 import { useAuth } from '../../contexts/useAuth';
 
 export default function ProfilePage() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    setFullName(user.full_name);
+    setPhone(user.phone ?? '');
+  }, [user]);
 
   if (!user) return null;
+
+  const onSave = async () => {
+    const payload = {
+      full_name: fullName.trim(),
+      phone: phone.trim() || null,
+    };
+    setIsSaving(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    try {
+      await updateMe(payload);
+      await refreshUser();
+      setSuccessMessage(t('recruit.profile.updateSuccess'));
+    } catch (err) {
+      setErrorMessage(
+        getApiErrorMessage(err, t('recruit.profile.updateError'), t('common.networkError'))
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <Box>
@@ -78,9 +116,34 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
-      <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
-        {t('recruit.profile.editHint')}
-      </Typography>
+      <Card sx={{ mt: 3 }}>
+        <CardContent>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            {t('recruit.profile.editTitle')}
+          </Typography>
+          <Stack spacing={2}>
+            {successMessage && <Alert severity="success">{successMessage}</Alert>}
+            {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+            <TextField
+              label={t('signup.fullName')}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+            />
+            <TextField
+              label={t('signup.phone')}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              helperText={t('signup.phoneHelp')}
+            />
+            <Box>
+              <Button onClick={onSave} variant="contained" disabled={isSaving}>
+                {isSaving ? t('recruit.profile.saving') : t('recruit.profile.save')}
+              </Button>
+            </Box>
+          </Stack>
+        </CardContent>
+      </Card>
     </Box>
   );
 }

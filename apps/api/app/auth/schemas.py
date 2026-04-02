@@ -44,6 +44,11 @@ class ChangePasswordRequest(BaseModel):
     new_password: str = Field(..., min_length=8)
 
 
+class UpdateProfileRequest(BaseModel):
+    full_name: str | None = Field(default=None, min_length=1, max_length=255)
+    phone: str | None = Field(default=None, max_length=32)
+
+
 class RequestOTP(BaseModel):
     email: EmailStr
 

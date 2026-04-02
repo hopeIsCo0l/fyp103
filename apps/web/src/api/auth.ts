@@ -31,6 +31,11 @@ export interface ChangePasswordPayload {
   new_password: string;
 }
 
+export interface UpdateProfilePayload {
+  full_name?: string;
+  phone?: string | null;
+}
+
 export interface TokenResponse {
   access_token: string;
   refresh_token?: string;
@@ -111,6 +116,11 @@ export const logoutApi = async () => {
 
 export const getMe = async () => {
   const res = await api.get<User>('/auth/me');
+  return res.data;
+};
+
+export const updateMe = async (data: UpdateProfilePayload) => {
+  const res = await api.patch<User>('/auth/me', data);
   return res.data;
 };
 
