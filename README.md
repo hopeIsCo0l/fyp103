@@ -94,6 +94,19 @@ EMAIL_FROM=hello@yourdomain.com
 - Interactive docs: `GET /docs` (Swagger UI)
 - Machine-readable schema: `GET /openapi.json` (use for codegen or review)
 
+## AI CV scoring quickstart
+
+The repository includes a persisted TF-IDF CV-job scoring flow with sample Ethiopian Airlines-style data.
+
+From repo root:
+
+```powershell
+python packages/ai-engine/src/ai_engine/train_cv_job_model.py
+python packages/ai-engine/src/ai_engine/infer_cv_job_model.py --model-path sample_data/models/cv_job_model.pkl --jobs-json sample_data/jobs.json --cvs-json sample_data/cvs.json --out-dir sample_data/out
+```
+
+For ready-to-run text-file batch inputs and schema notes, see `sample_data/README.md`.
+
 ## Database migrations
 
 - **Runtime:** On API startup (unless `SKIP_STARTUP_DB` is set), `app/main.py` runs **`alembic upgrade head`** via `run_alembic_upgrade()`, then **`run_postgresql_migrations(engine)`** for legacy PostgreSQL patches (`app/db_migrate.py`), then **`ensure_super_admin()`**. Same sequence applies when you run `python init_db.py` from `apps/api`.
@@ -145,6 +158,7 @@ Recruiter UI: create and **edit** postings from the Jobs page; dashboard stats a
 
 - `GET /api/jobs` — list open jobs (query: `search`, `employment_type`, `location`, `page`, `size`)
 - `GET /api/jobs/{job_id}` — open job detail (`404` if not open)
+- `POST /api/jobs/{job_id}/score-cv` — candidate-only fit preview (`cv_text`) returning predicted fit and score probabilities
 
 ## Applications (Week 3)
 
