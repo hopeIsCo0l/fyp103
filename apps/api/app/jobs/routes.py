@@ -6,9 +6,10 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.auth.dependencies import require_roles
+from app.jobs.ai_scoring import score_cv_for_job
 from app.candidate.schemas import CandidateApplicationOut
 from app.database import get_db
-from app.jobs.schemas import ApplyBody, PublicJobListResponse, PublicJobOut
+from app.jobs.schemas import ApplyBody, CVScoreBody, CVScoreOut, PublicJobListResponse, PublicJobOut
 from app.models.job import Job
 from app.models.job_application import JobApplication
 from app.models.user import User
@@ -140,3 +141,23 @@ def get_open_job(job_id: str, db: Session = Depends(get_db)):
     if not job:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
     return _to_public(job)
+
+
+@router.post("/{job_id}/score-cv", response_model=CVScoreOut)
+def score_cv_for_open_job(
+    job_id: str,
+    body: CVScoreBody = Body(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(_candidate),
+):
+    del user  # role guard already enforced by dependency
+    job = db.query(Job).filter(Job.id == job_id, Job.status == "open").first()
+    if not job:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
+
+    score = score_cv_for_job(
+        cv_text=body.cv_text,
+        job_title=job.title,
+        job_description=job.description or "",
+    )
+    return CVScoreOut(job_id=job.id, **score)
