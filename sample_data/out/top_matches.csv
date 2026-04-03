@@ -1,0 +1,11 @@
+cv_id,cv_name,job_id,job_title,predicted_fit,ranking_score,prob_good,prob_medium
+cv_b_01_lulit_mengesha,Cv B 01 Lulit Mengesha,job_ops_01,Flight Operations Performance Analyst,bad,0.111707,0.045338,0.362445
+cv_b_02_abel_fekadu,Cv B 02 Abel Fekadu,job_ops_01,Flight Operations Performance Analyst,medium,0.133892,0.036916,0.497704
+cv_b_03_helen_wolde,Cv B 03 Helen Wolde,job_ops_01,Flight Operations Performance Analyst,bad,0.127985,0.052544,0.435318
+cv_g_01_mekdes_bekele,Cv G 01 Mekdes Bekele,job_ops_01,Flight Operations Performance Analyst,good,0.404732,0.528544,0.420845
+cv_g_02_samuel_tadesse,Cv G 02 Samuel Tadesse,job_ops_01,Flight Operations Performance Analyst,good,0.407102,0.524171,0.435805
+cv_g_03_hana_girma,Cv G 03 Hana Girma,job_mx_01,Aircraft Maintenance Planning Engineer,good,0.462654,0.659128,0.286827
+cv_g_04_bereket_alemu,Cv G 04 Bereket Alemu,job_ops_01,Flight Operations Performance Analyst,medium,0.346062,0.408363,0.548892
+cv_g_05_saron_kassaye,Cv G 05 Saron Kassaye,job_mx_01,Aircraft Maintenance Planning Engineer,good,0.449686,0.641765,0.310287
+cv_m_01_yonas_asfaw,Cv M 01 Yonas Asfaw,job_ops_01,Flight Operations Performance Analyst,medium,0.248548,0.029169,0.950566
+cv_m_02_rahel_desalegn,Cv M 02 Rahel Desalegn,job_cargo_01,Cargo Operations Officer,medium,0.257144,0.044802,0.886775

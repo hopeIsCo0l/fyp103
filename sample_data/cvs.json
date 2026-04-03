@@ -1,0 +1,52 @@
+[
+  {
+    "id": "cv_g_01_mekdes_bekele",
+    "name": "Mekdes Bekele",
+    "text": "BSc in Statistics with 5 years in airline operations analytics. Built delay prediction models using Python and SQL and reduced average departure delays. Developed OTP dashboards in Power BI for OCC and dispatch. Strong communication with flight operations leadership."
+  },
+  {
+    "id": "cv_g_02_samuel_tadesse",
+    "name": "Samuel Tadesse",
+    "text": "Data analyst with aviation domain background. Advanced SQL, pandas, and Tableau skills. Led route performance analysis and crew utilization optimization projects. Experienced in presenting KPI packs to network planning and station managers."
+  },
+  {
+    "id": "cv_g_03_hana_girma",
+    "name": "Hana Girma",
+    "text": "Aircraft maintenance engineer with 7 years in planning and reliability. Coordinated A-check and C-check maintenance windows, managed AMOS work packages, and improved parts planning accuracy. Familiar with ICAO continuing airworthiness standards and compliance reporting."
+  },
+  {
+    "id": "cv_g_04_bereket_alemu",
+    "name": "Bereket Alemu",
+    "text": "Cargo operations specialist with 6 years in import and export handling. Experience with airway bills, dangerous goods validation, ULD planning, and shipment tracking. Strong customer communication and warehouse shift coordination."
+  },
+  {
+    "id": "cv_g_05_saron_kassaye",
+    "name": "Saron Kassaye",
+    "text": "Maintenance planning engineer skilled in reliability trend analysis, technical documentation, and MRO planning systems. Worked with engineering teams on preventive maintenance schedules and safety audits. Strong Excel and SQL reporting abilities."
+  },
+  {
+    "id": "cv_m_01_yonas_asfaw",
+    "name": "Yonas Asfaw",
+    "text": "Business analyst with 3 years of dashboard and KPI reporting in logistics. Intermediate SQL and Excel. Limited direct airline exposure but worked on scheduling and operations analytics."
+  },
+  {
+    "id": "cv_m_02_rahel_desalegn",
+    "name": "Rahel Desalegn",
+    "text": "Warehouse and freight coordinator with customer service and shipment documentation skills. Understands basic cargo procedures and tracking tools, but does not yet hold dangerous goods certification."
+  },
+  {
+    "id": "cv_b_01_lulit_mengesha",
+    "name": "Lulit Mengesha",
+    "text": "Junior graphic designer with 2 years in branding, logo design, and social media campaign visuals. Skilled in Adobe Photoshop and Illustrator. No aviation operations or data analytics experience."
+  },
+  {
+    "id": "cv_b_02_abel_fekadu",
+    "name": "Abel Fekadu",
+    "text": "Primary school teacher with classroom management and curriculum development experience. Strong communication and child mentoring skills. No technical maintenance or engineering background."
+  },
+  {
+    "id": "cv_b_03_helen_wolde",
+    "name": "Helen Wolde",
+    "text": "Retail cashier with POS handling and inventory counting skills. Worked in supermarkets and customer-facing sales. No cargo documentation, logistics, or aviation process knowledge."
+  }
+]
