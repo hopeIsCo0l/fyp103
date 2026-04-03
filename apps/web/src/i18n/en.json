@@ -167,6 +167,18 @@
       "companyTbd": "Company",
       "optionalCvLabel": "CV text (optional)",
       "optionalCvPlaceholder": "Paste a CV or summary to compute a match score with the job.",
+      "previewFit": "Preview fit",
+      "previewing": "Previewing...",
+      "previewAll": "Preview all jobs",
+      "previewingAll": "Previewing all...",
+      "previewError": "Could not preview fit score. Try again.",
+      "cvTooShort": "Please enter at least 20 characters of CV text for fit preview.",
+      "fitScore": "Fit score: {{value}}%",
+      "fitLabel": {
+        "good": "Good fit",
+        "medium": "Medium fit",
+        "bad": "Low fit"
+      },
       "browseNotice": "Listings show open postings only. Optional CV text enables a TF-IDF similarity score with each role.",
       "applySuccess": "Application submitted.",
       "applyError": "Could not submit application. Try again.",
