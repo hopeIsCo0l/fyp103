@@ -1,0 +1,17 @@
+[
+  {
+    "id": "job_ops_01",
+    "title": "Flight Operations Performance Analyst",
+    "description": "Ethiopian Airlines seeks a Flight Operations Performance Analyst to monitor on-time performance, delay drivers, crew utilization, and route profitability. Requires SQL, Python, dashboarding with Power BI or Tableau, aviation KPI reporting, and communication with dispatch, OCC, and network planning teams."
+  },
+  {
+    "id": "job_mx_01",
+    "title": "Aircraft Maintenance Planning Engineer",
+    "description": "Ethiopian Airlines maintenance division needs an Aircraft Maintenance Planning Engineer to plan A-check and C-check activities, analyze reliability trends, and coordinate parts availability. Requires EASA/ICAO awareness, AMOS or equivalent MRO system experience, Excel and SQL skills, and compliance reporting for safety."
+  },
+  {
+    "id": "job_cargo_01",
+    "title": "Cargo Operations Officer",
+    "description": "Ethiopian Cargo invites applications for Cargo Operations Officer. Role handles export and import documentation, dangerous goods checks, ULD allocation, warehouse coordination, and shipment tracking. Requires IATA cargo process knowledge, customer service, and shift-based operations support."
+  }
+]

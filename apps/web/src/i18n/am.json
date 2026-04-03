@@ -167,6 +167,18 @@
       "companyTbd": "ኩባንያ",
       "optionalCvLabel": "የ CV ጽሑፍ (አማራጭ)",
       "optionalCvPlaceholder": "ከሚናው ጋር የሚዛመድ ውጤት ለማግኘት CV ወይም ማጠቃለያ ይለጥፉ።",
+      "previewFit": "ተዛማጅነት አሳይ",
+      "previewing": "በማሳየት ላይ...",
+      "previewAll": "ሁሉንም ስራዎች አሳይ",
+      "previewingAll": "ሁሉንም በማሳየት ላይ...",
+      "previewError": "የተዛማጅነት ውጤት ማሳየት አልተቻለም።",
+      "cvTooShort": "ለቅድመ እይታ ቢያንስ 20 ቁምፊ ያለ CV ጽሑፍ ያስገቡ።",
+      "fitScore": "የተዛማጅነት ነጥብ: {{value}}%",
+      "fitLabel": {
+        "good": "ጥሩ ተዛማጅ",
+        "medium": "መካከለኛ ተዛማጅ",
+        "bad": "ዝቅተኛ ተዛማጅ"
+      },
       "browseNotice": "ዝርዝሩ ክፍት ማስታወሻዎችን ብቻ ያሳያል። አማራጭ CV ከሚናው ጋር የ TF-IDF ተመሳሳይነት ውጤት ይሰጣል።",
       "applySuccess": "ማመልከቻ ተላልፏል።",
       "applyError": "ማመልከቻ ማስገባት አልተቻለም። እንደገና ይሞክሩ።",

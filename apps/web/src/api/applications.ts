@@ -13,6 +13,17 @@ export type CandidateApplication = {
   updated_at: string | null;
 };
 
+export type CvScorePreview = {
+  job_id: string;
+  predicted_fit: 'bad' | 'medium' | 'good';
+  ranking_score: number;
+  prob_good: number;
+  prob_medium: number;
+  prob_bad: number;
+  lexical_similarity: number;
+  scorer_source: string;
+};
+
 export async function listCandidateApplications() {
   const { data } = await api.get<CandidateApplication[]>('/candidate/applications');
   return data;
@@ -24,5 +35,12 @@ export async function applyToJob(jobId: string, opts?: { cvText?: string }) {
       ? { cv_text: opts.cvText.trim() }
       : {};
   const { data } = await api.post<CandidateApplication>(`/jobs/${jobId}/apply`, body);
+  return data;
+}
+
+export async function scoreCvForJob(jobId: string, cvText: string) {
+  const { data } = await api.post<CvScorePreview>(`/jobs/${jobId}/score-cv`, {
+    cv_text: cvText.trim(),
+  });
   return data;
 }

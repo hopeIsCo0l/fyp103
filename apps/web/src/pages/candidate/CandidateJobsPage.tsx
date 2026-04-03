@@ -16,7 +16,9 @@ import { useTranslation } from 'react-i18next';
 import {
   applyToJob,
   listCandidateApplications,
+  scoreCvForJob,
   type CandidateApplication,
+  type CvScorePreview,
 } from '../../api/applications';
 import { listOpenJobs, type PublicJob } from '../../api/publicJobs';
 
@@ -39,6 +41,16 @@ function isConflict(err: unknown): boolean {
   );
 }
 
+function isUnprocessable(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'response' in err &&
+    typeof (err as { response?: { status?: number } }).response?.status === 'number' &&
+    (err as { response: { status: number } }).response.status === 422
+  );
+}
+
 export default function CandidateJobsPage() {
   const { t } = useTranslation();
   const [jobs, setJobs] = useState<PublicJob[]>([]);
@@ -47,7 +59,10 @@ export default function CandidateJobsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [applyingId, setApplyingId] = useState<string | null>(null);
+  const [scoringId, setScoringId] = useState<string | null>(null);
+  const [scoringAll, setScoringAll] = useState(false);
   const [optionalCvText, setOptionalCvText] = useState('');
+  const [fitPreviewByJob, setFitPreviewByJob] = useState<Record<string, CvScorePreview>>({});
 
   const appliedJobIds = useMemo(
     () => new Set(applications.map((a) => a.job_id)),
@@ -76,6 +91,67 @@ export default function CandidateJobsPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    setFitPreviewByJob({});
+  }, [optionalCvText]);
+
+  const handlePreviewFit = async (jobId: string) => {
+    setError(null);
+    setSuccess(null);
+    const cvText = optionalCvText.trim();
+    if (cvText.length < 20) {
+      setError(t('recruit.jobs.cvTooShort'));
+      return;
+    }
+    setScoringId(jobId);
+    try {
+      const score = await scoreCvForJob(jobId, cvText);
+      setFitPreviewByJob((prev) => ({ ...prev, [jobId]: score }));
+    } catch (e) {
+      if (isUnprocessable(e)) {
+        setError(t('recruit.jobs.cvTooShort'));
+      } else {
+        setError(t('recruit.jobs.previewError'));
+      }
+    } finally {
+      setScoringId(null);
+    }
+  };
+
+  const handlePreviewAllFits = async () => {
+    setError(null);
+    setSuccess(null);
+    const cvText = optionalCvText.trim();
+    if (cvText.length < 20) {
+      setError(t('recruit.jobs.cvTooShort'));
+      return;
+    }
+    setScoringAll(true);
+    try {
+      const results = await Promise.all(
+        jobs.map(async (job) => {
+          const score = await scoreCvForJob(job.id, cvText);
+          return { jobId: job.id, score };
+        }),
+      );
+      setFitPreviewByJob((prev) => {
+        const next = { ...prev };
+        results.forEach(({ jobId, score }) => {
+          next[jobId] = score;
+        });
+        return next;
+      });
+    } catch (e) {
+      if (isUnprocessable(e)) {
+        setError(t('recruit.jobs.cvTooShort'));
+      } else {
+        setError(t('recruit.jobs.previewError'));
+      }
+    } finally {
+      setScoringAll(false);
+    }
+  };
 
   const handleApply = async (jobId: string) => {
     setSuccess(null);
@@ -131,6 +207,16 @@ export default function CandidateJobsPage() {
         fullWidth
         sx={{ mb: 3 }}
       />
+      <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
+        <Button
+          size="small"
+          variant="outlined"
+          disabled={scoringAll || optionalCvText.trim().length === 0 || jobs.length === 0}
+          onClick={() => void handlePreviewAllFits()}
+        >
+          {scoringAll ? t('recruit.jobs.previewingAll') : t('recruit.jobs.previewAll')}
+        </Button>
+      </Stack>
 
       {loading ? (
         <Typography color="text.secondary">{t('common.loading')}</Typography>
@@ -140,6 +226,7 @@ export default function CandidateJobsPage() {
         <Stack spacing={2}>
           {jobs.map((job) => {
             const applied = appliedJobIds.has(job.id);
+            const preview = fitPreviewByJob[job.id];
             return (
               <Card key={job.id} variant="outlined">
                 <CardContent>
@@ -169,10 +256,41 @@ export default function CandidateJobsPage() {
                           <Chip size="small" color="success" label={t('recruit.jobs.appliedBadge')} />
                         )}
                       </Stack>
+                      {preview && (
+                        <Stack direction="row" spacing={1} sx={{ mt: 1.5, flexWrap: 'wrap', gap: 1 }}>
+                          <Chip
+                            size="small"
+                            color={
+                              preview.predicted_fit === 'good'
+                                ? 'success'
+                                : preview.predicted_fit === 'medium'
+                                  ? 'warning'
+                                  : 'default'
+                            }
+                            label={t(`recruit.jobs.fitLabel.${preview.predicted_fit}`)}
+                          />
+                          <Chip
+                            size="small"
+                            variant="outlined"
+                            label={t('recruit.jobs.fitScore', {
+                              value: Math.round(preview.ranking_score * 100),
+                            })}
+                          />
+                        </Stack>
+                      )}
                     </Box>
                   </Stack>
                 </CardContent>
                 <CardActions sx={{ px: 2, pb: 2, pt: 0 }}>
+                  <Button
+                    size="small"
+                    disabled={
+                      scoringAll || scoringId === job.id || optionalCvText.trim().length === 0
+                    }
+                    onClick={() => void handlePreviewFit(job.id)}
+                  >
+                    {scoringId === job.id ? t('recruit.jobs.previewing') : t('recruit.jobs.previewFit')}
+                  </Button>
                   <Button
                     variant="contained"
                     size="small"

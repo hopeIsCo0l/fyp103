@@ -97,3 +97,37 @@ def test_public_pagination(client: TestClient, make_verified_user):
     assert len(data["items"]) == 2
     assert data["page"] == 1
     assert data["size"] == 2
+
+
+def test_candidate_can_score_cv_for_open_job(client: TestClient, make_verified_user):
+    recruiter = make_verified_user("pubrec6@t.com", "Passw0rd!1", role="recruiter")
+    candidate = make_verified_user("candscore@t.com", "Passw0rd!1", role="candidate")
+    rec_h = _auth(recruiter)
+    cand_h = _auth(candidate)
+
+    created = client.post(
+        "/api/recruiter/jobs",
+        headers=rec_h,
+        json={
+            "title": "Cargo Operations Officer",
+            "description": "IATA cargo process, documentation, dangerous goods checks, shipment tracking",
+            "status": "open",
+        },
+    )
+    job_id = created.json()["id"]
+    r = client.post(
+        f"/api/jobs/{job_id}/score-cv",
+        headers=cand_h,
+        json={
+            "cv_text": (
+                "Cargo operations specialist with airway bill handling, dangerous goods validation, "
+                "shipment tracking, and warehouse coordination experience."
+            )
+        },
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["job_id"] == job_id
+    assert data["predicted_fit"] in {"bad", "medium", "good"}
+    assert 0.0 <= data["ranking_score"] <= 1.0
+    assert data["scorer_source"]

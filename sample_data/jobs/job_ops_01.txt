@@ -1,0 +1,2 @@
+Flight Operations Performance Analyst
+Ethiopian Airlines seeks a Flight Operations Performance Analyst to monitor on-time performance, delay drivers, crew utilization, and route profitability. Requires SQL, Python, dashboarding with Power BI or Tableau, aviation KPI reporting, and communication with dispatch, OCC, and network planning teams.
