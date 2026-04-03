@@ -6,9 +6,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.auth.dependencies import require_roles
-from app.jobs.ai_scoring import score_cv_for_job
 from app.candidate.schemas import CandidateApplicationOut
 from app.database import get_db
+from app.jobs.ai_scoring import score_cv_for_job
 from app.jobs.schemas import ApplyBody, CVScoreBody, CVScoreOut, PublicJobListResponse, PublicJobOut
 from app.models.job import Job
 from app.models.job_application import JobApplication
