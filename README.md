@@ -34,7 +34,7 @@ From the repo root:
 .\scripts\docker-up.ps1
 ```
 
-Or manually:
+Or manually
 
 ```powershell
 cd docker
