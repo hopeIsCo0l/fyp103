@@ -10,6 +10,11 @@ import {
   Paper,
   InputAdornment,
   IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  type SelectChangeEvent,
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
@@ -25,6 +30,7 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [role, setRole] = useState('candidate');
   const [otp, setOtp] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -40,6 +46,7 @@ export default function Signup() {
         password,
         full_name: fullName,
         phone: phone.trim() || undefined,
+        role,
       });
       setStep('otp');
     } catch (err: unknown) {
@@ -184,6 +191,17 @@ export default function Signup() {
             autoComplete="tel"
             helperText={t('signup.phoneHelp')}
           />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>{t('signup.roleLabel')}</InputLabel>
+            <Select
+              value={role}
+              label={t('signup.roleLabel')}
+              onChange={(e: SelectChangeEvent) => setRole(e.target.value)}
+            >
+              <MenuItem value="candidate">{t('signup.roleCandidate')}</MenuItem>
+              <MenuItem value="recruiter">{t('signup.roleRecruiter')}</MenuItem>
+            </Select>
+          </FormControl>
           <TextField
             fullWidth
             label={t('common.password')}

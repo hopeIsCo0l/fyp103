@@ -6,6 +6,7 @@ class UserSignup(BaseModel):
     password: str = Field(..., min_length=8)
     full_name: str = Field(..., min_length=1, max_length=255)
     phone: str | None = Field(None, max_length=32)
+    role: str = Field("candidate", pattern=r"^(candidate|recruiter)$")
 
 
 class UserSignin(BaseModel):

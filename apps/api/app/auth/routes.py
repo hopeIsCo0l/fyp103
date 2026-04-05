@@ -128,7 +128,7 @@ def signup(
             "phone": phone_norm,
             "hashed_password": get_password_hash(payload.password),
             "full_name": payload.full_name.strip(),
-            "role": "candidate",
+            "role": payload.role,
         }
     )
     if not create_and_send_otp(db, payload.email, "signup", signup_data=signup_data):
