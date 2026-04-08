@@ -7,6 +7,15 @@ This document captures recruitment system requirements across application workfl
 - The Functional Requirements (FR) in this document apply to recruitment workflows implemented in frontend and backend service layers.
 - AI model training and fine-tuning are mandatory scope items and are captured in the AI Requirements Backlog section of this document.
 - The currently deployed deterministic TF-IDF score is treated as baseline behavior until trained model rollout is approved.
+- Current baseline delivery includes persisted model training/inference scripts, a candidate fit-preview scoring endpoint, and UI preview actions; promotion to production-grade model governance remains governed by AFR-07 through AFR-12.
+
+## Delivery phases (cost-guided)
+
+This backlog is delivered in phased slices to control cost and risk:
+
+- **Demo phase:** single-model baseline, sample dataset, manual/periodic retraining, and candidate fit preview.
+- **Pilot phase:** labeled-data expansion, experiment tracking discipline, promotion gates, and operational monitoring.
+- **Production-lite phase:** registry-driven lifecycle controls, rollback/governance workflows, and stronger compliance evidence retention.
 
 ---
 
@@ -917,6 +926,7 @@ This document captures recruitment system requirements across application workfl
 - The same preprocessing logic is versioned and reused in training and serving.
 - Feature schema changes are tracked with version identifiers.
 - Pipeline artifacts are reproducible by run identifier.
+- Shared preprocessing utilities are exposed through stable public modules (avoid coupling training/inference to private helper functions).
 
 ---
 
@@ -933,6 +943,7 @@ This document captures recruitment system requirements across application workfl
 - Training supports configurable hyperparameters.
 - Training run produces model artifacts and metric outputs.
 - Training logs and metadata are retained for audit and debugging.
+- The training workflow supports controlled input schemas (CSV/JSON) and deterministic local execution for reproducible demos.
 
 ---
 
@@ -981,6 +992,7 @@ This document captures recruitment system requirements across application workfl
 - Registered models include unique version, metadata, and lifecycle state.
 - Lifecycle states include candidate, staging, production, and archived.
 - Every prediction can be traced to a specific model version.
+- Versioned artifacts are persistable and loadable by serving components without retraining at startup.
 
 ---
 
@@ -997,6 +1009,7 @@ This document captures recruitment system requirements across application workfl
 - The scoring endpoint returns score and explanation payloads as defined by API contract.
 - The service supports version pinning for testing and validation.
 - The service provides graceful fallback behavior if model inference is unavailable.
+- Candidate-facing preview APIs support pre-application scoring and expose confidence-oriented fields for UI display.
 
 ---
 
@@ -1157,6 +1170,7 @@ This document captures recruitment system requirements across application workfl
 
 - CI pipelines validate training code, serving code, and model contracts.
 - Operational runbooks define incident handling and retraining procedures.
+- Training and serving codepaths avoid fragile private-symbol dependencies across modules.
 
 ---
 
@@ -1189,3 +1203,4 @@ This document captures recruitment system requirements across application workfl
 | 1.0 | Initial backlog FR-01–FR-38; FR-04 tightened for enumeration resistance; FR-12/FR-28 minor clarity; FR-39–FR-44 added. |
 | 1.1 | Clarified FR scope as frontend/backend only (AI engine and model internals out of scope) and added detailed NFR-01 through NFR-11. |
 | 1.2 | Renamed document title to Recruitment Backlog, updated scope to make AI training/fine-tuning mandatory, and added AFR-01 through AFR-12 plus AI-NFR-01 through AI-NFR-12. |
+| 1.3 | Aligned AI backlog with persisted model baseline delivery (train/infer scripts, scoring preview API/UI), added phased cost-guided delivery framing, and clarified maintainability criteria around stable shared interfaces. |

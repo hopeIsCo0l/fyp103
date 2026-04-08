@@ -1,0 +1,3 @@
+[submodule "packages/ai-engine/ea-cv-job-matcher"]
+	path = packages/ai-engine/ea-cv-job-matcher
+	url = https://github.com/hopeIsCo0l/ea-cv-job-matcher.git

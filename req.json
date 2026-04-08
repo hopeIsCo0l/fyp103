@@ -1,0 +1,18 @@
+{
+  "cv_text": "Customer-focused graduate with airport operations internship.",
+  "jobs": [
+    {
+      "job_id": "et-ground-001",
+      "title": "Trainee Ground Operations Officer",
+      "description": "Coordinate ramp operations and baggage handling.",
+      "company_name": "Ethiopian Airlines"
+    },
+    {
+      "job_id": "et-cabin-001",
+      "title": "Trainee Cabin Crew",
+      "description": "Deliver safety and customer service on Ethiopian Airlines flights.",
+      "company_name": "Ethiopian Airlines"
+    }
+  ],
+  "top_k": 2
+}
