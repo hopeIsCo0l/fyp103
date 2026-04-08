@@ -32,6 +32,11 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str = ""
     EMAIL_FROM: str = "noreply@recruit.local"
 
+    # Optional external scorer: if set, job apply / score preview call POST {base}/v1/score
+    # and fall back to the in-process scorer on remote errors or excluded jobs.
+    EA_CV_SCORER_URL: str = ""
+    EA_CV_SCORER_TIMEOUT_SEC: float = 5.0
+
     class Config:
         env_file = str(_env_path) if _env_path.exists() else ".env"
         extra = "ignore"

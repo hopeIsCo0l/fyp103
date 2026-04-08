@@ -55,11 +55,12 @@ The first run creates `docker/.env` from `docker/.env.example` if missing. Copy 
 
 | Service    | URL / host |
 |-----------|------------|
-| Web (Vite) | http://localhost:5173 |
+| Web (Vite) | http://localhost:5175 |
 | API (Swagger) | http://localhost:8000/docs |
+| CV similarity API | http://localhost:8001/ready |
 | PostgreSQL | `localhost:5433` (user/password/db from `docker/.env`) |
 
-**Inside Docker:** the Vite dev server proxies `/api` to `http://backend:8000` (see `BACKEND_PROXY_TARGET` in `docker-compose.yml`). The browser still uses `http://localhost:5173`, so no manual API URL change is needed.
+**Inside Docker:** the Vite dev server proxies `/api` to `http://backend:8000`. The standalone scorer runs separately as `http://cv-similarity-api:8000` inside the Compose network and is published on host port `8001`. The browser still talks only to the web app at `http://localhost:5175`, so no manual API URL change is needed.
 
 **Super admin** (when `SEED_ADMIN_ON_START=1`, default): email `admin@recruit-system.com`, password `Admin123!` — override with `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `docker/.env`.
 
@@ -114,7 +115,7 @@ python packages/ai-engine/src/ai_engine/infer_cv_job_model.py --model-path sampl
 
 For ready-to-run text-file batch inputs and schema notes, see `sample_data/README.md`.
 
-**External scorer (Docker):** If you run a separate CV similarity API on port 8000, use [`docs/scorer-sanity-checks.md`](docs/scorer-sanity-checks.md) for host vs container base URLs and curl checks. Sample `POST /v1/score` body: `req.json` at the repo root. Optional env names for HTTP integration are listed in `apps/api/.env.example` (`EA_CV_SCORER_URL`); until the backend calls that service, scoring stays in-process (`packages/ai-engine`).
+**External scorer (Docker):** The backend now uses `EA_CV_SCORER_URL` when set, and falls back to the in-process scorer on remote failures or excluded jobs. In this repo’s Docker stack, the scorer is exposed on host port `8001` and on the internal Compose hostname `cv-similarity-api:8000`. See [`docs/scorer-sanity-checks.md`](docs/scorer-sanity-checks.md) and `req.json` for quick checks.
 
 ## Database migrations
 

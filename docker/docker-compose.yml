@@ -24,7 +24,8 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/recruit_db
-      # Optional: scorer on host (Docker Desktop): EA_CV_SCORER_URL=http://host.docker.internal:8000
+      # Reserved for remote scorer wiring: internal URL of the standalone scoring API.
+      EA_CV_SCORER_URL: http://cv-similarity-api:8000
       SECRET_KEY: your-super-secret-key-change-in-production
       ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: "30"
@@ -38,13 +39,37 @@ services:
     volumes:
       - ../apps/api:/app
 
+  cv-similarity-api:
+    build:
+      context: ../packages/ai-engine/ea-cv-job-matcher
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8000"
+    environment:
+      SERVING_BACKEND: local
+      ROLLOUT_MODE: production
+      REGISTRY_PATH: registry/registry.json
+      LOG_LEVEL: INFO
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready', timeout=5)",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
   frontend:
     build:
       context: ../apps/web
       dockerfile: ../../docker/web.Dockerfile
     ports:
-      # Host 3000: avoid Windows reserved ranges that often block 5173–5174.
-      - "3000:5173"
+      # Host 5175: lower ports on this machine are reserved; keep Vite's container port at 5173.
+      - "5175:5173"
     environment:
       # Do not set VITE_API_URL here: the browser must use same-origin `/api` (e.g. localhost:5174).
       VITE_API_PROXY_TARGET: http://backend:8000

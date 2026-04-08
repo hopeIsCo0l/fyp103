@@ -1,6 +1,6 @@
 import uuid
 
-from ai_engine.match import cv_job_similarity, weighted_score_breakdown
+from ai_engine.match import weighted_score_breakdown
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -56,7 +56,14 @@ def apply_to_open_job(
     cv_text = cv_raw if cv_raw else None
     score = None
     if cv_text:
-        score = cv_job_similarity(cv_text, _job_text_for_match(job))
+        score = float(
+            score_cv_for_job(
+                cv_text=cv_text,
+                job_title=job.title,
+                job_description=job.description or "",
+                company_name=job.company_name,
+            )["ranking_score"]
+        )
     row = JobApplication(
         id=str(uuid.uuid4()),
         job_id=job.id,
@@ -159,5 +166,6 @@ def score_cv_for_open_job(
         cv_text=body.cv_text,
         job_title=job.title,
         job_description=job.description or "",
+        company_name=job.company_name,
     )
     return CVScoreOut(job_id=job.id, **score)

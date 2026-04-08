@@ -2,23 +2,19 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+ENV PIP_DEFAULT_TIMEOUT=120 \
+    PYTHONUNBUFFERED=1
 
 # Build context must be repo root (see docker-compose.yml) so local packages exist.
 COPY packages/database /packages/database
-RUN pip install --no-cache-dir -e /packages/database
+RUN python -m pip install --no-cache-dir -e /packages/database
 COPY packages/ai-engine /packages/ai-engine
-RUN pip install --no-cache-dir -e /packages/ai-engine
+RUN python -m pip install --no-cache-dir -e /packages/ai-engine
 
 COPY apps/api/requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install --no-cache-dir -r requirements.txt
 
 COPY apps/api .
-
-ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
 
