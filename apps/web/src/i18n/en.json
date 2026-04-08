@@ -241,17 +241,22 @@
       "applicantsLoadError": "Could not load applicants.",
       "applicantsColName": "Name",
       "applicantsColEmail": "Email",
+      "applicantsColProfile": "Profile",
       "applicantsColMatch": "CV match",
       "stageLabel": "Stage",
       "stageUpdateError": "Could not update stage.",
       "closeApplicants": "Close",
-      "pipelineEmpty": "No applications yet. When candidates apply, they appear here."
+      "pipelineEmpty": "No applications yet. When candidates apply, they appear here.",
+      "profileSummaryEmpty": "Profile details not completed yet.",
+      "profileStatusSkipped": "Skipped for now",
+      "higherEducationSummary": "Higher education"
     },
     "pipeline": {
       "title": "Candidate pipeline",
       "subtitle": "Review candidates across stages.",
       "colCandidate": "Candidate",
       "colRole": "Role",
+      "colProfile": "Profile",
       "colStage": "Stage",
       "colMatch": "CV match",
       "colUpdated": "Updated",
@@ -293,6 +298,9 @@
         "bmi": "BMI",
         "skillsSummary": "Skills summary",
         "experienceSummary": "Experience summary"
+      },
+      "validation": {
+        "valueRangeHelper": "Enter a value between {{min}} and {{max}}."
       },
       "save": "Save changes",
       "saving": "Saving...",
