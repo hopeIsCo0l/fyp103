@@ -20,6 +20,11 @@ interface CandidateProfileEditorProps {
   mode?: 'profile' | 'complete';
 }
 
+const MIN_YEAR = 1900;
+const MAX_YEAR = 2100;
+const MAX_HEIGHT_CM = 300;
+const MAX_WEIGHT_KG = 500;
+
 function normalizeText(value: string): string | null {
   const trimmed = value.trim();
   return trimmed ? trimmed : null;
@@ -27,18 +32,34 @@ function normalizeText(value: string): string | null {
 
 function normalizeInt(value: string): number | null {
   const trimmed = value.trim();
-  return trimmed ? Number.parseInt(trimmed, 10) : null;
+  if (!trimmed) return null;
+  const parsed = Number.parseInt(trimmed, 10);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function normalizeFloat(value: string): number | null {
   const trimmed = value.trim();
-  return trimmed ? Number.parseFloat(trimmed) : null;
+  if (!trimmed) return null;
+  const parsed = Number.parseFloat(trimmed);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function isYearInRange(value: number | null): value is number {
+  return value != null && value >= MIN_YEAR && value <= MAX_YEAR;
+}
+
+function isPositiveWithin(value: number | null, max: number): value is number {
+  return value != null && value > 0 && value <= max;
 }
 
 function calculateBmi(heightCm: string, weightKg: string): number | null {
-  const height = normalizeFloat(heightCm);
-  const weight = normalizeFloat(weightKg);
-  if (!height || !weight || height <= 0 || weight <= 0) return null;
+  const heightValue = normalizeFloat(heightCm);
+  const weightValue = normalizeFloat(weightKg);
+  if (!isPositiveWithin(heightValue, MAX_HEIGHT_CM) || !isPositiveWithin(weightValue, MAX_WEIGHT_KG)) {
+    return null;
+  }
+  const height = heightValue;
+  const weight = weightValue;
   const bmi = weight / (height / 100) ** 2;
   return Math.round(bmi * 10) / 10;
 }
@@ -98,6 +119,24 @@ export default function CandidateProfileEditor({
 
   const bmi = useMemo(() => calculateBmi(heightCm, weightKg), [heightCm, weightKg]);
   const isCompletionFlow = mode === 'complete';
+  const parsedHighSchoolCompletionYear = normalizeInt(highSchoolCompletionYear);
+  const parsedGraduationYear = normalizeInt(graduationYear);
+  const parsedHeightCm = normalizeFloat(heightCm);
+  const parsedWeightKg = normalizeFloat(weightKg);
+  const highSchoolCompletionYearValid = isYearInRange(parsedHighSchoolCompletionYear);
+  const invalidHighSchoolCompletionYear =
+    highSchoolCompletionYear.trim() !== '' && !highSchoolCompletionYearValid;
+  const graduationYearValid = !graduationYear.trim() || isYearInRange(parsedGraduationYear);
+  const invalidGraduationYear = graduationYear.trim() !== '' && !graduationYearValid;
+  const heightCmValid = !heightCm.trim() || isPositiveWithin(parsedHeightCm, MAX_HEIGHT_CM);
+  const invalidHeightCm = heightCm.trim() !== '' && !heightCmValid;
+  const weightKgValid = !weightKg.trim() || isPositiveWithin(parsedWeightKg, MAX_WEIGHT_KG);
+  const invalidWeightKg = weightKg.trim() !== '' && !weightKgValid;
+  const hasInvalidNumericInput =
+    invalidHighSchoolCompletionYear ||
+    invalidGraduationYear ||
+    invalidHeightCm ||
+    invalidWeightKg;
   const completionReady =
     !!fullName.trim() &&
     !!birthDate &&
@@ -106,7 +145,7 @@ export default function CandidateProfileEditor({
     !!subcity.trim() &&
     !!educationLevel.trim() &&
     !!highSchoolName.trim() &&
-    !!highSchoolCompletionYear.trim();
+    highSchoolCompletionYearValid;
 
   if (!user) return null;
 
@@ -120,13 +159,15 @@ export default function CandidateProfileEditor({
     address_line: normalizeText(addressLine),
     education_level: normalizeText(educationLevel),
     high_school_name: normalizeText(highSchoolName),
-    high_school_completion_year: normalizeInt(highSchoolCompletionYear),
+    high_school_completion_year: highSchoolCompletionYearValid
+      ? parsedHighSchoolCompletionYear
+      : null,
     higher_education_institution: normalizeText(higherEducationInstitution),
     higher_education_level: normalizeText(higherEducationLevel),
     field_of_study: normalizeText(fieldOfStudy),
-    graduation_year: normalizeInt(graduationYear),
-    height_cm: normalizeFloat(heightCm),
-    weight_kg: normalizeFloat(weightKg),
+    graduation_year: graduationYearValid ? parsedGraduationYear : null,
+    height_cm: heightCmValid ? parsedHeightCm : null,
+    weight_kg: weightKgValid ? parsedWeightKg : null,
     skills_summary: normalizeText(skillsSummary),
     experience_summary: normalizeText(experienceSummary),
   };
@@ -289,7 +330,16 @@ export default function CandidateProfileEditor({
                 value={highSchoolCompletionYear}
                 onChange={(e) => setHighSchoolCompletionYear(e.target.value.replace(/\D/g, '').slice(0, 4))}
                 required={isCompletionFlow}
-                inputProps={{ inputMode: 'numeric', maxLength: 4 }}
+                error={invalidHighSchoolCompletionYear}
+                helperText={
+                  invalidHighSchoolCompletionYear
+                    ? t('recruit.profile.validation.valueRangeHelper', {
+                        min: MIN_YEAR,
+                        max: MAX_YEAR,
+                      })
+                    : undefined
+                }
+                inputProps={{ inputMode: 'numeric', maxLength: 4, min: MIN_YEAR, max: MAX_YEAR }}
               />
               <TextField
                 label={t('recruit.profile.fields.higherEducationInstitution')}
@@ -313,8 +363,16 @@ export default function CandidateProfileEditor({
                 label={t('recruit.profile.fields.graduationYear')}
                 value={graduationYear}
                 onChange={(e) => setGraduationYear(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                inputProps={{ inputMode: 'numeric', maxLength: 4 }}
-                helperText={t('recruit.profile.optional')}
+                error={invalidGraduationYear}
+                inputProps={{ inputMode: 'numeric', maxLength: 4, min: MIN_YEAR, max: MAX_YEAR }}
+                helperText={
+                  invalidGraduationYear
+                    ? t('recruit.profile.validation.valueRangeHelper', {
+                        min: MIN_YEAR,
+                        max: MAX_YEAR,
+                      })
+                    : t('recruit.profile.optional')
+                }
               />
             </Box>
           </Box>
@@ -328,13 +386,31 @@ export default function CandidateProfileEditor({
                 label={t('recruit.profile.fields.heightCm')}
                 value={heightCm}
                 onChange={(e) => setHeightCm(e.target.value)}
-                inputProps={{ inputMode: 'decimal' }}
+                error={invalidHeightCm}
+                helperText={
+                  invalidHeightCm
+                    ? t('recruit.profile.validation.valueRangeHelper', {
+                        min: 1,
+                        max: MAX_HEIGHT_CM,
+                      })
+                    : undefined
+                }
+                inputProps={{ inputMode: 'decimal', min: 1, max: MAX_HEIGHT_CM, step: '0.1' }}
               />
               <TextField
                 label={t('recruit.profile.fields.weightKg')}
                 value={weightKg}
                 onChange={(e) => setWeightKg(e.target.value)}
-                inputProps={{ inputMode: 'decimal' }}
+                error={invalidWeightKg}
+                helperText={
+                  invalidWeightKg
+                    ? t('recruit.profile.validation.valueRangeHelper', {
+                        min: 1,
+                        max: MAX_WEIGHT_KG,
+                      })
+                    : undefined
+                }
+                inputProps={{ inputMode: 'decimal', min: 1, max: MAX_WEIGHT_KG, step: '0.1' }}
               />
               <TextField
                 label={t('recruit.profile.fields.bmi')}
@@ -375,7 +451,12 @@ export default function CandidateProfileEditor({
             <Button
               variant="contained"
               onClick={onSave}
-              disabled={isSaving || isSkipping || (isCompletionFlow && !completionReady)}
+              disabled={
+                isSaving ||
+                isSkipping ||
+                hasInvalidNumericInput ||
+                (isCompletionFlow && !completionReady)
+              }
             >
               {isSaving ? t('recruit.profile.saving') : saveLabel}
             </Button>
