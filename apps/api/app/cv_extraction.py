@@ -5,7 +5,6 @@ from __future__ import annotations
 from io import BytesIO
 from pathlib import Path
 
-
 MAX_CV_UPLOAD_BYTES = 5 * 1024 * 1024
 _ALLOWED_SUFFIXES = frozenset({".pdf", ".docx", ".txt"})
 
