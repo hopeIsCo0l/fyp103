@@ -24,8 +24,8 @@ export interface User {
   /** Set after an admin reset; user must choose a new password before using the app. */
   must_change_password?: boolean;
   phone?: string | null;
-  profile_completion_skipped?: boolean;
-  profile_completed?: boolean;
+  profile_completion_skipped: boolean;
+  profile_completed: boolean;
   birth_date?: string | null;
   country?: string | null;
   city?: string | null;

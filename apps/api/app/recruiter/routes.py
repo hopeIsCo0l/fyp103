@@ -12,6 +12,7 @@ from app.models.job_application import JobApplication
 from app.models.user import User
 from app.recruiter.schemas import (
     ApplicationStageUpdate,
+    CandidateProfileSummary,
     JobCreate,
     JobListResponse,
     JobOut,
@@ -72,6 +73,50 @@ def _application_scores(cv_similarity_score: float | None, job: Job) -> dict[str
     return weighted_score_breakdown(
         cv_similarity_score=cv_similarity_score,
         criteria_weights=job.criteria_weights if isinstance(job.criteria_weights, dict) else None,
+    )
+
+
+def _candidate_profile_summary(cand: User) -> CandidateProfileSummary:
+    return CandidateProfileSummary(
+        phone=cand.phone,
+        profile_completed=bool(cand.profile_completed),
+        profile_completion_skipped=bool(cand.profile_completion_skipped),
+        birth_date=cand.birth_date,
+        country=cand.country,
+        city=cand.city,
+        subcity=cand.subcity,
+        address_line=cand.address_line,
+        education_level=cand.education_level,
+        high_school_name=cand.high_school_name,
+        high_school_completion_year=cand.high_school_completion_year,
+        higher_education_institution=cand.higher_education_institution,
+        higher_education_level=cand.higher_education_level,
+        field_of_study=cand.field_of_study,
+        graduation_year=cand.graduation_year,
+        height_cm=cand.height_cm,
+        weight_kg=cand.weight_kg,
+        bmi=cand.bmi,
+        skills_summary=cand.skills_summary,
+        experience_summary=cand.experience_summary,
+    )
+
+
+def _recruiter_application_out(app_row: JobApplication, cand: User, job: Job) -> RecruiterApplicationOut:
+    scores = _application_scores(app_row.cv_similarity_score, job)
+    return RecruiterApplicationOut(
+        id=app_row.id,
+        job_id=job.id,
+        job_title=job.title,
+        candidate_id=cand.id,
+        candidate_email=cand.email,
+        candidate_name=cand.full_name,
+        candidate_profile=_candidate_profile_summary(cand),
+        stage=app_row.stage,
+        cv_similarity_score=app_row.cv_similarity_score,
+        weighted_total_score=scores["weighted_total_score"],
+        score_breakdown=scores,
+        created_at=app_row.created_at,
+        updated_at=app_row.updated_at,
     )
 
 
@@ -145,23 +190,7 @@ def list_all_applications(
     rows = q.order_by(JobApplication.created_at.desc()).all()
     out: list[RecruiterApplicationOut] = []
     for app_row, cand, job in rows:
-        scores = _application_scores(app_row.cv_similarity_score, job)
-        out.append(
-            RecruiterApplicationOut(
-                id=app_row.id,
-                job_id=job.id,
-                job_title=job.title,
-                candidate_id=cand.id,
-                candidate_email=cand.email,
-                candidate_name=cand.full_name,
-                stage=app_row.stage,
-                cv_similarity_score=app_row.cv_similarity_score,
-                weighted_total_score=scores["weighted_total_score"],
-                score_breakdown=scores,
-                created_at=app_row.created_at,
-                updated_at=app_row.updated_at,
-            )
-        )
+        out.append(_recruiter_application_out(app_row, cand, job))
     return out
 
 
@@ -181,23 +210,7 @@ def list_job_applications(
     )
     out: list[RecruiterApplicationOut] = []
     for app_row, cand in rows:
-        scores = _application_scores(app_row.cv_similarity_score, job)
-        out.append(
-            RecruiterApplicationOut(
-                id=app_row.id,
-                job_id=job.id,
-                job_title=job.title,
-                candidate_id=cand.id,
-                candidate_email=cand.email,
-                candidate_name=cand.full_name,
-                stage=app_row.stage,
-                cv_similarity_score=app_row.cv_similarity_score,
-                weighted_total_score=scores["weighted_total_score"],
-                score_breakdown=scores,
-                created_at=app_row.created_at,
-                updated_at=app_row.updated_at,
-            )
-        )
+        out.append(_recruiter_application_out(app_row, cand, job))
     return out
 
 
@@ -218,21 +231,7 @@ def update_application_stage(
     cand = db.query(User).filter(User.id == app_row.candidate_id).first()
     job = db.query(Job).filter(Job.id == app_row.job_id).first()
     assert cand is not None and job is not None
-    scores = _application_scores(app_row.cv_similarity_score, job)
-    return RecruiterApplicationOut(
-        id=app_row.id,
-        job_id=app_row.job_id,
-        job_title=job.title,
-        candidate_id=cand.id,
-        candidate_email=cand.email,
-        candidate_name=cand.full_name,
-        stage=app_row.stage,
-        cv_similarity_score=app_row.cv_similarity_score,
-        weighted_total_score=scores["weighted_total_score"],
-        score_breakdown=scores,
-        created_at=app_row.created_at,
-        updated_at=app_row.updated_at,
-    )
+    return _recruiter_application_out(app_row, cand, job)
 
 
 @router.patch("/jobs/{job_id}", response_model=JobOut)

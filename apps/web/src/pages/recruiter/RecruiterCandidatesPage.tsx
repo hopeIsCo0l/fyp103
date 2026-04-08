@@ -23,6 +23,7 @@ import {
   type RecruiterApplication,
 } from '../../api/recruiterApplications';
 import type { ApplicationStage } from '../../api/applications';
+import CandidateProfileSummary from '../../components/CandidateProfileSummary';
 
 const STAGES: ApplicationStage[] = ['applied', 'screening', 'interview', 'offer', 'rejected'];
 
@@ -103,6 +104,7 @@ export default function RecruiterCandidatesPage() {
               <TableRow>
                 <TableCell>{t('recruit.pipeline.colCandidate')}</TableCell>
                 <TableCell>{t('recruit.pipeline.colRole')}</TableCell>
+                <TableCell>{t('recruit.pipeline.colProfile')}</TableCell>
                 <TableCell>{t('recruit.pipeline.colStage')}</TableCell>
                 <TableCell align="right">{t('recruit.pipeline.colMatch')}</TableCell>
                 <TableCell align="right">{t('recruit.pipeline.colUpdated')}</TableCell>
@@ -120,6 +122,9 @@ export default function RecruiterCandidatesPage() {
                     </Stack>
                   </TableCell>
                   <TableCell>{row.job_title}</TableCell>
+                  <TableCell sx={{ minWidth: 280 }}>
+                    <CandidateProfileSummary profile={row.candidate_profile} />
+                  </TableCell>
                   <TableCell sx={{ minWidth: 160 }}>
                     <FormControl size="small" fullWidth disabled={updatingId === row.id}>
                       <InputLabel id={`st-${row.id}`}>{t('recruit.recruiter.stageLabel')}</InputLabel>

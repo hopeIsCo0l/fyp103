@@ -241,17 +241,22 @@
       "applicantsLoadError": "አመልካቾችን መጫን አልተቻለም።",
       "applicantsColName": "ስም",
       "applicantsColEmail": "ኢሜይል",
+      "applicantsColProfile": "መገለጫ",
       "applicantsColMatch": "CV ተዛማጅ",
       "stageLabel": "ደረጃ",
       "stageUpdateError": "ደረጃ ማዘመን አልተቻለም።",
       "closeApplicants": "ዝጋ",
-      "pipelineEmpty": "እስካሁን ማመልከቻ የለም። እጩዎች ሲመልከቱ እዚህ ይታያሉ።"
+      "pipelineEmpty": "እስካሁን ማመልከቻ የለም። እጩዎች ሲመልከቱ እዚህ ይታያሉ።",
+      "profileSummaryEmpty": "የመገለጫ ዝርዝሮች ገና አልተሟሉም።",
+      "profileStatusSkipped": "ለአሁን ተዘልሏል",
+      "higherEducationSummary": "ከፍተኛ ትምህርት"
     },
     "pipeline": {
       "title": "የእምሰራተኛ መስመር",
       "subtitle": "በደረጃዎች አመልካቾችን ይገምግሙ።",
       "colCandidate": "እምሰራተኛ",
       "colRole": "ሚና",
+      "colProfile": "መገለጫ",
       "colStage": "ደረጃ",
       "colMatch": "CV ተዛማጅ",
       "colUpdated": "ተዘምኗል",
@@ -293,6 +298,9 @@
         "bmi": "BMI",
         "skillsSummary": "የክህሎት ማጠቃለያ",
         "experienceSummary": "የልምድ ማጠቃለያ"
+      },
+      "validation": {
+        "valueRangeHelper": "በ{{min}} እና {{max}} መካከል ያለ እሴት ያስገቡ።"
       },
       "save": "ለውጦችን አስቀምጥ",
       "saving": "በማስቀመጥ ላይ...",

@@ -43,6 +43,7 @@ import {
   updateApplicationStage,
   type RecruiterApplication,
 } from '../../api/recruiterApplications';
+import CandidateProfileSummary from '../../components/CandidateProfileSummary';
 
 const APP_STAGES: ApplicationStage[] = ['applied', 'screening', 'interview', 'offer', 'rejected'];
 
@@ -415,7 +416,7 @@ export default function RecruiterJobsPage() {
         open={applicantsJob !== null}
         onClose={closeApplicantsDialog}
         fullWidth
-        maxWidth="md"
+        maxWidth="lg"
       >
         <DialogTitle>
           {applicantsJob
@@ -439,6 +440,7 @@ export default function RecruiterJobsPage() {
                   <TableRow>
                     <TableCell>{t('recruit.recruiter.applicantsColName')}</TableCell>
                     <TableCell>{t('recruit.recruiter.applicantsColEmail')}</TableCell>
+                    <TableCell>{t('recruit.recruiter.applicantsColProfile')}</TableCell>
                     <TableCell align="right">{t('recruit.recruiter.applicantsColMatch')}</TableCell>
                     <TableCell sx={{ minWidth: 160 }}>{t('recruit.recruiter.stageLabel')}</TableCell>
                   </TableRow>
@@ -448,6 +450,9 @@ export default function RecruiterJobsPage() {
                     <TableRow key={a.id} hover>
                       <TableCell>{a.candidate_name}</TableCell>
                       <TableCell>{a.candidate_email}</TableCell>
+                      <TableCell sx={{ minWidth: 280 }}>
+                        <CandidateProfileSummary profile={a.candidate_profile} />
+                      </TableCell>
                       <TableCell align="right">{fmtMatch(a.cv_similarity_score)}</TableCell>
                       <TableCell>
                         <FormControl
