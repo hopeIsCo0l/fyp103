@@ -24,7 +24,6 @@ const MIN_YEAR = 1900;
 const MAX_YEAR = 2100;
 const MAX_HEIGHT_CM = 300;
 const MAX_WEIGHT_KG = 500;
-
 function normalizeText(value: string): string | null {
   const trimmed = value.trim();
   return trimmed ? trimmed : null;
