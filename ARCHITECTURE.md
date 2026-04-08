@@ -26,6 +26,7 @@ pip install -e ./packages/utils
 | Package | Role |
 |--------|------|
 | `packages/ai-engine` (`recruit-ai-engine`) | CV parsing, TF‑IDF / embedding scoring, exams, XAI — **imported by `apps/api`** as logic is implemented. |
+| `packages/ai-engine/ea-cv-job-matcher` | **Git submodule:** standalone [CV–job scoring API](https://github.com/hopeIsCo0l/ea-cv-job-matcher) (`POST /v1/score`). Not installed as part of `recruit-ai-engine`; run or deploy it separately. |
 | `packages/database` (`recruit-database`) | Portable types (e.g. `CriteriaWeights`), JSON shapes; **PostgreSQL + pgvector** DDL remains under **Alembic in `apps/api`**. |
 | `packages/utils` (`recruit-utils`) | Shared text utilities; Amharic/Unicode normalization as needed. |
 

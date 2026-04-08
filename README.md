@@ -14,13 +14,20 @@ fypimp103/
 │  ├─ web.Dockerfile
 │  └─ docker-compose.yml
 ├─ packages/                  # Shared Python libs (install with pip -e; see ARCHITECTURE.md)
-│  ├─ ai-engine/              # CV parsing, scoring, XAI (scaffold)
+│  ├─ ai-engine/              # recruit-ai-engine; includes `ea-cv-job-matcher` git submodule
+│  │   └─ ea-cv-job-matcher/  # [standalone CV–job scoring API](https://github.com/hopeIsCo0l/ea-cv-job-matcher)
 │  ├─ database/               # Shared Pydantic types / JSON shapes (Alembic stays in apps/api)
 │  └─ utils/                  # Text helpers, future Amharic normalization
 ├─ scripts/
 ├─ .github/workflows/
 ├─ ARCHITECTURE.md
 └─ README.md
+```
+
+Clone with submodules (needed for `packages/ai-engine/ea-cv-job-matcher`), or after a plain clone run:
+
+```powershell
+git submodule update --init --recursive
 ```
 
 ## Run the stack (Docker Compose — production-like)
@@ -106,6 +113,8 @@ python packages/ai-engine/src/ai_engine/infer_cv_job_model.py --model-path sampl
 ```
 
 For ready-to-run text-file batch inputs and schema notes, see `sample_data/README.md`.
+
+**External scorer (Docker):** If you run a separate CV similarity API on port 8000, use [`docs/scorer-sanity-checks.md`](docs/scorer-sanity-checks.md) for host vs container base URLs and curl checks. Sample `POST /v1/score` body: `req.json` at the repo root. Optional env names for HTTP integration are listed in `apps/api/.env.example` (`EA_CV_SCORER_URL`); until the backend calls that service, scoring stays in-process (`packages/ai-engine`).
 
 ## Database migrations
 
