@@ -5,6 +5,7 @@ export interface SignupPayload {
   password: string;
   full_name: string;
   phone?: string | null;
+  role?: string;
 }
 
 export interface SigninPayload {
