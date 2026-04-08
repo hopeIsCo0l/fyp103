@@ -13,6 +13,14 @@ export function getApiErrorMessage(
   if (data && typeof data === 'object' && data !== null && 'detail' in data) {
     const detail = (data as { detail: unknown }).detail;
     if (typeof detail === 'string') return detail;
+    if (
+      typeof detail === 'object' &&
+      detail !== null &&
+      'message' in detail &&
+      typeof (detail as { message?: unknown }).message === 'string'
+    ) {
+      return (detail as { message: string }).message;
+    }
     if (Array.isArray(detail)) {
       return detail
         .map((item) => {

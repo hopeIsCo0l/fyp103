@@ -1,7 +1,14 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+
+class CvExtractOut(BaseModel):
+    """Response from automated CV / resume text extraction."""
+
+    cv_text: str = Field(..., max_length=50000)
+    file_format: str = Field(..., description="Detected file kind: pdf, docx, or txt")
 
 
 class CandidateApplicationOut(BaseModel):

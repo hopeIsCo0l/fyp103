@@ -11,15 +11,17 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   applyToJob,
+  extractCvText,
   listCandidateApplications,
   scoreCvForJob,
   type CandidateApplication,
   type CvScorePreview,
 } from '../../api/applications';
+import { getApiErrorMessage } from '../../utils/apiError';
 import { listOpenJobs, type PublicJob } from '../../api/publicJobs';
 
 function postedDate(iso: string | null): string {
@@ -62,6 +64,8 @@ export default function CandidateJobsPage() {
   const [scoringId, setScoringId] = useState<string | null>(null);
   const [scoringAll, setScoringAll] = useState(false);
   const [optionalCvText, setOptionalCvText] = useState('');
+  const [extractingResume, setExtractingResume] = useState(false);
+  const resumeFileInputRef = useRef<HTMLInputElement>(null);
   const [fitPreviewByJob, setFitPreviewByJob] = useState<Record<string, CvScorePreview>>({});
 
   const appliedJobIds = useMemo(
@@ -95,6 +99,26 @@ export default function CandidateJobsPage() {
   useEffect(() => {
     setFitPreviewByJob({});
   }, [optionalCvText]);
+
+  const handleResumeFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setError(null);
+    setSuccess(null);
+    setExtractingResume(true);
+    try {
+      const { cv_text: extracted } = await extractCvText(file);
+      setOptionalCvText(extracted);
+      setSuccess(t('recruit.jobs.resumeExtractSuccess'));
+    } catch (err) {
+      setError(
+        getApiErrorMessage(err, t('recruit.jobs.resumeExtractError'), t('common.networkError')),
+      );
+    } finally {
+      setExtractingResume(false);
+    }
+  };
 
   const handlePreviewFit = async (jobId: string) => {
     setError(null);
@@ -197,6 +221,26 @@ export default function CandidateJobsPage() {
         </Alert>
       )}
 
+      <input
+        ref={resumeFileInputRef}
+        type="file"
+        accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+        style={{ display: 'none' }}
+        onChange={(e) => void handleResumeFileSelected(e)}
+      />
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mb: 2 }} alignItems={{ sm: 'center' }}>
+        <Button
+          variant="outlined"
+          size="small"
+          disabled={extractingResume}
+          onClick={() => resumeFileInputRef.current?.click()}
+        >
+          {extractingResume ? t('recruit.jobs.resumeExtracting') : t('recruit.jobs.resumeUpload')}
+        </Button>
+        <Typography variant="body2" color="text.secondary">
+          {t('recruit.jobs.resumeUploadHint')}
+        </Typography>
+      </Stack>
       <TextField
         label={t('recruit.jobs.optionalCvLabel')}
         placeholder={t('recruit.jobs.optionalCvPlaceholder')}
@@ -211,7 +255,12 @@ export default function CandidateJobsPage() {
         <Button
           size="small"
           variant="outlined"
-          disabled={scoringAll || optionalCvText.trim().length === 0 || jobs.length === 0}
+          disabled={
+            scoringAll ||
+            optionalCvText.trim().length === 0 ||
+            jobs.length === 0 ||
+            extractingResume
+          }
           onClick={() => void handlePreviewAllFits()}
         >
           {scoringAll ? t('recruit.jobs.previewingAll') : t('recruit.jobs.previewAll')}
@@ -285,7 +334,10 @@ export default function CandidateJobsPage() {
                   <Button
                     size="small"
                     disabled={
-                      scoringAll || scoringId === job.id || optionalCvText.trim().length === 0
+                      scoringAll ||
+                      scoringId === job.id ||
+                      optionalCvText.trim().length === 0 ||
+                      extractingResume
                     }
                     onClick={() => void handlePreviewFit(job.id)}
                   >
@@ -294,7 +346,7 @@ export default function CandidateJobsPage() {
                   <Button
                     variant="contained"
                     size="small"
-                    disabled={applied || applyingId === job.id}
+                    disabled={applied || applyingId === job.id || extractingResume}
                     onClick={() => void handleApply(job.id)}
                   >
                     {applied ? t('recruit.jobs.appliedBadge') : t('recruit.jobs.apply')}
