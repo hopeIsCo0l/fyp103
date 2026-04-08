@@ -24,8 +24,21 @@ export type CvScorePreview = {
   scorer_source: string;
 };
 
+export type CvExtractResult = {
+  cv_text: string;
+  file_format: string;
+};
+
 export async function listCandidateApplications() {
   const { data } = await api.get<CandidateApplication[]>('/candidate/applications');
+  return data;
+}
+
+/** Server-side text extraction from PDF, DOCX, or TXT (candidate auth). */
+export async function extractCvText(file: File) {
+  const form = new FormData();
+  form.append('file', file);
+  const { data } = await api.post<CvExtractResult>('/candidate/cv/extract', form);
   return data;
 }
 
