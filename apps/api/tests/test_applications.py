@@ -176,6 +176,66 @@ def test_recruiter_updates_stage(client: TestClient, make_verified_user):
     assert r.json()["stage"] == "interview"
 
 
+def test_recruiter_application_lists_include_candidate_profile_summary(
+    client: TestClient,
+    make_verified_user,
+):
+    rec = make_verified_user("profrec@t.com", "Passw0rd!1", role="recruiter")
+    cand = make_verified_user("profcand@t.com", "Passw0rd!2", role="candidate")
+    h_rec = _headers(rec["access_token"])
+    h_cand = _headers(cand["access_token"])
+
+    profile_update = client.patch(
+        "/api/auth/me",
+        headers=h_cand,
+        json={
+            "phone": "+251911000000",
+            "birth_date": "1999-10-05",
+            "country": "Ethiopia",
+            "city": "Addis Ababa",
+            "subcity": "Bole",
+            "address_line": "Bole Road",
+            "education_level": "Bachelor",
+            "high_school_name": "Bole Secondary School",
+            "high_school_completion_year": 2017,
+            "higher_education_institution": "AAU",
+            "higher_education_level": "BSc",
+            "field_of_study": "Computer Science",
+            "graduation_year": 2021,
+            "height_cm": 175,
+            "weight_kg": 70,
+            "skills_summary": "Python, FastAPI, SQL",
+            "experience_summary": "Two years of backend internship experience",
+        },
+    )
+    assert profile_update.status_code == 200
+
+    created_job = client.post(
+        "/api/recruiter/jobs",
+        json={"title": "Backend Engineer", "status": "open"},
+        headers=h_rec,
+    )
+    assert created_job.status_code == 201
+    job_id = created_job.json()["id"]
+
+    applied = client.post(f"/api/jobs/{job_id}/apply", headers=h_cand)
+    assert applied.status_code == 201
+
+    by_job = client.get(f"/api/recruiter/jobs/{job_id}/applications", headers=h_rec)
+    assert by_job.status_code == 200
+    profile = by_job.json()[0]["candidate_profile"]
+    assert profile["phone"] == "+251911000000"
+    assert profile["profile_completed"] is True
+    assert profile["city"] == "Addis Ababa"
+    assert profile["field_of_study"] == "Computer Science"
+    assert profile["bmi"] == 22.9
+    assert profile["skills_summary"] == "Python, FastAPI, SQL"
+
+    all_apps = client.get("/api/recruiter/applications", headers=h_rec)
+    assert all_apps.status_code == 200
+    assert all_apps.json()[0]["candidate_profile"]["higher_education_institution"] == "AAU"
+
+
 def test_recruiter_cannot_access_other_job_applicants(client: TestClient, make_verified_user):
     r1 = make_verified_user("o1@t.com", "Passw0rd!1", role="recruiter")
     r2 = make_verified_user("o2@t.com", "Passw0rd!2", role="recruiter")

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
@@ -53,6 +53,29 @@ class JobListResponse(BaseModel):
 ApplicationStage = Literal["applied", "screening", "interview", "offer", "rejected"]
 
 
+class CandidateProfileSummary(BaseModel):
+    phone: Optional[str] = None
+    profile_completed: bool = False
+    profile_completion_skipped: bool = False
+    birth_date: Optional[date] = None
+    country: Optional[str] = None
+    city: Optional[str] = None
+    subcity: Optional[str] = None
+    address_line: Optional[str] = None
+    education_level: Optional[str] = None
+    high_school_name: Optional[str] = None
+    high_school_completion_year: Optional[int] = None
+    higher_education_institution: Optional[str] = None
+    higher_education_level: Optional[str] = None
+    field_of_study: Optional[str] = None
+    graduation_year: Optional[int] = None
+    height_cm: Optional[float] = None
+    weight_kg: Optional[float] = None
+    bmi: Optional[float] = None
+    skills_summary: Optional[str] = None
+    experience_summary: Optional[str] = None
+
+
 class RecruiterApplicationOut(BaseModel):
     id: str
     job_id: str
@@ -60,6 +83,7 @@ class RecruiterApplicationOut(BaseModel):
     candidate_id: str
     candidate_email: str
     candidate_name: str
+    candidate_profile: CandidateProfileSummary
     stage: str
     cv_similarity_score: Optional[float] = None
     weighted_total_score: Optional[float] = None
