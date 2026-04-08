@@ -108,6 +108,8 @@ class TestSignupVerifySignin:
         })
         assert resp.status_code == 200
         assert resp.json()["email"] == EMAIL
+        assert resp.json()["profile_completed"] is False
+        assert resp.json()["profile_completion_skipped"] is False
 
     def test_me_without_token_rejected(self, client):
         resp = client.get("/api/auth/me")
@@ -131,6 +133,47 @@ class TestSignupVerifySignin:
         assert me.status_code == 200
         assert me.json()["full_name"] == "Updated User"
         assert me.json()["phone"] == "+1555000222"
+
+    def test_update_me_updates_candidate_profile_and_bmi(self, client, make_verified_user):
+        tokens = make_verified_user(EMAIL, PASSWORD)
+        headers = {"Authorization": f"Bearer {tokens['access_token']}"}
+
+        resp = client.patch(
+            "/api/auth/me",
+            json={
+                "country": "Ethiopia",
+                "city": "Addis Ababa",
+                "subcity": "Bole",
+                "birth_date": "2000-01-02",
+                "education_level": "Bachelor",
+                "high_school_name": "Bole Secondary School",
+                "high_school_completion_year": 2018,
+                "height_cm": 180,
+                "weight_kg": 81,
+                "skills_summary": "Python, FastAPI",
+                "experience_summary": "Internship experience",
+            },
+            headers=headers,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["country"] == "Ethiopia"
+        assert data["profile_completed"] is True
+        assert data["profile_completion_skipped"] is False
+        assert data["bmi"] == 25.0
+
+    def test_update_me_can_skip_candidate_profile_completion(self, client, make_verified_user):
+        tokens = make_verified_user(EMAIL, PASSWORD)
+        headers = {"Authorization": f"Bearer {tokens['access_token']}"}
+
+        resp = client.patch(
+            "/api/auth/me",
+            json={"profile_completion_skipped": True},
+            headers=headers,
+        )
+        assert resp.status_code == 200
+        assert resp.json()["profile_completion_skipped"] is True
+        assert resp.json()["profile_completed"] is False
 
     def test_update_me_rejects_duplicate_phone(self, client, captured_otps, make_verified_user):
         phone = "+1555011111"

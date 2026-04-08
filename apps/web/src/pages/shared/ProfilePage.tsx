@@ -16,6 +16,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { updateMe } from '../../api/auth';
+import CandidateProfileEditor from '../../components/CandidateProfileEditor';
 import { getApiErrorMessage } from '../../utils/apiError';
 import { useAuth } from '../../contexts/useAuth';
 
@@ -35,6 +36,7 @@ export default function ProfilePage() {
   }, [user]);
 
   if (!user) return null;
+  const isCandidate = (user.role || '').toLowerCase() === 'candidate';
 
   const onSave = async () => {
     const payload = {
@@ -116,34 +118,38 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
-      <Card sx={{ mt: 3 }}>
-        <CardContent>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            {t('recruit.profile.editTitle')}
-          </Typography>
-          <Stack spacing={2}>
-            {successMessage && <Alert severity="success">{successMessage}</Alert>}
-            {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
-            <TextField
-              label={t('signup.fullName')}
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-            />
-            <TextField
-              label={t('signup.phone')}
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              helperText={t('signup.phoneHelp')}
-            />
-            <Box>
-              <Button onClick={onSave} variant="contained" disabled={isSaving}>
-                {isSaving ? t('recruit.profile.saving') : t('recruit.profile.save')}
-              </Button>
-            </Box>
-          </Stack>
-        </CardContent>
-      </Card>
+      {isCandidate ? (
+        <CandidateProfileEditor />
+      ) : (
+        <Card sx={{ mt: 3 }}>
+          <CardContent>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              {t('recruit.profile.editTitle')}
+            </Typography>
+            <Stack spacing={2}>
+              {successMessage && <Alert severity="success">{successMessage}</Alert>}
+              {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+              <TextField
+                label={t('signup.fullName')}
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+              />
+              <TextField
+                label={t('signup.phone')}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                helperText={t('signup.phoneHelp')}
+              />
+              <Box>
+                <Button onClick={onSave} variant="contained" disabled={isSaving}>
+                  {isSaving ? t('recruit.profile.saving') : t('recruit.profile.save')}
+                </Button>
+              </Box>
+            </Stack>
+          </CardContent>
+        </Card>
+      )}
     </Box>
   );
 }
