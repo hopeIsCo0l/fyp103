@@ -40,6 +40,35 @@ from app.models.user_session import UserSession
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+CANDIDATE_PROFILE_TEXT_FIELDS = (
+    "country",
+    "city",
+    "subcity",
+    "address_line",
+    "education_level",
+    "high_school_name",
+    "higher_education_institution",
+    "higher_education_level",
+    "field_of_study",
+    "skills_summary",
+    "experience_summary",
+)
+CANDIDATE_PROFILE_VALUE_FIELDS = {
+    *CANDIDATE_PROFILE_TEXT_FIELDS,
+    "birth_date",
+    "high_school_completion_year",
+    "graduation_year",
+    "height_cm",
+    "weight_kg",
+}
+
+
+def _clean_optional_text(value: str | None) -> str | None:
+    if value is None:
+        return None
+    cleaned = value.strip()
+    return cleaned or None
+
 
 def _request_context(request: Request) -> tuple[str | None, str | None]:
     ip = request.client.host if request.client else None
@@ -655,6 +684,25 @@ def update_me(
                 )
         current_user.phone = phone_norm
         updated_fields.append("phone")
+
+    for field_name in CANDIDATE_PROFILE_TEXT_FIELDS:
+        if field_name not in provided_fields:
+            continue
+        setattr(current_user, field_name, _clean_optional_text(getattr(payload, field_name)))
+        updated_fields.append(field_name)
+
+    for field_name in ("birth_date", "high_school_completion_year", "graduation_year", "height_cm", "weight_kg"):
+        if field_name not in provided_fields:
+            continue
+        setattr(current_user, field_name, getattr(payload, field_name))
+        updated_fields.append(field_name)
+
+    if "profile_completion_skipped" in provided_fields:
+        current_user.profile_completion_skipped = bool(payload.profile_completion_skipped)
+        updated_fields.append("profile_completion_skipped")
+
+    if current_user.role.lower() == "candidate" and provided_fields.intersection(CANDIDATE_PROFILE_VALUE_FIELDS):
+        current_user.profile_completion_skipped = False
 
     db.commit()
     ip, ua = _request_context(request)

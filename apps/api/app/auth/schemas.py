@@ -1,3 +1,5 @@
+from datetime import date
+
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -34,6 +36,25 @@ class UserResponse(BaseModel):
     is_super_admin: bool = False
     must_change_password: bool = False
     phone: str | None = None
+    profile_completion_skipped: bool = False
+    profile_completed: bool = True
+    birth_date: date | None = None
+    country: str | None = None
+    city: str | None = None
+    subcity: str | None = None
+    address_line: str | None = None
+    education_level: str | None = None
+    high_school_name: str | None = None
+    high_school_completion_year: int | None = None
+    higher_education_institution: str | None = None
+    higher_education_level: str | None = None
+    field_of_study: str | None = None
+    graduation_year: int | None = None
+    height_cm: float | None = None
+    weight_kg: float | None = None
+    bmi: float | None = None
+    skills_summary: str | None = None
+    experience_summary: str | None = None
 
     class Config:
         from_attributes = True
@@ -47,6 +68,23 @@ class ChangePasswordRequest(BaseModel):
 class UpdateProfileRequest(BaseModel):
     full_name: str | None = Field(default=None, min_length=1, max_length=255)
     phone: str | None = Field(default=None, max_length=32)
+    profile_completion_skipped: bool | None = None
+    birth_date: date | None = None
+    country: str | None = Field(default=None, max_length=100)
+    city: str | None = Field(default=None, max_length=100)
+    subcity: str | None = Field(default=None, max_length=100)
+    address_line: str | None = Field(default=None, max_length=255)
+    education_level: str | None = Field(default=None, max_length=100)
+    high_school_name: str | None = Field(default=None, max_length=255)
+    high_school_completion_year: int | None = Field(default=None, ge=1900, le=2100)
+    higher_education_institution: str | None = Field(default=None, max_length=255)
+    higher_education_level: str | None = Field(default=None, max_length=100)
+    field_of_study: str | None = Field(default=None, max_length=150)
+    graduation_year: int | None = Field(default=None, ge=1900, le=2100)
+    height_cm: float | None = Field(default=None, gt=0, le=300)
+    weight_kg: float | None = Field(default=None, gt=0, le=500)
+    skills_summary: str | None = Field(default=None, max_length=2000)
+    experience_summary: str | None = Field(default=None, max_length=2000)
 
 
 class RequestOTP(BaseModel):

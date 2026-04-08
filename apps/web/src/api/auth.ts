@@ -24,6 +24,25 @@ export interface User {
   /** Set after an admin reset; user must choose a new password before using the app. */
   must_change_password?: boolean;
   phone?: string | null;
+  profile_completion_skipped?: boolean;
+  profile_completed?: boolean;
+  birth_date?: string | null;
+  country?: string | null;
+  city?: string | null;
+  subcity?: string | null;
+  address_line?: string | null;
+  education_level?: string | null;
+  high_school_name?: string | null;
+  high_school_completion_year?: number | null;
+  higher_education_institution?: string | null;
+  higher_education_level?: string | null;
+  field_of_study?: string | null;
+  graduation_year?: number | null;
+  height_cm?: number | null;
+  weight_kg?: number | null;
+  bmi?: number | null;
+  skills_summary?: string | null;
+  experience_summary?: string | null;
 }
 
 export interface ChangePasswordPayload {
@@ -34,6 +53,23 @@ export interface ChangePasswordPayload {
 export interface UpdateProfilePayload {
   full_name?: string;
   phone?: string | null;
+  profile_completion_skipped?: boolean;
+  birth_date?: string | null;
+  country?: string | null;
+  city?: string | null;
+  subcity?: string | null;
+  address_line?: string | null;
+  education_level?: string | null;
+  high_school_name?: string | null;
+  high_school_completion_year?: number | null;
+  higher_education_institution?: string | null;
+  higher_education_level?: string | null;
+  field_of_study?: string | null;
+  graduation_year?: number | null;
+  height_cm?: number | null;
+  weight_kg?: number | null;
+  skills_summary?: string | null;
+  experience_summary?: string | null;
 }
 
 export interface TokenResponse {

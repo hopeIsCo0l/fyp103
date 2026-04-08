@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Box, CircularProgress, ThemeProvider, CssBaseline } from '@mui/material';
 import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './contexts/useAuth';
@@ -19,6 +19,7 @@ import RecruitLayout from './layouts/RecruitLayout';
 import CandidateDashboard from './pages/candidate/CandidateDashboard';
 import CandidateJobsPage from './pages/candidate/CandidateJobsPage';
 import CandidateApplicationsPage from './pages/candidate/CandidateApplicationsPage';
+import CandidateProfileCompletePage from './pages/candidate/CandidateProfileCompletePage';
 import RecruiterDashboard from './pages/recruiter/RecruiterDashboard';
 import RecruiterJobsPage from './pages/recruiter/RecruiterJobsPage';
 import RecruiterCandidatesPage from './pages/recruiter/RecruiterCandidatesPage';
@@ -83,11 +84,14 @@ function App() {
                 </RequireRole>
               }
             >
-              <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path="dashboard" element={<CandidateDashboard />} />
-              <Route path="jobs" element={<CandidateJobsPage />} />
-              <Route path="applications" element={<CandidateApplicationsPage />} />
-              <Route path="profile" element={<ProfilePage />} />
+              <Route path="profile/complete" element={<CandidateProfileCompletePage />} />
+              <Route element={<CandidateProfileGate />}>
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<CandidateDashboard />} />
+                <Route path="jobs" element={<CandidateJobsPage />} />
+                <Route path="applications" element={<CandidateApplicationsPage />} />
+                <Route path="profile" element={<ProfilePage />} />
+              </Route>
             </Route>
             <Route
               path="/recruiter"
@@ -147,6 +151,9 @@ function DashboardRedirect() {
   const r = (user?.role || '').toLowerCase();
   if (r === 'admin') return <Navigate to="/admin" replace />;
   if (r === 'recruiter') return <Navigate to="/recruiter/dashboard" replace />;
+  if (!user?.profile_completed && !user?.profile_completion_skipped) {
+    return <Navigate to="/candidate/profile/complete" replace />;
+  }
   return <Navigate to="/candidate/dashboard" replace />;
 }
 
@@ -193,6 +200,15 @@ function RequireRole({ role, children }: { role: string; children: ReactNode }) 
     return <Navigate to="/unauthorized" replace />;
   }
   return children;
+}
+
+function CandidateProfileGate() {
+  const { user, isLoading } = useAuth();
+  if (isLoading) return null;
+  if (user && !user.profile_completed && !user.profile_completion_skipped) {
+    return <Navigate to="/candidate/profile/complete" replace />;
+  }
+  return <Outlet />;
 }
 
 export default App;

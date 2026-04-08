@@ -82,7 +82,7 @@ def test_alembic_upgrade_from_003_to_head_adds_scoring_columns():
 
     with engine.connect() as conn:
         head_rev = conn.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
-        assert head_rev == "008_add_must_change_password"
+        assert head_rev == "009_add_candidate_profile_fields"
         app_cols = {
             row[0]
             for row in conn.execute(
@@ -111,5 +111,20 @@ def test_alembic_upgrade_from_003_to_head_adds_scoring_columns():
                 )
             ).fetchall()
         }
+        user_cols = {
+            row[0]
+            for row in conn.execute(
+                text(
+                    """
+                    SELECT column_name
+                    FROM information_schema.columns
+                    WHERE table_schema = 'public'
+                      AND table_name = 'users'
+                      AND column_name IN ('birth_date', 'country', 'profile_completion_skipped')
+                    """
+                )
+            ).fetchall()
+        }
         assert app_cols == {"cv_text", "cv_similarity_score"}
         assert jobs_cols == {"criteria_weights"}
+        assert user_cols == {"birth_date", "country", "profile_completion_skipped"}
