@@ -145,10 +145,37 @@ Or: `python init_db.py` (Alembic upgrade + legacy patches).
 - `POST /api/auth/refresh`
 - `POST /api/auth/forgot-password`
 - `POST /api/auth/reset-password`
+- `POST /api/auth/change-password` — authenticated; required when `must_change_password` flag is set (e.g. after admin-initiated reset); issues fresh tokens
 - `POST /api/auth/logout`
 - `GET /api/auth/me`
+- `PATCH /api/auth/me` — update own profile (see [Candidate Profile](#candidate-profile) below for fields)
 - `GET /api/auth/recruiter-only`
 - `GET /api/auth/admin-only`
+
+## Candidate Profile
+
+Candidates are prompted to complete their profile on first sign-in. The profile can also be updated at any time via `PATCH /api/auth/me` (all fields optional).
+
+**Profile fields**
+
+| Field | Description |
+|-------|-------------|
+| `full_name` | Display name |
+| `phone` | Optional, unique |
+| `birth_date` | ISO date (YYYY-MM-DD) |
+| `country`, `city`, `subcity`, `address_line` | Address / location |
+| `education_level` | E.g. `high_school`, `bachelor`, `master`, `phd` |
+| `high_school_name`, `high_school_completion_year` | High-school details |
+| `higher_education_institution`, `higher_education_level`, `field_of_study`, `graduation_year` | University / college details |
+| `height_cm`, `weight_kg` | Physical stats (BMI computed automatically) |
+| `skills_summary`, `experience_summary` | Free-text areas used in CV scoring |
+| `profile_completion_skipped` | Set `true` to dismiss the completion prompt without filling in all fields |
+
+`profile_completed` is a read-only derived flag on `GET /api/auth/me`; it is `true` when all required candidate fields are present (birth date, country, city, subcity, education level, high-school name and year) or when the user is not a candidate.
+
+**Profile completion flow (UI)**
+
+After sign-in, candidates whose profile is incomplete and who have not previously skipped are redirected to `/candidate/profile/complete`. They can fill in the form or click **Skip for now** (sets `profile_completion_skipped = true`). The same editor is available from the candidate dashboard at `/candidate/profile`.
 
 ## Recruiter job postings (Week 2)
 
@@ -175,7 +202,8 @@ Recruiter UI: create and **edit** postings from the Jobs page; dashboard stats a
 **Candidates** (`candidate` or `admin` role):
 
 - `POST /api/jobs/{job_id}/apply` — apply to an **open** job (409 if already applied; 400 if you own the posting)
-- `GET /api/candidate/applications` — list your applications with job title, company, stage, timestamps
+- `GET /api/candidate/applications` — list your applications with job title, company, stage, timestamps, CV similarity score, and weighted score breakdown
+- `POST /api/candidate/cv/extract` — upload a resume file (PDF, DOCX, or TXT; max 5 MB) and receive the extracted plain text; use the returned `cv_text` in a subsequent apply request
 
 **Recruiters** (`recruiter` or `admin` role):
 
@@ -194,6 +222,7 @@ Recruiter job list/detail (`GET /api/recruiter/jobs`) includes **`applicants_cou
 - Account lockout after 5 failed sign-in attempts (15 min, 30 min attempt window)
 - In-memory rate limiting on sensitive endpoints
 - Role-based access control (candidate, recruiter, admin) — normalized **`roles`** table + **`users.role_id`** FK; API still exposes `role` as a string
+- Profile update via `PATCH /api/auth/me` (full_name, phone, and candidate profile fields); `profile_completed` derived flag; `must_change_password` flag cleared on `POST /api/auth/change-password`
 - Audit logging (signup, signin, verify, refresh, reset events, **`auth.locked`** when locked after max failures)
 - Composite index on `audit_logs` (`created_at`, `actor_id`, `action`); legacy column drift handled via `init_db` / `db_migrate` where needed
 - Seed super admin via `apps/api/seed_admin.py` / `ensure_super_admin` on startup
