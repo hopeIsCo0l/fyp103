@@ -1,6 +1,6 @@
 # EAA Recruit
 
-AI-powered recruitment platform built in a clean monorepo structure.
+AI-powered recruitment platform built in a clean monorepo structure. that's it
 
 ## Repository Structure
 
